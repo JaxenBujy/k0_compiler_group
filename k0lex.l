@@ -1,5 +1,5 @@
 /* -*-bison-*- */
-/* Simple wc implementation in Flex */
+/* Scanner for subset of Kotlin language "k0" */
 %option noyywrap
 %option noinput
 %option nounput
