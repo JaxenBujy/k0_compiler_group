@@ -24,38 +24,38 @@
 %}
 %start program
 %%
-program
+program /* a program is just a list of top level declarations */
     : top_level_list
     ;
-top_level_list
+top_level_list /* a list of top level declarations */
     : top_level_list top_level_decl
     | top_level_decl
     ;
-top_level_decl
+top_level_decl /* for now, just a function declaration, but includes class declarations, import statements, etc */
     : function_decl
     ;
-function_decl
+function_decl /* the basic function declaration of kotlin */
     : FUN IDENT LPAREN RPAREN block
     ;
-block
+block /* a block is full of statements in a statement list */
     : LBRACE stmt_list RBRACE
     ;
-stmt_list
+stmt_list /* a statement list is built of another statement list and statements, or just statements */
     : stmt_list stmt
     |
     ;
-stmt
+stmt /* a statement for now is just an expression followed by an optional semicolon, that is how kotlin works */
     : expr SEMICOLON
     | expr
     ;
-expr
+expr /* for now, an expression is just a function call, but it includes literals, assingments, etc. */
     : function_call
     { printf("This is an expression\n"); }
     ;
-function_call
+function_call /* a function call is a form of expression that calls functions */
     : IDENT LPAREN arg_list RPAREN
     { printf("This is a function call\n"); }
-arg_list
+arg_list /* this list of arguments within that function call, just string for now */
     : STRING
     |
     ;
