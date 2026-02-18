@@ -112,4 +112,3 @@
 #define DOUBLE_TYPE 351
 #define BOOLEAN_TYPE 352
 #define STRING_TYPE 353
-#define ARRAY 356
