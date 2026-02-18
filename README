@@ -1,0 +1,8 @@
+To do:
+    - steps 11 and 12 of Lab 3
+    - add way more grammar rules
+
+Implemented:
+    - working k0gram.y for a hello world program
+    - Makefile
+    - hello_world.kt test file

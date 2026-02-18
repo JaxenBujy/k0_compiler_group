@@ -4,9 +4,9 @@
 %option noinput
 %option nounput
 %{
-#include "ytab.h"
-int lineno = 1; // keep track of line number 
-int multi_line_start; // keep track of when a multi line comment begins to give error if it is unclosed
+    #include "k0gram.tab.h"
+    int lineno = 1; // keep track of line number 
+    int multi_line_start; // keep track of when a multi line comment begins to give error if it is unclosed
 %}
 
 whitespace  [ \t\r]+
