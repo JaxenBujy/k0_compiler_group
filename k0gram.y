@@ -37,24 +37,32 @@ top_level_decl /* for now, just a function declaration, but includes class decla
     : function_decl
     | importHeader
     ;
-importHeader: /* imports */
-    IMPORT IDENT
+importHeader /* imports */
+    : IMPORT IDENT
     ;
-type: /* basic types supported in k0 */
-    BYTE_TYPE | SHORT_TYPE | INT_TYPE | LONG_TYPE | FLOAT_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | "String" {return STRING_TYPE; }
+type /* basic types supported in k0 */
+    : BYTE_TYPE 
+    | SHORT_TYPE 
+    | INT_TYPE 
+    | LONG_TYPE 
+    | FLOAT_TYPE 
+    | DOUBLE_TYPE 
+    | BOOLEAN_TYPE 
+    | STRING_TYPE
+    | ARRAY LT type GT
     ;
-array_decl:
-    ARRAY '<' type '>'
-    ;
-var_decl:
-    IDENT COLON array_decl
-    | IDENT COLON type
+var_decl
+    : IDENT COLON type
     ;
 function_decl /* the basic function declaration of kotlin */
     : FUN IDENT LPAREN RPAREN block // fun main() {}
     | FUN IDENT LPAREN RPAREN COLON type block // fun main(): int {}
     | FUN IDENT LPAREN RPAREN // fun main() - has no block after it, just a function declaration
-    | FUN IDENT LPAREN var_decl RPAREN COLON type block // fun main(args: Array<String>) {}
+    | FUN IDENT LPAREN parameter_list RPAREN COLON type block // fun main(args: Array<String>) {}
+    ;
+parameter_list /* allows for multiple parameters */
+    : var_decl
+    | parameter_list COMMA var_decl
     ;
 block /* a block is full of statements in a statement list */
     : LBRACE stmt_list RBRACE

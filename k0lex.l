@@ -33,46 +33,46 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 <COMMENT><<EOF>> {return UNCLOSED_COMMENT;}
 
  /* Initial state */
-\n		{ lineno++; }
+\n		            { lineno++; }
 {inline_comment}    {}
-{hash_line}  {}
-{whitespace}  {}   
+{hash_line}         {}
+{whitespace}        {}   
 
 
  /* K0 Reserved Keywords */
-"break"    { return BREAK; }
-"continue" { return CONTINUE; }
-"do"       { return DO; }
-"else"    { return ELSE; }
-"false"    { return K_FALSE; }
-"for"      { return FOR; }
-"fun"      { return FUN; }
-"if"       { return IF; }
-"in"       { return IN; }
-"null"     { return K_NULL; }
-"return"   { return RETURN; }
-"true"     { return K_TRUE; }
-"val"      { return VAL; }
-"var"      { return VAR; }
-"when"     { return WHEN; }
-"while"   { return WHILE; }
-"import"  { return IMPORT; }
+"break"     { return BREAK; }
+"continue"  { return CONTINUE; }
+"do"        { return DO; }
+"else"      { return ELSE; }
+"false"     { return K_FALSE; }
+"for"       { return FOR; }
+"fun"       { return FUN; }
+"if"        { return IF; }
+"in"        { return IN; }
+"null"      { return K_NULL; }
+"return"    { return RETURN; }
+"true"      { return K_TRUE; }
+"val"       { return VAL; }
+"var"       { return VAR; }
+"when"      { return WHEN; }
+"while"     { return WHILE; }
+"import"    { return IMPORT; }
 
  /* Kotline Reserved Keywords that we are not dealing with, return KEYWORD_ERROR */
-"!in"        { return KEYWORD_ERROR; }
-"!is"        { return KEYWORD_ERROR; }
-"as"        { return KEYWORD_ERROR; }
-"as?"        { return KEYWORD_ERROR; }
-"class"      { return KEYWORD_ERROR; }
-"is"         { return KEYWORD_ERROR; }
-"object"     { return KEYWORD_ERROR; }
-"package"    { return KEYWORD_ERROR; }
-"super"      { return KEYWORD_ERROR; }
-"this"       { return KEYWORD_ERROR; }
-"throw"      { return KEYWORD_ERROR; }
-"try"        { return KEYWORD_ERROR; }
-"typealias"  { return KEYWORD_ERROR; }
-"typeof"     { return KEYWORD_ERROR; }
+"!in"           { return KEYWORD_ERROR; }
+"!is"           { return KEYWORD_ERROR; }
+"as"            { return KEYWORD_ERROR; }
+"as?"           { return KEYWORD_ERROR; }
+"class"         { return KEYWORD_ERROR; }
+"is"            { return KEYWORD_ERROR; }
+"object"        { return KEYWORD_ERROR; }
+"package"       { return KEYWORD_ERROR; }
+"super"         { return KEYWORD_ERROR; }
+"this"          { return KEYWORD_ERROR; }
+"throw"         { return KEYWORD_ERROR; }
+"try"           { return KEYWORD_ERROR; }
+"typealias"     { return KEYWORD_ERROR; }
+"typeof"        { return KEYWORD_ERROR; }
  /* Soft keywords that we are not dealing with */
 "by"           { return KEYWORD_ERROR; }
 "catch"        { return KEYWORD_ERROR; }
@@ -92,34 +92,34 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 "value"        { return KEYWORD_ERROR; }
 "where"        { return KEYWORD_ERROR; }
  /* Kotlin modifier keywords not in k0 */
-"abstract"    { return KEYWORD_ERROR; }
-"actual"      { return KEYWORD_ERROR; }
-"annotation"  { return KEYWORD_ERROR; }
-"companion"   { return KEYWORD_ERROR; }
-"crossinline" { return KEYWORD_ERROR; }
-"data"        { return KEYWORD_ERROR; }
-"enum"        { return KEYWORD_ERROR; }
-"expect"      { return KEYWORD_ERROR; }
-"external"    { return KEYWORD_ERROR; }
-"final"       { return KEYWORD_ERROR; }
-"infix"       { return KEYWORD_ERROR; }
-"inline"      { return KEYWORD_ERROR; }
-"inner"       { return KEYWORD_ERROR; }
-"internal"    { return KEYWORD_ERROR; }
-"lateinit"    { return KEYWORD_ERROR; }
-"noinline"    { return KEYWORD_ERROR; }
-"open"        { return KEYWORD_ERROR; }
-"operator"    { return KEYWORD_ERROR; }
-"out"         { return KEYWORD_ERROR; }
-"private"     { return KEYWORD_ERROR; }
-"protected"   { return KEYWORD_ERROR; }
-"public"      { return KEYWORD_ERROR; }
-"reified"     { return KEYWORD_ERROR; }
-"sealed"      { return KEYWORD_ERROR; }
-"suspend"     { return KEYWORD_ERROR; }
-"tailrec"     { return KEYWORD_ERROR; }
-"vararg"      { return KEYWORD_ERROR; }
-"it"          { return KEYWORD_ERROR; }
+"abstract"      { return KEYWORD_ERROR; }
+"actual"        { return KEYWORD_ERROR; }
+"annotation"    { return KEYWORD_ERROR; }
+"companion"     { return KEYWORD_ERROR; }
+"crossinline"   { return KEYWORD_ERROR; }
+"data"          { return KEYWORD_ERROR; }
+"enum"          { return KEYWORD_ERROR; }
+"expect"        { return KEYWORD_ERROR; }
+"external"      { return KEYWORD_ERROR; }
+"final"         { return KEYWORD_ERROR; }
+"infix"         { return KEYWORD_ERROR; }
+"inline"        { return KEYWORD_ERROR; }
+"inner"         { return KEYWORD_ERROR; }
+"internal"      { return KEYWORD_ERROR; }
+"lateinit"      { return KEYWORD_ERROR; }
+"noinline"      { return KEYWORD_ERROR; }
+"open"          { return KEYWORD_ERROR; }
+"operator"      { return KEYWORD_ERROR; }
+"out"           { return KEYWORD_ERROR; }
+"private"       { return KEYWORD_ERROR; }
+"protected"     { return KEYWORD_ERROR; }
+"public"        { return KEYWORD_ERROR; }
+"reified"       { return KEYWORD_ERROR; }
+"sealed"        { return KEYWORD_ERROR; }
+"suspend"       { return KEYWORD_ERROR; }
+"tailrec"       { return KEYWORD_ERROR; }
+"vararg"        { return KEYWORD_ERROR; }
+"it"            { return KEYWORD_ERROR; }
 
 
  /* Operators */
@@ -178,26 +178,26 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 "]"     { return RSQUARE; }
 
  /* Types */
-"byte"   { return BYTE_TYPE; }
-"short"   { return SHORT_TYPE; }
-"int"   { return INT_TYPE; }
-"long"   { return LONG_TYPE; }
-"float"   { return FLOAT_TYPE; }
-"double"   { return DOUBLE_TYPE; }
-"boolean"   { return BOOLEAN_TYPE; }
-"string"   { return STRING_TYPE; }
-"Array"    { return ARRAY; }
+"Byte"      { return BYTE_TYPE; }
+"Short"     { return SHORT_TYPE; }
+"Int"       { return INT_TYPE; }
+"Long"      { return LONG_TYPE; }
+"Float"     { return FLOAT_TYPE; }
+"Double"    { return DOUBLE_TYPE; }
+"Boolean"   { return BOOLEAN_TYPE; }
+"String"    { return STRING_TYPE; }
+"Array"     { return ARRAY; }
 
  /* Literals */
-{char_literal}  { return CHAR; }
-{integer_literal}   { return INT; }
-{real_literal}     { return REAL; }
-{string_literal}    { return STRING; }
+{char_literal}          { return CHAR; }
+{integer_literal}       { return INT; }
+{real_literal}          { return REAL; }
+{string_literal}        { return STRING; }
 {multi_string_literal}  { return MULTI_STRING; }
 
  /* identifier catchall */
-{identifier}    { return IDENT; }
-{illegal_identifier}  { return ILL_IDENT;}
+{identifier}            { return IDENT; }
+{illegal_identifier}    { return ILL_IDENT;}
 
  /* Could not match */
 .      { return COULD_NOT_MATCH; }
