@@ -1,8 +1,12 @@
 To do:
-    - steps 11 and 12 of Lab 3
-    - add way more grammar rules
-
+    - block, statements, statement, declaration, assignment, loopStatement, expression, controlStructureBody
+    - Most of these are partially done
+    - Once the grammar is complete, we can work on moving everything in main to somewhere else, possibly the auxillary section of k0gram.y?
+Somewhat implemented:
+    - declaration: Variable and function declaration seem to be the only types of declaration we need to do, but there are some gray areas like Array declaration,
+    which Jeffery mentions being a class. So just want to look into other types of declarations more and see if we need to implement them or not
+    - statements, statement, expression - just more to be done with these
 Implemented:
-    - working k0gram.y for a hello world program
-    - Makefile
-    - hello_world.kt test file
+    - topLevelObject, functionDeclaration, functionValueParameters, type, typeConstraints, functionBody
+    - bison -dv -t debug options added to Makefile, to activiate, set int debug in main to 1. Shows exactly which token caused a syntax error.
+

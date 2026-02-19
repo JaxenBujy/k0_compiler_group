@@ -1,6 +1,11 @@
 import something
 import something_else
+val x: Int = 5
+val y = 9
 
-fun main(args: Array<String>): Int {
-    println("Hello World!")
+// main function
+fun main(args: Array<String>, arg_count: Int): Int {
+    val z = 8
+    val message: String = "Hello, World!\n"
+    println(message)
 }

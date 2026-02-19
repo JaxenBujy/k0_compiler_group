@@ -11,6 +11,7 @@ extern int yyleng;
 extern int lineno;
 extern int multi_line_start;
 extern int yyparse();
+extern int yydebug;
 
 struct token
 {
@@ -56,6 +57,7 @@ int main(int argc, char *argv[])
         struct tokenlist *head = NULL;
         int first_token = 1;
 
+        yydebug = 1;
         int rv = yyparse(); // call yyparse once instead of yylex() in a while loop
         switch (rv)
         {
@@ -205,7 +207,7 @@ void free_list(struct tokenlist *head)
 char *consume_sval(int str_type)
 {
     // allocate worst-case size (raw string length including escapes and quotes)
-    char *tmp = (char *)malloc(yyleng);
+    char *tmp = (char *)malloc(yyleng + 1);
     char *start = tmp;
 
     // pointer to iterate over the raw lexer text
