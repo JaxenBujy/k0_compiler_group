@@ -19,6 +19,11 @@
 %token IDENT
 %token BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE
 %token ARRAY
+%right ASSIGN PLUS_ASSIGN MINUS_ASSIGN
+%left PLUS MINUS
+%left MUL DIV MOD
+%right NOT
+%right INC DEC
 %nonassoc IFX
 %nonassoc ELSE
 %{
@@ -134,14 +139,44 @@ statement /* a statement for now is just an expression followed by an optional s
     | if_statement
     ;
 non_control_statement
-    : expr SEMICOLON
-    | expr
-    | assignment
-    | assignment SEMICOLON
+    : expr opt_semicolon
     ;
-expr /* for now, an expression is just a function call, but it includes literals, assignments, etc. */
+opt_semicolon
+    : SEMICOLON
+    | 
+    ;
+expr /* for now, an expression is just an assignment with allowable arithmetic. NOTE this gets called before a primary expression in order to keep previous code working */
+    : assignment_expr
+    ;
+assignment_expr /* assignment expression allows for one additive expression or assignment */
+    : additive_expr
+    | IDENT ASSIGN assignment_expr
+    | IDENT PLUS_ASSIGN assignment_expr
+    | IDENT MINUS_ASSIGN assignment_expr
+    ;
+additive_expr /* left recursion to create correct order of operations */
+    : mulitplicative_expr
+    | additive_expr PLUS mulitplicative_expr
+    | additive_expr MINUS mulitplicative_expr
+    ;
+mulitplicative_expr /* left recursion into a unary expression */
+    : unary_expr
+    | mulitplicative_expr MUL unary_expr
+    | mulitplicative_expr DIV unary_expr
+    | mulitplicative_expr MOD unary_expr
+    ;
+unary_expr /* all unary expressions as well as a primary expression, which will allow for function calls as well as expressions again*/
+    : primary_expr
+    | MINUS unary_expr
+    | NOT unary_expr
+    | INC unary_expr
+    | DEC unary_expr
+    ;
+primary_expr /* refactored expr into primary_expr, that includes everything from before as well as new logic to expressions */
     : function_call
     | IDENT
+    | literal
+    | LPAREN expr RPAREN
     ;
 function_call /* a function call is a form of expression that calls functions */
     : IDENT LPAREN function_call_values_list RPAREN
@@ -157,10 +192,6 @@ functionCallVal
     ;
 block /* cannot have variable declarations/initiations, since those are only allowed at the global level and top of functions*/
     : LBRACE statement_list RBRACE
-    ;
-assignment /* declared/initialized variables can be assigned new values anywhere in the program */
-    : IDENT ASSIGN IDENT
-    | IDENT ASSIGN literal
     ;
 loop_statement /* we are supporting for loops and while loops */
     : for_statement
