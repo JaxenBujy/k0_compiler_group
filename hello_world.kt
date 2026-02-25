@@ -9,4 +9,8 @@ fun main(args: Array<String>, arg_count: Int): Int {
     val message: String = "Hello, World!\n"
     println(message)
     for (jeg in x..z) {}
+    
+    if (x) y
+    else if (z) {}
+    else a
 }

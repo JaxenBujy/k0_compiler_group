@@ -19,6 +19,8 @@
 %token IDENT
 %token BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE
 %token ARRAY
+%nonassoc IFX
+%nonassoc ELSE
 %{
     extern int yylex();
     extern int yyerror(char *s);
@@ -119,20 +121,24 @@ fun_body_var_list /* the list of variable defintions/initializations that must g
     | fun_body_var_list fun_body_var_init
     |
     ;
-statement_list /* a statement list is built of another statement list and statements, acts as statements in the Kotlin syntax */
+statement_list /* a statement list is built of another statement list and statements, fulfills the role of statements in the Kotlin grammar */
     : statement_list statement
     |
     ;
 statement /* a statement for now is just an expression followed by an optional semicolon, that is how kotlin works */
+    : non_control_statement
+    | loop_statement
+    | if_statement
+    ;
+non_control_statement
     : expr SEMICOLON
     | expr
     | assignment
     | assignment SEMICOLON
-    | loop_statement
-    //| if_expression
     ;
 expr /* for now, an expression is just a function call, but it includes literals, assignments, etc. */
     : function_call
+    | IDENT
     ;
 function_call /* a function call is a form of expression that calls functions */
     : IDENT LPAREN function_call_values_list RPAREN
@@ -170,16 +176,8 @@ control_structure_body /* the body following a control structure like a for, whi
     : block
     | statement
     ;
-// if_expression /* Can be single if, if else if, if else if else*/
-//     : IF LPAREN expr RPAREN control_structure_body // if (expr)
-//     | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body // if (expr) else (expr) 
-//     ;
-//     // from recursion, if (expr) else if (expr) else (expr) is covered as well
-// else_expression
-//     : ELSE LPAREN expr RPAREN control_structure_body
-//     |
-//     ;
-// else_if_expression
-//     : ELSE IF LPAREN expr RPAREN control_structure_body
-//     |
-//     ;
+if_statement /* Allowing if, if else, and if else if*/
+    : IF LPAREN expr RPAREN control_structure_body %prec IFX
+    | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body
+    ;
+
