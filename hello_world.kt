@@ -8,4 +8,5 @@ fun main(args: Array<String>, arg_count: Int): Int {
     val z = 8
     val message: String = "Hello, World!\n"
     println(message)
+    for (jeg in x..z) {}
 }

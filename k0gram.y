@@ -112,20 +112,24 @@ parameter_list /* allows for multiple parameters in a function declaration */
 
 /* k0 allows for var_defs and var_inits at the top of the bodies of function definitions, before the first executable statement */
 function_body
-    : LBRACE fun_body_var_list stmt_list RBRACE
+    : LBRACE fun_body_var_list statement_list RBRACE
     ;
 fun_body_var_list /* the list of variable defintions/initializations that must go at the start of a function body */
     : fun_body_var_list fun_body_var_decl
     | fun_body_var_list fun_body_var_init
     |
     ;
-stmt_list /* a statement list is built of another statement list and statements, or just statements, or empty */
-    : stmt_list stmt
+statement_list /* a statement list is built of another statement list and statements, acts as statements in the Kotlin syntax */
+    : statement_list statement
     |
     ;
-stmt /* a statement for now is just an expression followed by an optional semicolon, that is how kotlin works */
+statement /* a statement for now is just an expression followed by an optional semicolon, that is how kotlin works */
     : expr SEMICOLON
     | expr
+    | assignment
+    | assignment SEMICOLON
+    | loop_statement
+    //| if_expression
     ;
 expr /* for now, an expression is just a function call, but it includes literals, assignments, etc. */
     : function_call
@@ -142,3 +146,40 @@ functionCallVal
     : literal
     | IDENT
     ;
+block /* cannot have variable declarations/initiations, since those are only allowed at the global level and top of functions*/
+    : LBRACE statement_list RBRACE
+    ;
+assignment /* declared/initialized variables can be assigned new values anywhere in the program */
+    : IDENT ASSIGN IDENT
+    | IDENT ASSIGN literal
+    ;
+loop_statement /* we are supporting for loops and while loops */
+    : for_statement
+    | while_statement
+    ;
+for_statement /* enforced form: for ( x in y..z) {} */
+    : FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body // for ( x in y..z) {}
+    | FOR LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body // for ( x in 1..z) {}
+    | FOR LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body // for ( x in y..10) {}
+    | FOR LPAREN IDENT IN literal RANGE_INCL literal RPAREN control_structure_body // for ( x in 1..10) {}
+    ;
+while_statement /* enforced form: while ( expr ) {} */
+    : WHILE LPAREN expr RPAREN control_structure_body
+    ;
+control_structure_body /* the body following a control structure like a for, while, if statement can be a block or one statement */
+    : block
+    | statement
+    ;
+// if_expression /* Can be single if, if else if, if else if else*/
+//     : IF LPAREN expr RPAREN control_structure_body // if (expr)
+//     | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body // if (expr) else (expr) 
+//     ;
+//     // from recursion, if (expr) else if (expr) else (expr) is covered as well
+// else_expression
+//     : ELSE LPAREN expr RPAREN control_structure_body
+//     |
+//     ;
+// else_if_expression
+//     : ELSE IF LPAREN expr RPAREN control_structure_body
+//     |
+//     ;

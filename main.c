@@ -57,7 +57,8 @@ int main(int argc, char *argv[])
         struct tokenlist *head = NULL;
         int first_token = 1;
 
-        yydebug = 1;
+        // for debug prints from bison
+        yydebug = 0;
         int rv = yyparse(); // call yyparse once instead of yylex() in a while loop
         switch (rv)
         {
