@@ -13,4 +13,5 @@ fun main(args: Array<String>, arg_count: Int): Int {
     if (x) y
     else if (z) {}
     else a
+    return x
 }

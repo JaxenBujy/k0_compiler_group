@@ -102,7 +102,7 @@ function_var_decl /* just var_decl without val_var, to be place within function 
 /* k0 does not support function bodies that are expressions not enclosed in curly brackets */
 /* Kotlin does not do function declaration and definition separately like C. So we can choose to allow declarations like fun main() <no body>, but they seem useless */
 function_decl 
-    : FUN IDENT LPAREN parameter_list RPAREN COLON type function_body // fun main(args: Array<String>, arg_count: Int) {}
+    : FUN IDENT LPAREN parameter_list RPAREN COLON type function_body_with_return // fun main(args: Array<String>, arg_count: Int): Int {}
     | FUN IDENT LPAREN parameter_list RPAREN function_body // fun main() {} - the colon and return type may be omitted for functions with no return
     | FUN IDENT LPAREN parameter_list RPAREN // fun main() <no body> - a strict declaration that is useless other than the programmer wanting to strictly declare a function
     ;
@@ -115,6 +115,9 @@ parameter_list /* allows for multiple parameters in a function declaration */
 /* k0 allows for var_defs and var_inits at the top of the bodies of function definitions, before the first executable statement */
 function_body
     : LBRACE fun_body_var_list statement_list RBRACE
+    ;
+function_body_with_return
+    : LBRACE fun_body_var_list statement_list RETURN expr RBRACE
     ;
 fun_body_var_list /* the list of variable defintions/initializations that must go at the start of a function body */
     : fun_body_var_list fun_body_var_decl
