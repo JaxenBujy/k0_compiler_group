@@ -5,8 +5,10 @@
 %option nounput
 %{
     #include "k0gram.tab.h"
+    #include "tree.h"
     int lineno = 1; // keep track of line number 
     int multi_line_start; // keep track of when a multi line comment begins to give error if it is unclosed
+    extern struct tree *treeptr;
 %}
 
 whitespace  [ \t\r]+
@@ -206,3 +208,47 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
     return 0;
 }
 %%
+
+// int alctoken(int category) {
+//     yytoken = malloc(sizeof(struct))
+//     struct token *newTok = malloc(sizeof(*newTok));
+
+//     // set general fields
+//     newTok->category = category;
+//     newTok->text = strdup(yytext);
+//     newTok->lineno = lineno;
+//     newTok->filename = strdup(filename);
+
+//     // set defaults for literal vals
+//     newTok->ival = 0;
+//     newTok->dval = 0.0;
+//     newTok->sval = NULL;
+
+//     // set specific literal fields depending on data
+//     switch (category)
+//     {
+//     case INT:
+//         newTok->ival = atoi(yytext);
+//         break;
+//     case REAL:
+//         newTok->dval = atof(yytext);
+//         break;
+//     case STRING:
+//         newTok->sval = consume_sval(STRING);
+//         if (newTok->sval == NULL)
+//         {
+//             printf("%s:%d: scanner error: unsupported escape sequence in %s\n", filename, lineno, yytext);
+//             exit(1);
+//         }
+//         break;
+//     case MULTI_STRING:
+//         newTok->sval = consume_sval(MULTI_STRING);
+//         if (newTok->sval == NULL)
+//         {
+//             printf("%s:%d: scanner error: unsupported escape sequence in %s\n", filename, lineno, yytext);
+//             exit(1);
+//         }
+//         break;
+//     }
+//     return newTok;
+// }

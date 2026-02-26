@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         int first_token = 1;
 
         // for debug prints from bison
-        yydebug = 1;
+        yydebug = 0;
         int rv = yyparse(); // call yyparse once instead of yylex() in a while loop
         switch (rv)
         {

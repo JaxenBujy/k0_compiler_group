@@ -26,10 +26,14 @@
 %right INC DEC
 %nonassoc IFX
 %nonassoc ELSE
+%union {
+    struct tree *treeptr;
+}
 %{
     extern int yylex();
     extern int yyerror(char *s);
     #include <stdio.h>
+    #include "tree.h"
 %}
 %start program
 %%
@@ -69,6 +73,10 @@ literal /* literals */
     | STRING 
     | MULTI_STRING 
     | CHAR
+    ;
+bool_literal
+    : K_TRUE
+    | K_FALSE
     ;
 /* Variable declaration/initialization
 /* global variable declaration. Acts as typeConstraints. 
@@ -177,6 +185,7 @@ primary_expr /* refactored expr into primary_expr, that includes everything from
     | IDENT
     | literal
     | LPAREN expr RPAREN
+    | bool_literal
     ;
 function_call /* a function call is a form of expression that calls functions */
     : IDENT LPAREN function_call_values_list RPAREN
@@ -214,4 +223,4 @@ if_statement /* Allowing if, if else, and if else if*/
     : IF LPAREN expr RPAREN control_structure_body %prec IFX
     | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body
     ;
-
+%%

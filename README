@@ -10,3 +10,13 @@ Implemented:
     - expression, assignment, arithmetic
 Notes:
     - 3 shift/reduce conflicts due to | LPAREN expr RPAREN rule in primary_expr and optional semicolons
+
+
+Chris:
+    semicolon insertion
+    make all returns alctoken
+    alctoken function
+    modified: k0lex.l
+Jaxen:
+    semantic actions
+    tree functionality
