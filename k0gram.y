@@ -1,9 +1,12 @@
 %{
     #include <stdio.h>
+    #include <stdlib.h>
     #include "tree.h"
     extern int yylex();
     extern int yyerror(char *s);
+    struct tree *alctree(int prod_rule, char *symbol_name, int nkids, struct tree *kids[10], struct token *leaf);
     void print_node(struct tree *t);
+    struct tree *root = NULL;
 %}
 
 %union {
@@ -87,7 +90,7 @@
 %type <treeptr> relational_expr
 %type <treeptr> assignment_expr
 %type <treeptr> additive_expr
-%type <treeptr> mulitplicative_expr
+%type <treeptr> multiplicative_expr
 %type <treeptr> unary_expr
 %type <treeptr> primary_expr
 %type <treeptr> function_call
@@ -111,7 +114,7 @@
 %start program
 %%
 program /* a program is just a list of top level declarations */
-    : top_level_list
+    : top_level_list {struct tree *kids[10] = {$1}; $$ = alctree(0, "program", 1, kids, NULL); }
     ;
 top_level_list /* a list of top level declarations */
     : top_level_list top_level_decl
@@ -250,15 +253,15 @@ assignment_expr /* assignment expression allows for one additive expression or a
     | IDENT MINUS_ASSIGN assignment_expr
     ;
 additive_expr /* left recursion to create correct order of operations */
-    : mulitplicative_expr
-    | additive_expr PLUS mulitplicative_expr
-    | additive_expr MINUS mulitplicative_expr
+    : multiplicative_expr
+    | additive_expr PLUS multiplicative_expr
+    | additive_expr MINUS multiplicative_expr
     ;
-mulitplicative_expr /* left recursion into a unary expression */
+multiplicative_expr /* left recursion into a unary expression */
     : unary_expr
-    | mulitplicative_expr MUL unary_expr
-    | mulitplicative_expr DIV unary_expr
-    | mulitplicative_expr MOD unary_expr
+    | multiplicative_expr MUL unary_expr
+    | multiplicative_expr DIV unary_expr
+    | multiplicative_expr MOD unary_expr
     ;
 unary_expr /* all unary expressions as well as a primary expression, which will allow for function calls as well as expressions again*/
     : primary_expr
@@ -311,13 +314,26 @@ if_statement /* Allowing if, if else, and if else if*/
     | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body
     ;
 %%
-
-void print_node(struct tree *t) {
-    if (t->leaf == NULL) {
-        printf("internal node");
+struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kids[10], struct token *leaf) {
+    struct tree *t = malloc(sizeof(struct tree));
+    if (t == NULL) {
+        fprintf(stderr, "Failed to allocate memory for tree node\n");
+        exit(1);
     }
-    else {
-        printf("Category: %d\nText: %s\nLine Number: %d\nFilename: %s\nival: %d\ndval: %f\nsval: %s\n",
+    t->prodrule = prodrule;
+    t->symbolname = symbolname;
+    t->nkids = nkids;
+    t->leaf = leaf;
+
+    for (int i = 0; i < nkids; i++) {
+        t->kids[i] = kids[i];
+    }
+    return t;
+}
+void print_node(struct tree *t) {
+    printf("Prodrule: %d\nSymbol Name: %s\nNumber Kids: %d\n", t->prodrule, t->symbolname, t->nkids);
+    if (t->leaf != NULL) {
+        printf("Category: %d\nText: %s\nLine Number: %d\nFilename: %s\nival: %d\ndval: %f\nsval: %s\n\n",
         t->leaf->category, t->leaf->text, t->leaf->lineno, t->leaf->filename, t->leaf->ival, t->leaf->dval, t->leaf->sval);
     }
 }
