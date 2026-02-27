@@ -3,6 +3,7 @@
     #include "tree.h"
     extern int yylex();
     extern int yyerror(char *s);
+    struct tree *alctree(char *rule_name, int num_children, struct tree *kid);
 %}
 
 %union {
@@ -58,6 +59,47 @@
 %token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE
 %token <treeptr> ARRAY
 
+/* Production Rules */
+%type <treeptr> program
+%type <treeptr> top_level_list
+%type <treeptr> top_level_decl
+%type <treeptr> importHeader
+%type <treeptr> type
+%type <treeptr> val_var
+%type <treeptr> literal
+%type <treeptr> bool_literal
+%type <treeptr> global_var_decl
+%type <treeptr> global_var_init
+%type <treeptr> fun_body_var_decl
+%type <treeptr> fun_body_var_init
+%type <treeptr> function_var_decl
+%type <treeptr> function_decl
+%type <treeptr> parameter_list
+%type <treeptr> function_body
+%type <treeptr> fun_body_var_list
+%type <treeptr> statement_list
+%type <treeptr> statement
+%type <treeptr> non_control_statement
+%type <treeptr> expr
+%type <treeptr> logical_or_expr
+%type <treeptr> logical_and_expr
+%type <treeptr> equality_expr
+%type <treeptr> relational_expr
+%type <treeptr> assignment_expr
+%type <treeptr> additive_expr
+%type <treeptr> mulitplicative_expr
+%type <treeptr> unary_expr
+%type <treeptr> primary_expr
+%type <treeptr> function_call
+%type <treeptr> function_call_values_list
+%type <treeptr> functionCallVal
+%type <treeptr> block
+%type <treeptr> loop_statement
+%type <treeptr> for_statement
+%type <treeptr> while_statement
+%type <treeptr> control_structure_body
+%type <treeptr> if_statement
+
 /* Precedence */
 %right ASSIGN PLUS_ASSIGN MINUS_ASSIGN
 %left PLUS MINUS
@@ -99,7 +141,7 @@ val_var /* keywords val or var to be used in variable declaration/initialization
     | VAR
     ;
 literal /* literals */
-    : INT 
+    : INT {$$ = alctree("literal", 0, $1);}
     | REAL 
     | STRING 
     | MULTI_STRING 
@@ -269,3 +311,8 @@ if_statement /* Allowing if, if else, and if else if*/
     | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body
     ;
 %%
+
+struct tree *alctree(char *rule_name, int num_children, struct tree *kid) {
+    printf("bungus");
+    return NULL;
+}
