@@ -8,7 +8,6 @@
     #include "tree.h"
     int lineno = 1; // keep track of line number 
     int multi_line_start; // keep track of when a multi line comment begins to give error if it is unclosed
-    extern struct tree *treeptr;
 %}
 
 whitespace  [ \t\r]+
@@ -125,7 +124,7 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 
 
  /* Operators */
-"++"        { return INC; }
+"++"        { alctoken(INC); }
 "--"        { return DEC; }
 "==="       { return REQ; }
 "!=="       { return RNEQ; }

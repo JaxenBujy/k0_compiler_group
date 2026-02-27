@@ -13,8 +13,8 @@ Notes:
 
 
 Chris:
-    semicolon insertion
-    make all returns alctoken
+    semicolon insertion - its not doable
+    make all returns alctoken 
     alctoken function
     modified: k0lex.l
 Jaxen:
