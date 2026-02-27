@@ -3,7 +3,7 @@
     #include "tree.h"
     extern int yylex();
     extern int yyerror(char *s);
-    struct tree *alctree(char *rule_name, int num_children, struct tree *kid);
+    void print_node(struct tree *t);
 %}
 
 %union {
@@ -141,7 +141,7 @@ val_var /* keywords val or var to be used in variable declaration/initialization
     | VAR
     ;
 literal /* literals */
-    : INT {$$ = alctree("literal", 0, $1);}
+    : INT {print_node($1);};
     | REAL 
     | STRING 
     | MULTI_STRING 
@@ -195,7 +195,7 @@ function_decl
 parameter_list /* allows for multiple parameters in a function declaration */
     : function_var_decl
     | parameter_list COMMA function_var_decl
-    |
+    | {$$ = NULL; };
     ;
 
 /* k0 allows for var_defs and var_inits at the top of the bodies of function definitions, before the first executable statement */
@@ -205,11 +205,11 @@ function_body
 fun_body_var_list /* the list of variable defintions/initializations that must go at the start of a function body */
     : fun_body_var_list fun_body_var_decl
     | fun_body_var_list fun_body_var_init
-    |
+    | {$$ = NULL; };
     ;
 statement_list /* a statement list is built of another statement list and statements, fulfills the role of statements in the Kotlin grammar */
     : statement_list statement
-    |
+    | {$$ = NULL; };
     ;
 statement /* a statement for now is just an expression followed by an optional semicolon, that is how kotlin works */
     : non_control_statement
@@ -280,7 +280,7 @@ function_call /* a function call is a form of expression that calls functions */
 function_call_values_list /* this list of arguments within that function call, acts as functionValueParameters */
     : functionCallVal
     | function_call_values_list COMMA functionCallVal
-    |
+    | {$$ = NULL; };
     ;
 functionCallVal
     : literal
@@ -312,7 +312,12 @@ if_statement /* Allowing if, if else, and if else if*/
     ;
 %%
 
-struct tree *alctree(char *rule_name, int num_children, struct tree *kid) {
-    printf("bungus");
-    return NULL;
+void print_node(struct tree *t) {
+    if (t->leaf == NULL) {
+        printf("internal node");
+    }
+    else {
+        printf("Category: %d\nText: %s\nLine Number: %d\nFilename: %s\nival: %d\ndval: %f\nsval: %s\n",
+        t->leaf->category, t->leaf->text, t->leaf->lineno, t->leaf->filename, t->leaf->ival, t->leaf->dval, t->leaf->sval);
+    }
 }

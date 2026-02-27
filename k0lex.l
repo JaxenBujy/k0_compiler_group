@@ -6,6 +6,9 @@
 %{
     #include "k0gram.tab.h"
     #include "tree.h"
+    int alctoken(int category);
+    char *consume_sval(int str_type);
+    extern char *filename;
     int lineno = 1; // keep track of line number 
     int multi_line_start; // keep track of when a multi line comment begins to give error if it is unclosed
 %}
@@ -191,7 +194,7 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 
  /* Literals */
 {char_literal}          { return CHAR; }
-{integer_literal}       { return INT; }
+{integer_literal}       { return alctoken(INT); }
 {real_literal}          { return REAL; }
 {string_literal}        { return STRING; }
 {multi_string_literal}  { return MULTI_STRING; }
@@ -208,20 +211,149 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 }
 %%
 
-// int alctoken(int category)
-// {
-//     struct tree *t = malloc(sizeof(struct tree));
+int alctoken(int category)
+{
+    struct tree *t = malloc(sizeof(struct tree));
 
-//     t->prodrule = category;
-//     t->symbolname = NULL;
-//     t->nkids = 0;
+    t->prodrule = category;
+    t->symbolname = NULL;
+    t->nkids = 0;
 
-//     t->leaf = malloc(sizeof(struct token));
-//     t->leaf->category = category;
+    t->leaf = malloc(sizeof(struct token));
+    t->leaf->category = category;
 
-//     t->kids[0] = NULL; // optional cleanup
+    t->kids[0] = NULL; // optional cleanup
 
-//     yylval.treeptr = t;
+    yylval.treeptr = t;
 
-//     return category;
-// }
+    switch (category)
+    {
+    case KEYWORD_ERROR:
+        printf("%s:%d: scanner error: Kotlin reserved keyword: \"%s\" is not a part of k0\n", filename, lineno, yytext);
+        exit(1);
+    case UNCLOSED_COMMENT:
+        printf("%s:%d: scanner error: unclosed multi-line comment\n", filename, multi_line_start);
+        exit(1);
+    case COULD_NOT_MATCH:
+        printf("%s:%d: scanner error: \'%s\' could not be matched\n", filename, lineno, yytext);
+        exit(1);
+    case ILL_IDENT:
+        printf("%s:%d: scanner error: \'%s\' is an illegal identifier\n", filename, lineno, yytext);
+        exit(1);
+    case OP_ERROR:
+        printf("%s:%d: scanner error: \'%s\' is an illegal operator\n", filename, lineno, yytext);
+        exit(1);
+    default: 
+        break;
+    }
+
+    // set general fields
+    t->leaf->category = category;
+    t->leaf->text = strdup(yytext);
+    t->leaf->lineno = lineno;
+    t->leaf->filename = strdup(filename);
+
+    // set defaults for literal vals
+    t->leaf->ival = 0;
+    t->leaf->dval = 0.0;
+    t->leaf->sval = NULL;
+
+    // set specific literal fields depending on data
+    switch (category)
+    {
+    case INT:
+        t->leaf->ival = atoi(yytext);
+        break;
+    case REAL:
+        t->leaf->dval = atof(yytext);
+        break;
+    case STRING:
+        t->leaf->sval = consume_sval(STRING);
+        if (t->leaf->sval == NULL)
+        {
+            printf("%s:%d: scanner error: unsupported escape sequence in %s\n", filename, lineno, yytext);
+            exit(1);
+        }
+        break;
+    case MULTI_STRING:
+        t->leaf->sval = consume_sval(MULTI_STRING);
+        if (t->leaf->sval == NULL)
+        {
+            printf("%s:%d: scanner error: unsupported escape sequence in %s\n", filename, lineno, yytext);
+            exit(1);
+        }
+        break;
+    }
+
+    return category;
+}
+
+char *consume_sval(int str_type)
+{
+    // allocate worst-case size (raw string length including escapes and quotes)
+    char *tmp = (char *)malloc(yyleng + 1);
+    char *start = tmp;
+
+    // pointer to iterate over the raw lexer text
+    char *raw_text = yytext + 1;     // skip initial quote
+    char *end = yytext + yyleng - 1; // stop before final quote
+
+    if (str_type == MULTI_STRING)
+    {
+        raw_text = yytext + 3;
+        end = yytext + yyleng - 3;
+    }
+
+    // iterate through raw text, consuming escapes and copying characters
+    while (raw_text < end)
+    {
+        // encountered a backslash, meaning an escape sequence
+        if (*raw_text == '\\')
+        {
+            raw_text++; // move to escaped character
+
+            // check what the escaped character is
+            switch (*raw_text)
+            {
+            case 'n': // consume newline
+                *tmp = '\n';
+                break;
+            case 't': // consume tab
+                *tmp = '\t';
+                break;
+            case '\\': // consume literal backslash
+                *tmp = '\\';
+                break;
+            case '\'': // consume apostrophe
+                *tmp = '\'';
+                break;
+            case '\"': // consume quote
+                *tmp = '\"';
+                break;
+            case 'r': // consume carriage return
+                *tmp = '\r';
+                break;
+            case 'b': // consume backspace
+                *tmp = '\b';
+                break;
+            default:
+                // unsupported escape sequence
+                free(start);
+                return NULL;
+            }
+        }
+        else
+        {
+            // regular character, copy as-is
+            *tmp = *raw_text;
+        }
+
+        tmp++;
+        raw_text++;
+    }
+
+    // null-terminate the final string value
+    *tmp = '\0';
+
+    return start;
+}
