@@ -1,24 +1,64 @@
-%token BREAK CONTINUE DO ELSE K_FALSE FOR FUN IF IN K_NULL RETURN K_TRUE VAL VAR WHEN WHILE IMPORT
-%token OP_ERROR ILL_IDENT UNCLOSED_COMMENT COULD_NOT_MATCH KEYWORD_ERROR
-%token ASSIGN PLUS_ASSIGN MINUS_ASSIGN
-%token PLUS MINUS MUL DIV MOD
-%token INC DEC
-%token NEG
-%token EQ NEQ GT LT GTE LTE
-%token REQ RNEQ
-%token AND OR NOT
-%token NN_ASSERT
-%token LSQUARE DOT
-%token SAFE_CALL
-%token ELVIS
-%token NULLABLE
-%token RANGE_INCL RANGE_EXCL
-%token TYPE_CAST
-%token LPAREN RPAREN COMMA SEMICOLON LBRACE RBRACE COLON RSQUARE
-%token INT REAL STRING MULTI_STRING CHAR
-%token IDENT
-%token BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE
-%token ARRAY
+%{
+    #include <stdio.h>
+    #include "tree.h"
+    extern int yylex();
+    extern int yyerror(char *s);
+%}
+
+%union {
+    struct tree *treeptr;
+}
+
+/* Keywords */
+%token <treeptr> BREAK CONTINUE DO ELSE K_FALSE FOR FUN IF IN K_NULL RETURN K_TRUE VAL VAR WHEN WHILE IMPORT
+
+/* Error tokens */
+%token <treeptr> OP_ERROR ILL_IDENT UNCLOSED_COMMENT COULD_NOT_MATCH KEYWORD_ERROR
+
+/* Assignments */
+%token <treeptr> ASSIGN PLUS_ASSIGN MINUS_ASSIGN
+
+/* Arithmetic */
+%token <treeptr> PLUS MINUS MUL DIV MOD
+
+/* Inc/dec */
+%token <treeptr> INC DEC
+
+/* Unary */
+%token <treeptr> NEG
+
+/* Comparisons */
+%token <treeptr> EQ NEQ GT LT GTE LTE
+%token <treeptr> REQ RNEQ
+
+/* Logic */
+%token <treeptr> AND OR NOT
+
+/* Assertions */
+%token <treeptr> NN_ASSERT
+
+/* Punctuation / access */
+%token <treeptr> LSQUARE DOT
+%token <treeptr> SAFE_CALL
+%token <treeptr> ELVIS
+%token <treeptr> NULLABLE
+%token <treeptr> RANGE_INCL RANGE_EXCL
+%token <treeptr> TYPE_CAST
+
+/* Delimiters */
+%token <treeptr> LPAREN RPAREN COMMA SEMICOLON LBRACE RBRACE COLON RSQUARE
+
+/* Literals */
+%token <treeptr> INT REAL STRING MULTI_STRING CHAR
+
+/* Identifiers */
+%token <treeptr> IDENT
+
+/* Types */
+%token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE
+%token <treeptr> ARRAY
+
+/* Precedence */
 %right ASSIGN PLUS_ASSIGN MINUS_ASSIGN
 %left PLUS MINUS
 %left MUL DIV MOD
@@ -26,15 +66,6 @@
 %right INC DEC
 %nonassoc IFX
 %nonassoc ELSE
-%union {
-    struct tree *treeptr;
-}
-%{
-    extern int yylex();
-    extern int yyerror(char *s);
-    #include <stdio.h>
-    #include "tree.h"
-%}
 %start program
 %%
 program /* a program is just a list of top level declarations */
@@ -82,32 +113,32 @@ bool_literal
 /* global variable declaration. Acts as typeConstraints. 
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions */
 global_var_decl 
-    : val_var IDENT COLON type
-    | val_var IDENT COLON type ASSIGN literal
-    | val_var IDENT COLON type ASSIGN IDENT
+    : val_var IDENT COLON type SEMICOLON
+    | val_var IDENT COLON type ASSIGN literal SEMICOLON
+    | val_var IDENT COLON type ASSIGN IDENT SEMICOLON
     ;
 /* variable initializations strictly at the top (global) level. 
 k0 allows only simple initializers including int, float and char */
 global_var_init
-    : val_var IDENT ASSIGN INT
-    | val_var IDENT ASSIGN REAL
-    | val_var IDENT ASSIGN CHAR
+    : val_var IDENT ASSIGN INT SEMICOLON
+    | val_var IDENT ASSIGN REAL SEMICOLON
+    | val_var IDENT ASSIGN CHAR SEMICOLON
     ;
 /* function body variable declaration. Acts as typeConstraints. 
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions*/
 fun_body_var_decl 
-    : val_var IDENT COLON type
-    | val_var IDENT COLON type ASSIGN literal
-    | val_var IDENT COLON type ASSIGN IDENT
+    : val_var IDENT COLON type SEMICOLON
+    | val_var IDENT COLON type ASSIGN literal SEMICOLON
+    | val_var IDENT COLON type ASSIGN IDENT SEMICOLON
     ;
 /* variable initializations strictly at the start of function bodies. 
 k0 allows only simple initializers including int, float and char */
 fun_body_var_init 
-    : val_var IDENT ASSIGN INT
-    | val_var IDENT ASSIGN REAL
-    | val_var IDENT ASSIGN CHAR
+    : val_var IDENT ASSIGN INT SEMICOLON
+    | val_var IDENT ASSIGN REAL SEMICOLON
+    | val_var IDENT ASSIGN CHAR SEMICOLON
     ;
-function_var_decl /* just var_decl without val_var, to be place within function declarations only */
+function_var_decl /* just var_decl without val_var, to be placed within function declarations only */
     : IDENT COLON type
     ;
 
@@ -115,9 +146,9 @@ function_var_decl /* just var_decl without val_var, to be place within function 
 /* k0 does not support function bodies that are expressions not enclosed in curly brackets */
 /* Kotlin does not do function declaration and definition separately like C. So we can choose to allow declarations like fun main() <no body>, but they seem useless */
 function_decl 
-    : FUN IDENT LPAREN parameter_list RPAREN COLON type function_body_with_return // fun main(args: Array<String>, arg_count: Int): Int {}
+    : FUN IDENT LPAREN parameter_list RPAREN COLON type function_body // fun main(args: Array<String>, arg_count: Int): Int {}
     | FUN IDENT LPAREN parameter_list RPAREN function_body // fun main() {} - the colon and return type may be omitted for functions with no return
-    | FUN IDENT LPAREN parameter_list RPAREN // fun main() <no body> - a strict declaration that is useless other than the programmer wanting to strictly declare a function
+    | FUN IDENT LPAREN parameter_list RPAREN SEMICOLON // fun main() <no body> - a strict declaration that is useless other than the programmer wanting to strictly declare a function
     ;
 parameter_list /* allows for multiple parameters in a function declaration */
     : function_var_decl
@@ -128,9 +159,6 @@ parameter_list /* allows for multiple parameters in a function declaration */
 /* k0 allows for var_defs and var_inits at the top of the bodies of function definitions, before the first executable statement */
 function_body
     : LBRACE fun_body_var_list statement_list RBRACE
-    ;
-function_body_with_return
-    : LBRACE fun_body_var_list statement_list RETURN expr RBRACE
     ;
 fun_body_var_list /* the list of variable defintions/initializations that must go at the start of a function body */
     : fun_body_var_list fun_body_var_decl
@@ -145,19 +173,36 @@ statement /* a statement for now is just an expression followed by an optional s
     : non_control_statement
     | loop_statement
     | if_statement
+    | RETURN expr SEMICOLON
     ;
 non_control_statement
-    : expr opt_semicolon
+    : expr SEMICOLON
     ;
-opt_semicolon
-    : SEMICOLON
-    | 
-    ;
-expr /* for now, an expression is just an assignment with allowable arithmetic. NOTE this gets called before a primary expression in order to keep previous code working */
+expr /* for now, an expression is just an assignment with allowable arithmetic and logical algebra. NOTE this gets called before a primary expression in order to keep previous code working */
     : assignment_expr
     ;
-assignment_expr /* assignment expression allows for one additive expression or assignment */
+logical_or_expr
+    : logical_and_expr
+    | logical_or_expr OR logical_and_expr
+    ;
+logical_and_expr
+    : equality_expr
+    | logical_and_expr AND equality_expr
+    ;
+equality_expr
+    : relational_expr
+    | equality_expr EQ relational_expr
+    | equality_expr NEQ relational_expr
+    ;
+relational_expr
     : additive_expr
+    | relational_expr LT additive_expr
+    | relational_expr GT additive_expr
+    | relational_expr LTE additive_expr
+    | relational_expr GTE additive_expr
+    ;
+assignment_expr /* assignment expression allows for one additive expression or assignment */
+    : logical_or_expr
     | IDENT ASSIGN assignment_expr
     | IDENT PLUS_ASSIGN assignment_expr
     | IDENT MINUS_ASSIGN assignment_expr
