@@ -208,20 +208,20 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 }
 %%
 
-int alctoken(int category)
-{
-    struct tree *t = malloc(sizeof(struct tree));
+// int alctoken(int category)
+// {
+//     struct tree *t = malloc(sizeof(struct tree));
 
-    t->prodrule = category;
-    t->symbolname = NULL;
-    t->nkids = 0;
+//     t->prodrule = category;
+//     t->symbolname = NULL;
+//     t->nkids = 0;
 
-    t->leaf = malloc(sizeof(struct token));
-    t->leaf->category = category;
+//     t->leaf = malloc(sizeof(struct token));
+//     t->leaf->category = category;
 
-    t->kids[0] = NULL; // optional cleanup
+//     t->kids[0] = NULL; // optional cleanup
 
-    yylval.treeptr = t;
+//     yylval.treeptr = t;
 
-    return category;
-}
+//     return category;
+// }
