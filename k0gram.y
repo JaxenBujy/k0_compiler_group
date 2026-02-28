@@ -114,7 +114,7 @@
 %start program
 %%
 program /* a program is just a list of top level declarations */
-    : top_level_list {struct tree *kids[10] = {$1}; $$ = alctree(PR_PROGRAM, "program", 1, kids, NULL); }
+    : top_level_list {root = $$; }
     ;
 top_level_list /* a list of top level declarations */
     : top_level_list top_level_decl {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_TOP_LEVEL_LIST_RECUR, "top_level_list", 2, kids, NULL); }
@@ -145,7 +145,7 @@ val_var /* keywords val or var to be used in variable declaration/initialization
     | VAR
     ;
 literal /* literals */
-    : INT {print_node($1);};
+    : INT
     | REAL 
     | STRING 
     | MULTI_STRING 
@@ -160,7 +160,7 @@ bool_literal
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions */
 global_var_decl 
     : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL_SIMPLE, "global_var_decl", 5, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN literal SEMICOLON {struct tree *kids[10] = {$1, 2,$3,$4,$5,$6}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 6, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN literal SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 6, kids, NULL); }
     | val_var IDENT COLON type ASSIGN IDENT SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_GLOBAL_VAR_DECL_IDENT_INIT, "global_var_decl", 6, kids, NULL); }
     ;
 /* variable initializations strictly at the top (global) level. 
@@ -275,7 +275,7 @@ primary_expr /* refactored expr into primary_expr, that includes everything from
     : function_call
     | IDENT
     | literal
-    | LPAREN expr RPAREN {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_PRIMARY_PAREN "primary_expr", 2, kids, NULL); }
+    | LPAREN expr RPAREN {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_PRIMARY_PAREN, "primary_expr", 2, kids, NULL); }
     | bool_literal
     ;
 function_call /* a function call is a form of expression that calls functions */
