@@ -218,73 +218,81 @@ int alctoken(int category)
         exit(1);
     }
 
+    // initialize kids
+    for (int i = 0; i < 10; i++) {
+        t->kids[i] = NULL;
+    }
+
     t->prodrule = category;
     t->symbolname = NULL;
     t->nkids = 0;
 
     t->leaf = malloc(sizeof(struct token));
-    t->leaf->category = category;
-
-    t->kids[0] = NULL; // optional cleanup
-
+    if (t->leaf == NULL) {
+        fprintf(stderr, "Failed to allocate memory for token\n");
+        exit(1);
+    }
 
     switch (category)
     {
-    case KEYWORD_ERROR:
-        printf("%s:%d: scanner error: Kotlin reserved keyword: \"%s\" is not a part of k0\n", filename, lineno, yytext);
-        exit(1);
-    case UNCLOSED_COMMENT:
-        printf("%s:%d: scanner error: unclosed multi-line comment\n", filename, multi_line_start);
-        exit(1);
-    case COULD_NOT_MATCH:
-        printf("%s:%d: scanner error: \'%s\' could not be matched\n", filename, lineno, yytext);
-        exit(1);
-    case ILL_IDENT:
-        printf("%s:%d: scanner error: \'%s\' is an illegal identifier\n", filename, lineno, yytext);
-        exit(1);
-    case OP_ERROR:
-        printf("%s:%d: scanner error: \'%s\' is an illegal operator\n", filename, lineno, yytext);
-        exit(1);
-    default: 
-        break;
+        case KEYWORD_ERROR:
+            printf("%s:%d: scanner error: Kotlin reserved keyword: \"%s\" is not a part of k0\n",
+                   filename, lineno, yytext);
+            exit(1);
+
+        case UNCLOSED_COMMENT:
+            printf("%s:%d: scanner error: unclosed multi-line comment\n",
+                   filename, multi_line_start);
+            exit(1);
+
+        case COULD_NOT_MATCH:
+            printf("%s:%d: scanner error: \'%s\' could not be matched\n",
+                   filename, lineno, yytext);
+            exit(1);
+
+        case ILL_IDENT:
+            printf("%s:%d: scanner error: \'%s\' is an illegal identifier\n",
+                   filename, lineno, yytext);
+            exit(1);
+
+        case OP_ERROR:
+            printf("%s:%d: scanner error: \'%s\' is an illegal operator\n",
+                   filename, lineno, yytext);
+            exit(1);
+
+        default:
+            break;
     }
 
-    // set general fields
+    // fill token fields
     t->leaf->category = category;
     t->leaf->text = strdup(yytext);
     t->leaf->lineno = lineno;
     t->leaf->filename = strdup(filename);
 
-    // set defaults for literal vals
     t->leaf->ival = 0;
     t->leaf->dval = 0.0;
     t->leaf->sval = NULL;
 
-    // set specific literal fields depending on data
     switch (category)
     {
-    case INT:
-        t->leaf->ival = atoi(yytext);
-        break;
-    case REAL:
-        t->leaf->dval = atof(yytext);
-        break;
-    case STRING:
-        t->leaf->sval = consume_sval(STRING);
-        if (t->leaf->sval == NULL)
-        {
-            printf("%s:%d: scanner error: unsupported escape sequence in %s\n", filename, lineno, yytext);
-            exit(1);
-        }
-        break;
-    case MULTI_STRING:
-        t->leaf->sval = consume_sval(MULTI_STRING);
-        if (t->leaf->sval == NULL)
-        {
-            printf("%s:%d: scanner error: unsupported escape sequence in %s\n", filename, lineno, yytext);
-            exit(1);
-        }
-        break;
+        case INT:
+            t->leaf->ival = atoi(yytext);
+            break;
+
+        case REAL:
+            t->leaf->dval = atof(yytext);
+            break;
+
+        case STRING:
+        case MULTI_STRING:
+            t->leaf->sval = consume_sval(category);
+            if (t->leaf->sval == NULL) {
+                printf("%s:%d: scanner error: unsupported escape sequence in %s\n",
+                       filename, lineno, yytext);
+                exit(1);
+            }
+            break;
     }
 
     yylval.treeptr = t;
