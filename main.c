@@ -3,6 +3,7 @@ yyparse is called once to see its return value, so the loop of tokens being retu
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tree.h"
 #include "k0gram.tab.h"
 
 extern FILE *yyin;
@@ -34,6 +35,8 @@ int main(int argc, char *argv[])
     yydebug = 0;
     int rv = yyparse(); // call yyparse once instead of yylex() in a while loop
     printf("yyparse returned %d\n", rv);
+    struct tree *root = NULL;
+    print_tree(root);
 
     return 0;
 }
