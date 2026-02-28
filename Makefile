@@ -3,8 +3,8 @@ CFLAGS = -Wall -Wextra -g
 
 all: k0
 
-k0: k0gram.tab.o lex.yy.o main.o
-	$(CC) $(CFLAGS) k0gram.tab.o lex.yy.o main.o -o k0 -lfl
+k0: k0gram.tab.o lex.yy.o main.o tree.o
+	$(CC) $(CFLAGS) k0gram.tab.o lex.yy.o main.o tree.o -o k0 -lfl
 
 k0gram.tab.c k0gram.tab.h: k0gram.y
 	bison -dv -t -Wcounterexamples k0gram.y
@@ -20,7 +20,8 @@ lex.yy.o: lex.yy.c tree.h
 
 main.o: main.c k0gram.tab.h
 	$(CC) $(CFLAGS) -c main.c
-
+tree.o: tree.h
+	$(CC) $(CFLAGS) -c tree.c
 clean:
 	rm -f k0 *.o lex.yy.c k0gram.tab.c k0gram.tab.h k0gram.output
 
