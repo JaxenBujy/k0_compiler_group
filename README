@@ -14,8 +14,8 @@ Notes:
 
 Chris:
     semicolon insertion - its not doable
-    make all returns alctoken 
-    alctoken function
+    make all returns alctoken - done
+    alctoken function - done
     modified: k0lex.l
 Jaxen:
     semantic actions
