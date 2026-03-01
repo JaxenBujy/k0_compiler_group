@@ -114,9 +114,10 @@
 %nonassoc ELSE
 %start program
 
-/* error messages */
+/* for more descriptive error messages */
 %define parse.lac full
 %define parse.error detailed
+
 %%
 program /* a program is just a list of top level declarations */
     : top_level_list {root = $$; }
@@ -165,8 +166,8 @@ bool_literal
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions */
 global_var_decl 
     : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL_SIMPLE, "global_var_decl", 5, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN literal SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 6, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN IDENT SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_GLOBAL_VAR_DECL_IDENT_INIT, "global_var_decl", 6, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN literal SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 7, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN IDENT SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_IDENT_INIT, "global_var_decl", 7, kids, NULL); }
     ;
 /* variable initializations strictly at the top (global) level. 
 k0 allows only simple initializers including int, float and char */
@@ -224,10 +225,10 @@ statement /* a statement for now is just an expression followed by an optional s
     : non_control_statement
     | loop_statement
     | if_statement
-    | RETURN expr SEMICOLON {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_STATEMENT_RETURN, "statement", 2, kids, NULL); } /* ignoring SEMICOLON for now, but it still exists as a token */
+    | RETURN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_STATEMENT_RETURN, "statement", 3, kids, NULL); } /* ignoring SEMICOLON for now, but it still exists as a token */
     ;
 non_control_statement
-    : expr SEMICOLON {struct tree *kids[10] = {$1}; $$ = alctree(PR_NON_CONTROL_STATEMENT, "non_control_statement", 1, kids, NULL); }
+    : expr SEMICOLON {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_NON_CONTROL_STATEMENT, "non_control_statement", 2, kids, NULL); }
     ;
 expr /* for now, an expression is just an assignment with allowable arithmetic and logical algebra. NOTE this gets called before a primary expression in order to keep previous code working */
     : assignment_expr
@@ -280,7 +281,7 @@ primary_expr /* refactored expr into primary_expr, that includes everything from
     : function_call
     | IDENT
     | literal
-    | LPAREN expr RPAREN {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_PRIMARY_PAREN, "primary_expr", 2, kids, NULL); }
+    | LPAREN expr RPAREN {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_PRIMARY_PAREN, "primary_expr", 3, kids, NULL); }
     | bool_literal
     ;
 function_call /* a function call is a form of expression that calls functions */
@@ -331,6 +332,11 @@ struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kid
     t->nkids = nkids;
     t->leaf = leaf;
 
+    // fill with NULL kids first before inserting real kids so that none of them are garbage
+    for (int i = 0; i < 10; i++) {
+        t->kids[i] = NULL;
+    }
+    // fill with real kids
     for (int i = 0; i < nkids; i++) {
         t->kids[i] = kids[i];
     }

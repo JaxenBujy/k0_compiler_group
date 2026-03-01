@@ -1,4 +1,4 @@
 #!/bin/bash
 make clean
 make
-valgrind ./k0 hello_world.kt
+valgrind --leak-check=full ./k0 hello_world.kt
