@@ -40,18 +40,26 @@ void free_tree(struct tree *root)
 {
         free_tree_with_depth(root, 0);
 }
+
 void free_tree_with_depth(struct tree *root, int depth)
 {
         if (!root)
                 return;
 
+        // Free children first (post-order)
         for (int i = 0; i < root->nkids; i++)
-                print_tree_with_depth(root->kids[i], depth + 1);
+        {
+                free_tree_with_depth(root->kids[i], depth + 1);
+        }
 
-        // Free leaf if present
+        // Free leaf fields if present
         if (root->leaf != NULL)
         {
+                free(root->leaf->text);
+                free(root->leaf->filename);
+                free(root->leaf->sval);
                 free(root->leaf);
         }
+
         free(root);
 }

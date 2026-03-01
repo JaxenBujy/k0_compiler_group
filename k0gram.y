@@ -1,9 +1,10 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
+    #include <string.h>
     #include "tree.h"
     extern int yylex();
-    extern int yyerror(char *s);
+    extern int yyerror(const char *s);
     struct tree *alctree(int prod_rule, char *symbol_name, int nkids, struct tree *kids[10], struct token *leaf);
     void print_node(struct tree *t);
     struct tree *root = NULL;
@@ -112,6 +113,10 @@
 %nonassoc IFX
 %nonassoc ELSE
 %start program
+
+/* error messages */
+%define parse.lac full
+%define parse.error detailed
 %%
 program /* a program is just a list of top level declarations */
     : top_level_list {root = $$; }
@@ -322,7 +327,7 @@ struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kid
         exit(1);
     }
     t->prodrule = prodrule;
-    t->symbolname = symbolname;
+    t->symbolname = strdup(symbolname);
     t->nkids = nkids;
     t->leaf = leaf;
 

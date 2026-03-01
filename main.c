@@ -35,15 +35,25 @@ int main(int argc, char *argv[])
     // for debug prints from bison
     yydebug = 0;
     int rv = yyparse(); // call yyparse once instead of yylex() in a while loop
-    printf("yyparse returned %d\n", rv);
 
-    print_tree(root);
+    if (rv == 0) // yyparse returned no syntax errors, print AST
+    {
+        print_tree(root);
+        free_tree(root);
+        printf("yyparse returned %d\n", rv);
+    }
+    else
+    {
+        free_tree(root);
+        printf("exiting with status 2...\n");
+        exit(2); // exit status 2 for parser errors
+    }
 
     return 0;
 }
 
-int yyerror(char *s)
+int yyerror(const char *s)
 {
-    fprintf(stderr, "%s\n", s);
-    exit(1);
+    fprintf(stderr, "\nparser error: %s:%d: %s\n", filename, lineno, s); // print sytax error message with file name and line number
+    return 0;
 }
