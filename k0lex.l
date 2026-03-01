@@ -19,7 +19,7 @@ single_delim \/\*[^\n]*
 hash_line  \#[^\n]*
 identifier  [a-zA-Z_][a-zA-Z0-9_]*
 illegal_identifier [0-9]+[a-zA-Z_][a-zA-Z0-9_]*
-basic_type "byte"|"short"|"int"|"long"|"float"|"double"|"boolean"|"string"
+basic_type "Byte"|"Short"|"Int"|"Long"|"Float"|"Double"|"Boolean"|"String"
 integer_literal  [0-9]+[1-9]*|0[xX][0-9A-Fa-f]+
 real_literal  ([0-9]+\.[0-9]*|\.[0-9]+)
 string_literal \"([^\\\"\n]|\\.)*\"
