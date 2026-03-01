@@ -166,8 +166,7 @@ bool_literal
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions */
 global_var_decl 
     : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL_SIMPLE, "global_var_decl", 5, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN literal SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 7, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN IDENT SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_IDENT_INIT, "global_var_decl", 7, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 7, kids, NULL); }
     ;
 /* variable initializations strictly at the top (global) level. 
 k0 allows only simple initializers including int, float and char */
@@ -179,8 +178,8 @@ global_var_init
 /* function body variable declaration. Acts as typeConstraints. 
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions*/
 fun_body_var_decl 
-    : val_var expr COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUN_BODY_VAR_DECL_SIMPLE, "fun_body_var_decl", 5, kids, NULL); }
-    | val_var expr COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_FUN_BODY_VAR_DECL_LITERAL_INIT, "fun_body_var_decl", 7, kids, NULL); }
+    : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUN_BODY_VAR_DECL_SIMPLE, "fun_body_var_decl", 5, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_FUN_BODY_VAR_DECL_LITERAL_INIT, "fun_body_var_decl", 7, kids, NULL); }
     ;
 /* variable initializations strictly at the start of function bodies. 
 k0 allows only simple initializers including int, float and char */
