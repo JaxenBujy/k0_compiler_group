@@ -302,10 +302,7 @@ loop_statement /* we are supporting for loops and while loops */
     | while_statement
     ;
 for_statement /* enforced form: for ( x in y..z) {} */
-    : FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8,$9}; $$ = alctree(PR_FOR_IDENT_IDENT, "for_statement", 9, kids, NULL); } // for ( x in y..z) {}
-    | FOR LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8,$9}; $$ = alctree(PR_FOR_LITERAL_IDENT, "for_statement", 9, kids, NULL); } // for ( x in 1..z) {}
-    | FOR LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8,$9}; $$ = alctree(PR_FOR_IDENT_LITERAL, "for_statement", 9, kids, NULL); } // for ( x in y..10) {}
-    | FOR LPAREN IDENT IN literal RANGE_INCL literal RPAREN control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8,$9}; $$ = alctree(PR_FOR_LITERAL_LITERAL, "for_statement", 9, kids, NULL); } // for ( x in 1..10) {}
+    : FOR LPAREN IDENT IN expr RANGE_INCL expr RPAREN control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8,$9}; $$ = alctree(PR_FOR_IDENT_IDENT, "for_statement", 9, kids, NULL); } // for ( x in y..z) {}
     ;
 while_statement /* enforced form: while ( expr ) {} */
     : WHILE LPAREN expr RPAREN control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_WHILE, "while_statement", 5, kids, NULL); }

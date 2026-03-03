@@ -64,3 +64,31 @@ void free_tree_with_depth(struct tree *root, int depth)
         free(root->symbolname);
         free(root);
 }
+
+void print_tree_symbols(struct tree *root)
+{
+        print_tree_symbols_with_depth(root, 0);
+}
+
+void print_tree_symbols_with_depth(struct tree *root, int depth)
+{
+        if (!root)
+                return;
+
+        // Print indentation
+        for (int i = 0; i < depth; i++)
+                printf("  "); // two spaces per level
+
+        printf("%s\n", root->symbolname); // only print the symbol name for non-leaf nodes
+
+        // Print leaf if present
+        if (root->leaf != NULL)
+        {
+                for (int i = 0; i < depth + 1; i++)
+                        printf("  ");
+                printf("%s\n", root->leaf->text); // only print the lexeme text for leaf nodes
+        }
+
+        for (int i = 0; i < root->nkids; i++)
+                print_tree_symbols_with_depth(root->kids[i], depth + 1);
+}

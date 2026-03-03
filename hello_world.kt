@@ -9,7 +9,7 @@ fun main(args: Array<String>, arg_count: Int): Int {
     val g = 10;
     val message: String = "Hello, World!\n";
     println(message);
-    for (jeg in x..z) {}
+    for (jeg in (x+2)..z) {}
     
     if (x) y;
     else if (z) {}

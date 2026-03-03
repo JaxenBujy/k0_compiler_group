@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     if (rv == 0) // yyparse returned no syntax errors, print AST
     {
-        print_tree(root);
+        print_tree_symbols(root);
         free_tree(root);
         printf("yyparse returned %d\n", rv);
     }
