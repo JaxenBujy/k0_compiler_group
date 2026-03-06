@@ -1,0 +1,10 @@
+Implemented:
+    - initial grammar
+    - more grammar rules
+    - alctree
+    - alctoken
+    - lexer returns alctoken
+    - parser reads tokens
+    - semantic actions
+    - tree functionality
+    - cleaned up shift/reduce conflicts
