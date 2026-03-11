@@ -38,6 +38,9 @@ int main(int argc, char *argv[])
 
     if (rv == 0) // yyparse returned no syntax errors, print AST
     {
+        printf("\n\n--------------------------------------------------------------------\n");
+        printf("\n\nprintnode() output to prove leaf node information above ^. Beginning tree traversal/printing below:\n\n");
+        printf("\n--------------------------------------------------------------------\n\n");
         print_tree(root);
         free_tree(root);
         printf("yyparse returned %d\n", rv);
