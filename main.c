@@ -95,26 +95,30 @@ int yyerror(const char *s)
 /* add a \ before leading and trailing double quotes */
 char *escape(char *s)
 {
-    char *s2 = malloc(strlen(s) + 4);
-    if (s[0] == '\"')
+    if (s == NULL)
+        return NULL;
+
+    int len = strlen(s);
+    char *s2 = malloc(len * 2 + 1); // worst case: every char is "
+    int i, j = 0;
+
+    for (i = 0; i < len; i++)
     {
-        if (s[strlen(s) - 1] != '\"')
+        if (s[i] == '"')
         {
-            fprintf(stderr, "What is it?!\n");
+            s2[j++] = '\\';
         }
-        sprintf(s2, "\\%s", s);
-        // strcat(s2 + strlen(s2) - 2, "\\\"");
-        s2[strlen(s2) - 1] = '\\';
-        s2[strlen(s2)] = '\"';
-        return s2;
+        s2[j++] = s[i];
     }
-    else
-        return s;
+
+    s2[j] = '\0';
+    return s2;
 }
 
 char *pretty_print_name(struct tree *t)
 {
-    char *s2 = malloc(40);
+    char *s2 = malloc(128); // larger buffer
+
     if (t->leaf == NULL)
     {
         sprintf(s2, "%s#%d", t->symbolname, t->prodrule % 10);
@@ -129,22 +133,30 @@ char *pretty_print_name(struct tree *t)
 
 void print_branch(struct tree *t, FILE *f)
 {
-    fprintf(f, "N%d [shape=box label=\"%s\"];\n", t->prodrule, pretty_print_name(t));
+    char *name = pretty_print_name(t);
+    fprintf(f, "N%d [shape=box label=\"%s\"];\n", t->id, name);
+    free(name);
 }
 
 void print_leaf(struct tree *t, FILE *f)
 {
     char *s = t->leaf->text;
-    // print_branch(t, f);
-    fprintf(f, "N%d [shape=box style=dotted label=\" %s \\n ", t->prodrule, escape(s));
+
+    fprintf(f, "N%d [shape=box style=dotted label=\" %s \\n ",
+            t->id, escape(s));
+
     if (t->leaf->category == STRING)
     {
-        fprintf(f, "text = %s \\l lineno = %d \\l\"];\n", escape(t->leaf->sval),
+        fprintf(f, "ID: #%d \\l text = %s \\l lineno = %d\\l\"];\n",
+                t->id,
+                escape(t->leaf->sval),
                 t->leaf->lineno);
     }
     else
     {
-        fprintf(f, "text = %s \\l lineno = %d \\l\"];\n", escape(t->leaf->text),
+        fprintf(f, "ID: #%d \\l text = %s \\l lineno = %d\\l\"];\n",
+                t->id,
+                escape(t->leaf->text),
                 t->leaf->lineno);
     }
 }
@@ -152,18 +164,21 @@ void print_leaf(struct tree *t, FILE *f)
 void print_graph2(struct tree *t, FILE *f)
 {
     int i;
+
     if (t->leaf != NULL)
     {
         print_leaf(t, f);
         return;
     }
+
     /* not a leaf ==> internal node */
     print_branch(t, f);
+
     for (i = 0; i < t->nkids; i++)
     {
         if (t->kids[i] != NULL)
         {
-            fprintf(f, "N%d -> N%d;\n", t->prodrule, t->kids[i]->prodrule);
+            fprintf(f, "N%d -> N%d;\n", t->id, t->kids[i]->id);
             print_graph2(t->kids[i], f);
         }
     }
@@ -172,15 +187,19 @@ void print_graph2(struct tree *t, FILE *f)
 void print_graph(struct tree *t, char *filename)
 {
     char output_file[56];
-    strcpy(output_file, filename);
-    strcat(output_file, "_tree.dot");
+
+    snprintf(output_file, sizeof(output_file), "%s_tree.dot", filename);
+
     FILE *f = fopen(output_file, "w");
     if (!f)
     {
         printf("error opening dot output file\n");
+        return;
     }
+
     fprintf(f, "digraph {\n");
     print_graph2(t, f);
     fprintf(f, "}\n");
+
     fclose(f);
 }
