@@ -1,5 +1,8 @@
+extern int serial;
+
 struct tree
 {
+    int id;
     int prodrule;
     char *symbolname;
     int nkids;

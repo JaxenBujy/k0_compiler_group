@@ -21,14 +21,18 @@ void print_tree_with_depth(struct tree *root, int depth)
         {
                 for (int i = 0; i < depth + 1; i++)
                         printf("  ");
-                printf("Leaf Node: %s\n",
+                printf("Leaf Node: %s\t",
                        root->leaf->text);
+                printf("Serial #: %d\n",
+                        root->id);
         }
         else
         {
                 // Print tree node info
-                printf("Internal Node: %s\n",
+                printf("Internal Node: %s\t",
                        root->symbolname);
+                printf("Serial #: %d\n",
+                        root->id);
         }
 
         for (int i = 0; i < root->nkids; i++)

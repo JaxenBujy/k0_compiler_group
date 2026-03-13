@@ -104,8 +104,8 @@ char *escape(char *s)
         }
         sprintf(s2, "\\%s", s);
         // strcat(s2 + strlen(s2) - 2, "\\\"");
-        s2[strlen(s2) - 2] = '\\';
-        s2[strlen(s2) - 1] = '\"';
+        s2[strlen(s2) - 1] = '\\';
+        s2[strlen(s2)] = '\"';
         return s2;
     }
     else

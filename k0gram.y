@@ -8,6 +8,7 @@
     struct tree *alctree(int prod_rule, char *symbol_name, int nkids, struct tree *kids[10], struct token *leaf);
     void print_node(struct tree *t);
     struct tree *root = NULL;
+    int serial = 0;
 %}
 
 %union {
@@ -315,12 +316,14 @@ if_statement /* Allowing if, if else, and if else if*/
     | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_IF_ELSE, "if_statement", 7, kids, NULL); }
     ;
 %%
+
 struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kids[10], struct token *leaf) {
     struct tree *t = malloc(sizeof(struct tree));
     if (t == NULL) {
         fprintf(stderr, "Failed to allocate memory for tree node\n");
         exit(1);
     }
+    t->id = serial++;
     t->prodrule = prodrule;
     t->symbolname = strdup(symbolname);
     t->nkids = nkids;

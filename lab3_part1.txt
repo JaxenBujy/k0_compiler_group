@@ -1,0 +1,28 @@
+1) It outputs lex.yy.c
+2) Output:
+nnws.l: In function ‘yylex’:
+nnws.l:3:10: error: ‘NAME’ undeclared (first use in this function)
+    3 | [a-zA-Z]+   { return NAME; }
+      |          ^~~~
+nnws.l:3:10: note: each undeclared identifier is reported only once for each function it appears in
+nnws.l:4:10: error: ‘NUMBER’ undeclared (first use in this function)
+    4 | [0-9]+      { return NUMBER; }
+      |          ^~~~~~
+3) It outputs ns.tab.c
+4) Command: gcc ns.tab.c -c ns.tab
+5) It outputs ns.tab.y
+6) Output:
+/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
+(.text+0x1b): undefined reference to `main'
+collect2: error: ld returned 1 exit status
+7) Done
+8) Done
+9) Done
+10) gcc -o ns main.o lex.yy.o ns.tab.o -lfl
+11) Output:
+bad char
+syntax error
+12) Output:
+got a name-number pair
+got a name-number pair
+yyparse returns 0
