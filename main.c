@@ -16,15 +16,41 @@ extern int yydebug;
 extern struct tree *root;
 
 char *filename; // defined globally to share with k0lex.l
+void print_graph(struct tree *t, char *filename);
+void print_graph2(struct tree *t, FILE *f);
+void print_leaf(struct tree *t, FILE *f);
+void print_branch(struct tree *t, FILE *f);
+char *pretty_print_name(struct tree *t);
+char *escape(char *s);
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+
+    if (argc < 2)
     {
-        printf("2 arguments required\n");
+        printf("\nerror: at least two arguments required\nUsage: ./ko <filename> <-dot>\n");
         exit(1);
     }
-    filename = argv[1];
+    int dot = 0; // bool flag to determine if dot will be used to produce png image of AST
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-dot") == 0)
+        {
+            dot = i; // -dot provided, turn the flag on
+        }
+    }
+    switch (dot)
+    {
+    case 1:
+        filename = argv[2];
+        break;
+    case 2:
+        filename = argv[1];
+        break;
+    default:
+        filename = argv[1];
+    }
+
     yyin = fopen(filename, "r");
     if (!yyin)
     {
@@ -41,6 +67,11 @@ int main(int argc, char *argv[])
         printf("\n\n--------------------------------------------------------------------\n");
         printf("\n\nprintnode() output to prove leaf node information above ^. Beginning tree traversal/printing below:\n\n");
         printf("\n--------------------------------------------------------------------\n\n");
+        if (dot)
+        {
+            print_graph(root, filename);
+            printf("png image of file generated in %s_tree.png", filename);
+        }
         print_tree(root);
         free_tree(root);
         printf("yyparse returned %d\n", rv);
@@ -59,4 +90,97 @@ int yyerror(const char *s)
 {
     fprintf(stderr, "\nparser error: %s:%d: %s\n", filename, lineno, s); // print sytax error message with file name and line number
     return 0;
+}
+
+/* add a \ before leading and trailing double quotes */
+char *escape(char *s)
+{
+    char *s2 = malloc(strlen(s) + 4);
+    if (s[0] == '\"')
+    {
+        if (s[strlen(s) - 1] != '\"')
+        {
+            fprintf(stderr, "What is it?!\n");
+        }
+        sprintf(s2, "\\%s", s);
+        // strcat(s2 + strlen(s2) - 2, "\\\"");
+        s2[strlen(s2) - 2] = '\\';
+        s2[strlen(s2) - 1] = '\"';
+        return s2;
+    }
+    else
+        return s;
+}
+
+char *pretty_print_name(struct tree *t)
+{
+    char *s2 = malloc(40);
+    if (t->leaf == NULL)
+    {
+        sprintf(s2, "%s#%d", t->symbolname, t->prodrule % 10);
+        return s2;
+    }
+    else
+    {
+        sprintf(s2, "%s:%d", escape(t->leaf->text), t->leaf->category);
+        return s2;
+    }
+}
+
+void print_branch(struct tree *t, FILE *f)
+{
+    fprintf(f, "N%d [shape=box label=\"%s\"];\n", t->prodrule, pretty_print_name(t));
+}
+
+void print_leaf(struct tree *t, FILE *f)
+{
+    char *s = t->leaf->text;
+    // print_branch(t, f);
+    fprintf(f, "N%d [shape=box style=dotted label=\" %s \\n ", t->prodrule, escape(s));
+    if (t->leaf->category == STRING)
+    {
+        fprintf(f, "text = %s \\l lineno = %d \\l\"];\n", escape(t->leaf->sval),
+                t->leaf->lineno);
+    }
+    else
+    {
+        fprintf(f, "text = %s \\l lineno = %d \\l\"];\n", escape(t->leaf->text),
+                t->leaf->lineno);
+    }
+}
+
+void print_graph2(struct tree *t, FILE *f)
+{
+    int i;
+    if (t->leaf != NULL)
+    {
+        print_leaf(t, f);
+        return;
+    }
+    /* not a leaf ==> internal node */
+    print_branch(t, f);
+    for (i = 0; i < t->nkids; i++)
+    {
+        if (t->kids[i] != NULL)
+        {
+            fprintf(f, "N%d -> N%d;\n", t->prodrule, t->kids[i]->prodrule);
+            print_graph2(t->kids[i], f);
+        }
+    }
+}
+
+void print_graph(struct tree *t, char *filename)
+{
+    char output_file[56];
+    strcpy(output_file, filename);
+    strcat(output_file, "_tree.dot");
+    FILE *f = fopen(output_file, "w");
+    if (!f)
+    {
+        printf("error opening dot output file\n");
+    }
+    fprintf(f, "digraph {\n");
+    print_graph2(t, f);
+    fprintf(f, "}\n");
+    fclose(f);
 }
