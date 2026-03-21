@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void printsymbol(char *s)
+{
+        printf("Identifier: %s\n", s);
+        fflush(stdout);
+}
+
 void print_tree(struct tree *root)
 {
         print_tree_with_depth(root, 0);
@@ -19,6 +25,11 @@ void print_tree_with_depth(struct tree *root, int depth)
         // Print leaf if present
         if (root->leaf != NULL)
         {
+                if (root->leaf->category == 324)
+                {
+                        printsymbol(root->leaf->text);
+                }
+
                 for (int i = 0; i < depth + 1; i++)
                         printf("  ");
                 printf("Leaf Node: %s\t",

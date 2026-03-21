@@ -24,6 +24,7 @@ void free_tree(struct tree *root);
 void print_tree(struct tree *root);
 void free_tree_with_depth(struct tree *root, int depth);
 void print_tree_with_depth(struct tree *root, int depth);
+void printsymbol(char *s);
 
 enum ProductionRule
 {
