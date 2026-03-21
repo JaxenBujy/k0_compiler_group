@@ -180,6 +180,7 @@ enum ProductionRule
 
     /* function_call */
     PR_FUNCTION_CALL,
+    PR_FUNCTION_CALL_OBJECT_CALL,
 
     /* function_call_values_list */
     PR_CALL_VALUES_SINGLE,

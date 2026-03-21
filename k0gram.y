@@ -290,6 +290,7 @@ function_call_values_list /* this list of arguments within that function call, a
 functionCallVal
     : literal
     | IDENT
+    | LPAREN literal RPAREN DOT function_call {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUNCTION_CALL_OBJECT_CALL, "functionCallVal", 5, kids, NULL);}
     ;
 block /* cannot have variable declarations/initiations, since those are only allowed at the global level and top of functions*/
     : LBRACE statement_list RBRACE {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_BLOCK, "block", 3, kids, NULL); }
