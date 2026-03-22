@@ -6,6 +6,7 @@
 %{
     #include "k0gram.tab.h"
     #include "tree.h"
+    #include "symtab.h"
     int alctoken(int category);
     char *consume_sval(int str_type);
     extern char *filename;

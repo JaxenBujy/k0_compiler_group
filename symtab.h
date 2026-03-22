@@ -5,7 +5,9 @@ struct sym_entry{
 };
 
 struct sym_table{
-    int nEntries;
-    // struct sym_table *parent;
-    struct sym_entry *next;
+    int nBuckets; //Number of buckets
+    int nEntries; //Nuber of symbols in the table
+    struct sym_table *parent; // enclosing scope, superclass, etc.? no idea what that means
+    struct sym_entry *next;   // next symbol table
+    // struct sym_entry **tbl;
 };

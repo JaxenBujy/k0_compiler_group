@@ -22,6 +22,9 @@ void print_leaf(struct tree *t, FILE *f);
 void print_branch(struct tree *t, FILE *f);
 char *pretty_print_name(struct tree *t);
 char *escape(char *s);
+struct sym_table mksymtab();
+int hash(struct sym_table st, char *s);
+
 
 int main(int argc, char *argv[])
 {
@@ -59,7 +62,7 @@ int main(int argc, char *argv[])
     }
 
     // for debug prints from bison
-    yydebug = 1;
+    yydebug = 0;
     int rv = yyparse(); // call yyparse once instead of yylex() in a while loop
 
     if (rv == 0) // yyparse returned no syntax errors, print AST
