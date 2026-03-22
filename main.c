@@ -4,7 +4,6 @@ yyparse is called once to see its return value, so the loop of tokens being retu
 #include <stdlib.h>
 #include <string.h>
 #include "k0gram.tab.h"
-#include "tree.h"
 #include "symtab.h"
 
 extern FILE *yyin;
@@ -77,7 +76,12 @@ int main(int argc, char *argv[])
         printf("\n\n--------------------------------------------------------------------\n");
         printf("\n\nprintnode() output to prove leaf node information above ^. Beginning tree traversal/printing below:\n\n");
         printf("\n--------------------------------------------------------------------\n\n");
+
         printsyms(root);
+        struct sym_table *global = mksymtab(64);
+        build_symtab(root, global);
+        print_symtab(global, 0);
+
         free_tree(root);
         printf("yyparse returned %d\n", rv);
     }

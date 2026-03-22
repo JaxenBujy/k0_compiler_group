@@ -8,6 +8,7 @@ struct tree
     int nkids;
     struct tree *kids[10]; /* if nkids >0 */
     struct token *leaf;    /* if nkids == 0; NULL for ε productions */
+    struct sym_entry *symbol;
 };
 
 struct token
@@ -20,6 +21,7 @@ struct token
     double dval;    /* for real constants, store binary value here */
     char *sval;     /* for string constants, malloc space, de-escape, store the string (less quotes and after escapes) here */
 };
+
 void free_tree(struct tree *root);
 void print_tree(struct tree *root);
 void free_tree_with_depth(struct tree *root, int depth);

@@ -1,4 +1,4 @@
 #!/bin/bash
 make clean
 make
-./k0 foo.kt
+./k0 hello_world.kt

@@ -1,4 +1,4 @@
-#include "tree.h"
+#include "symtab.h"
 #include "k0gram.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
