@@ -152,9 +152,9 @@ val_var /* keywords val or var to be used in variable declaration/initialization
     | VAR
     ;
 literal /* literals */
-    : INT {print_node($1);} // per lab 4 specification, print info about a leaf node
+    : INT  // per lab 4 specification, print info about a leaf node
     | REAL 
-    | STRING {print_node($1); } // per lab 4 specification, print info about a leaf node
+    | STRING // per lab 4 specification, print info about a leaf node
     | MULTI_STRING 
     | CHAR
     ;

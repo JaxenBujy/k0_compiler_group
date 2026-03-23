@@ -64,22 +64,21 @@ int main(int argc, char *argv[])
 
     if (rv == 0) // yyparse returned no syntax errors, print AST
     {
-        printf("\n\n--------------------------------------------------------------------\n");
-        printf("\n\nprintnode() output to prove leaf node information above ^. Beginning tree traversal/printing below:\n\n");
-        printf("\n--------------------------------------------------------------------\n\n");
         if (dot)
         {
             print_graph(root, filename);
             printf("dot image of file generated in %s_tree.png", filename);
         }
+        printf("---print_tree output---\n");
         print_tree(root);
-        printf("\n\n--------------------------------------------------------------------\n");
-        printf("\n\nprintnode() output to prove leaf node information above ^. Beginning tree traversal/printing below:\n\n");
-        printf("\n--------------------------------------------------------------------\n\n");
 
+        printf("\n---printsyms output---\n");
         printsyms(root);
+
         struct sym_table *global = mksymtab(64);
         build_symtab(root, global);
+
+        printf("\n---print_symtab output---\n");
         print_symtab(global, 0);
 
         free_tree(root);

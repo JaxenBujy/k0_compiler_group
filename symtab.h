@@ -11,20 +11,21 @@ void insert_parameters(struct tree *node, struct sym_table *st);
 void print_scope(struct sym_table *st, int level);
 void print_symtab(struct sym_table *st, int level);
 
-
-struct sym_entry{
-    char *name;                  // identifier name
-    struct sym_entry *next;   // next entry in same bucket
+struct sym_entry
+{
+    char *name;             // identifier name
+    struct sym_entry *next; // next entry in same bucket
 };
 
-struct sym_table {
+struct sym_table
+{
     int nBuckets;
     int nEntries;
 
     struct sym_table *parent;
 
-    struct sym_table *child;     // first child scope
-    struct sym_table *sibling;   // next scope at same level
+    struct sym_table *child;   // first child scope
+    struct sym_table *sibling; // next scope at same level
 
     struct sym_entry **tbl;
 };
