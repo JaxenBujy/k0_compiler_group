@@ -17,8 +17,8 @@ void print_tree_with_depth(struct tree *root, int depth)
                 printf("  "); // two spaces per level
 
         // Print tree node info
-        printf("Prodrule: %d Symbol: %s Kids: %d\n",
-               root->prodrule, root->symbolname, root->nkids);
+        printf("Symbol: %s Prodrule: %d Kids: %d\n",
+               root->symbolname, root->prodrule, root->nkids);
 
         // Print leaf if present
         if (root->leaf != NULL)
@@ -61,5 +61,6 @@ void free_tree_with_depth(struct tree *root, int depth)
                 free(root->leaf);
         }
 
+        free(root->symbolname);
         free(root);
 }
