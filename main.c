@@ -28,29 +28,38 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        printf("\nerror: at least two arguments required\nUsage: ./ko <filename> <-dot>\n");
+        printf("\nError: at least two arguments required\nUsage: ./ko <filename> <options>\n");
+        printf("OPTIONAL:\n-dot: generate a dot file of the syntax tree\n");
+        printf("-dot: generate a dot file of the syntax tree\n");
+        printf("-tree: print the syntax tree\n");
+        printf("-symtab: print the syntax tree\n");
         exit(1);
     }
-    int dot = 0; // bool flag to determine if dot will be used to produce png image of AST
+    int dot_bool = 0;    // bool flag to determine if dot will be used to produce png image of AST
+    int tree_bool = 0;   // bool flag to determine if tree will be printed
+    int symtab_bool = 0; // bool flag to determine if symbol table will be printed
+
+    // filename is required to come first
+    filename = argv[1];
+
+    // collect any optional arguments
     for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "-dot") == 0)
         {
-            dot = i; // -dot provided, turn the flag on
+            dot_bool = 1; // -dot provided, turn the flag on
+        }
+        if (strcmp(argv[i], "-tree") == 0)
+        {
+            tree_bool = 1;
+        }
+        if (strcmp(argv[i], "-symtab") == 0)
+        {
+            symtab_bool = 1;
         }
     }
-    switch (dot)
-    {
-    case 1:
-        filename = argv[2];
-        break;
-    case 2:
-        filename = argv[1];
-        break;
-    default:
-        filename = argv[1];
-    }
 
+    printf("Opening file '%s'...\n", filename);
     yyin = fopen(filename, "r");
     if (!yyin)
     {
@@ -60,26 +69,33 @@ int main(int argc, char *argv[])
 
     // for debug prints from bison
     yydebug = 0;
-    int rv = yyparse(); // call yyparse once instead of yylex() in a while loop
+    int rv = yyparse(); // parse the given file, constructing an AST
 
-    if (rv == 0) // yyparse returned no syntax errors, print AST
+    if (rv == 0) // yyparse returned no syntax errors, proceed to semantics
     {
-        if (dot)
+        // print the tree if specified. May not be a complete tree since yyparse rv has not been checked yet
+        if (tree_bool)
+        {
+            printf("\n---print_tree output---\n");
+            print_tree(root);
+        }
+        // make dot file of the tree if specified. May not be a complete tree since yyparse rv has not been checked yet
+        if (dot_bool)
         {
             print_graph(root, filename);
-            printf("dot image of file generated in %s_tree.png", filename);
+            printf("dot file of AST generated in %s_tree.dot. To generate png image of the tree, run \"dot -Tpng %s_tree.dot > tree_img.png\"\n", filename, filename);
         }
-        printf("---print_tree output---\n");
-        print_tree(root);
 
-        printf("\n---printsyms output---\n");
-        printsyms(root);
-
+        // construct the symbol table
         struct sym_table *global = mksymtab(64);
         build_symtab(root, global);
 
-        printf("\n---print_symtab output---\n");
-        print_symtab(global, 0);
+        // print symbol table if specified
+        if (symtab_bool)
+        {
+            printf("\n---print_symtab output---\n");
+            print_symtab(global, 0);
+        }
 
         free_tree(root);
         printf("yyparse returned %d\n", rv);
