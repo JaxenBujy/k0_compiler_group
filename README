@@ -1,10 +1,8 @@
 Implemented:
-    - initial grammar
-    - more grammar rules
-    - alctree
-    - alctoken
-    - lexer returns alctoken
-    - parser reads tokens
-    - semantic actions
-    - tree functionality
-    - cleaned up shift/reduce conflicts
+    - implemented dot picture drawing
+    - implemented IDs for each token/tree node
+    - implemented new grammar to handle function calls within function call parameters
+
+Teammates:
+    Jaxen Bujold - 2
+    Christopher Esquibel - 2

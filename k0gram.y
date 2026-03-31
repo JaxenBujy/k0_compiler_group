@@ -8,6 +8,7 @@
     struct tree *alctree(int prod_rule, char *symbol_name, int nkids, struct tree *kids[10], struct token *leaf);
     void print_node(struct tree *t);
     struct tree *root = NULL;
+    int serial = 0;
 %}
 
 %union {
@@ -151,9 +152,9 @@ val_var /* keywords val or var to be used in variable declaration/initialization
     | VAR
     ;
 literal /* literals */
-    : INT {print_node($1);} // per lab 4 specification, print info about a leaf node
+    : INT  // per lab 4 specification, print info about a leaf node
     | REAL 
-    | STRING {print_node($1); } // per lab 4 specification, print info about a leaf node
+    | STRING // per lab 4 specification, print info about a leaf node
     | MULTI_STRING 
     | CHAR
     ;
@@ -289,6 +290,7 @@ function_call_values_list /* this list of arguments within that function call, a
 functionCallVal
     : literal
     | IDENT
+    | LPAREN literal RPAREN DOT function_call {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUNCTION_CALL_OBJECT_CALL, "functionCallVal", 5, kids, NULL);}
     ;
 block /* cannot have variable declarations/initiations, since those are only allowed at the global level and top of functions*/
     : LBRACE statement_list RBRACE {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_BLOCK, "block", 3, kids, NULL); }
@@ -315,12 +317,14 @@ if_statement /* Allowing if, if else, and if else if*/
     | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_IF_ELSE, "if_statement", 7, kids, NULL); }
     ;
 %%
+
 struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kids[10], struct token *leaf) {
     struct tree *t = malloc(sizeof(struct tree));
     if (t == NULL) {
         fprintf(stderr, "Failed to allocate memory for tree node\n");
         exit(1);
     }
+    t->id = serial++;
     t->prodrule = prodrule;
     t->symbolname = strdup(symbolname);
     t->nkids = nkids;
@@ -343,3 +347,4 @@ void print_node(struct tree *t) {
         t->leaf->category, t->leaf->text, t->leaf->lineno, t->leaf->filename, t->leaf->ival, t->leaf->dval, t->leaf->sval);
     }
 }
+

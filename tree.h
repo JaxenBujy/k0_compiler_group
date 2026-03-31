@@ -1,10 +1,14 @@
+extern int serial;
+
 struct tree
 {
+    int id;
     int prodrule;
     char *symbolname;
     int nkids;
     struct tree *kids[10]; /* if nkids >0 */
     struct token *leaf;    /* if nkids == 0; NULL for ε productions */
+    struct sym_entry *symbol;
 };
 
 struct token
@@ -17,10 +21,12 @@ struct token
     double dval;    /* for real constants, store binary value here */
     char *sval;     /* for string constants, malloc space, de-escape, store the string (less quotes and after escapes) here */
 };
+
 void free_tree(struct tree *root);
 void print_tree(struct tree *root);
 void free_tree_with_depth(struct tree *root, int depth);
 void print_tree_with_depth(struct tree *root, int depth);
+void printsymbol(char *s);
 
 enum ProductionRule
 {
@@ -177,6 +183,7 @@ enum ProductionRule
 
     /* function_call */
     PR_FUNCTION_CALL,
+    PR_FUNCTION_CALL_OBJECT_CALL,
 
     /* function_call_values_list */
     PR_CALL_VALUES_SINGLE,

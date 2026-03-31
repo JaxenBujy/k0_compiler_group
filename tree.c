@@ -1,6 +1,13 @@
-#include "tree.h"
+#include "symtab.h"
+#include "k0gram.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+void printsymbol(char *s)
+{
+        printf("Identifier: %s\n", s);
+        fflush(stdout);
+}
 
 void print_tree(struct tree *root)
 {
@@ -19,16 +26,25 @@ void print_tree_with_depth(struct tree *root, int depth)
         // Print leaf if present
         if (root->leaf != NULL)
         {
+                if (root->leaf->category == IDENT)
+                {
+                        printsymbol(root->leaf->text);
+                }
+
                 for (int i = 0; i < depth + 1; i++)
                         printf("  ");
-                printf("Leaf Node: %s\n",
+                printf("Leaf Node: %s\t",
                        root->leaf->text);
+                printf("Serial #: %d\n",
+                       root->id);
         }
         else
         {
                 // Print tree node info
-                printf("Internal Node: %s\n",
+                printf("Internal Node: %s\t",
                        root->symbolname);
+                printf("Serial #: %d\n",
+                       root->id);
         }
 
         for (int i = 0; i < root->nkids; i++)

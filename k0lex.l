@@ -5,7 +5,7 @@
 %option nounput
 %{
     #include "k0gram.tab.h"
-    #include "tree.h"
+    #include "symtab.h"
     int alctoken(int category);
     char *consume_sval(int str_type);
     extern char *filename;
@@ -13,11 +13,11 @@
     int multi_line_start; // keep track of when a multi line comment begins to give error if it is unclosed
 %}
 
-whitespace  [ \t\r]+
+whitespace      [ \t\r]+
 inline_comment  \/\/[^\n]*|\/\*[^\n]\*\/
-single_delim \/\*[^\n]*
-hash_line  \#[^\n]*
-identifier  [a-zA-Z_][a-zA-Z0-9_]*
+single_delim        \/\*[^\n]*
+hash_line           \#[^\n]*
+identifier          [a-zA-Z_][a-zA-Z0-9_]*
 illegal_identifier [0-9]+[a-zA-Z_][a-zA-Z0-9_]*
 basic_type "Byte"|"Short"|"Int"|"Long"|"Float"|"Double"|"Boolean"|"String"
 integer_literal  [0-9]+[1-9]*|0[xX][0-9A-Fa-f]+
@@ -223,6 +223,7 @@ int alctoken(int category)
         t->kids[i] = NULL;
     }
 
+    t->id = serial++;
     t->prodrule = category;
     t->symbolname = NULL;
     t->nkids = 0;
