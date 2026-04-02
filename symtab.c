@@ -14,6 +14,7 @@ struct sym_table *mksymtab(int size)
 
     t->child = NULL;
     t->sibling = NULL;
+    t->scope_name = NULL;
 
     t->tbl = calloc(size, sizeof(struct sym_entry *));
 
@@ -149,6 +150,12 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         new_scope->sibling = current->child;        // track the new scopes sibling to the child of current
         current->child = new_scope;                 // set new scope as current child
 
+        // set current symtables scope name, since we know it's a function declaration, we say func <name>
+        char *buf = malloc(strlen("func ") + strlen(name) + 1);
+        strcpy(buf, "func ");
+        strcat(buf, name);
+        new_scope->scope_name = buf;
+
         // insert parameters as they are a special case, they are being included in that functions scope, not the parents scope
         struct tree *params = node->kids[3];
         insert_parameters(params, new_scope, symtab_err_flag);
@@ -192,7 +199,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         break;
     }
 
-    // Assingment and arithmetic assignment
+    // Assignment and arithmetic assignment
     case PR_ASSIGNMENT_ASSIGN:
     case PR_ASSIGNMENT_PLUS:
     case PR_ASSIGNMENT_MINUS:
@@ -280,7 +287,7 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
 
 void print_scope(struct sym_table *st, int level)
 {
-    printf("Scope Level %d:\n", level);
+    printf("Level %d, Symbol table for %s:\n", level, st->scope_name);
 
     for (int i = 0; i < st->nBuckets; i++)
     {

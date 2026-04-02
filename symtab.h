@@ -21,6 +21,7 @@ struct sym_table
 {
     int nBuckets;
     int nEntries;
+    char *scope_name; // name like package main or func f
 
     struct sym_table *parent;
 

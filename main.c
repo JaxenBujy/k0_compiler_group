@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
         // construct the symbol table
         int symtab_err_flag = 0;
         struct sym_table *global = mksymtab(64);
+        global->scope_name = strdup("global");
         build_symtab(root, global, &symtab_err_flag);
 
         if (!symtab_err_flag)
