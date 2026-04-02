@@ -1,7 +1,7 @@
 Implemented:
-    - implemented dot picture drawing
-    - implemented IDs for each token/tree node
-    - implemented new grammar to handle function calls within function call parameters
+    - symbol table mostly complete from lab 6
+    - added -symtab and -tree options to change output of program
+    - changed all error messages to print to stderr
 
 Teammates:
     Jaxen Bujold - 2

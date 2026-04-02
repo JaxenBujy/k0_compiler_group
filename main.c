@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     yyin = fopen(filename, "r");
     if (!yyin)
     {
-        printf("Error reading file\n");
+        fprintf(stderr, "Error reading file\n");
         exit(1);
     }
 

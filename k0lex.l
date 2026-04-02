@@ -237,27 +237,27 @@ int alctoken(int category)
     switch (category)
     {
         case KEYWORD_ERROR:
-            printf("%s:%d: scanner error: Kotlin reserved keyword: \"%s\" is not a part of k0\n",
+            fprintf(stderr, "%s:%d: scanner error: Kotlin reserved keyword: \"%s\" is not a part of k0\n",
                    filename, lineno, yytext);
             exit(1);
 
         case UNCLOSED_COMMENT:
-            printf("%s:%d: scanner error: unclosed multi-line comment\n",
+            fprintf(stderr, "%s:%d: scanner error: unclosed multi-line comment\n",
                    filename, multi_line_start);
             exit(1);
 
         case COULD_NOT_MATCH:
-            printf("%s:%d: scanner error: \'%s\' could not be matched\n",
+            fprintf(stderr, "%s:%d: scanner error: \'%s\' could not be matched\n",
                    filename, lineno, yytext);
             exit(1);
 
         case ILL_IDENT:
-            printf("%s:%d: scanner error: \'%s\' is an illegal identifier\n",
+            fprintf(stderr, "%s:%d: scanner error: \'%s\' is an illegal identifier\n",
                    filename, lineno, yytext);
             exit(1);
 
         case OP_ERROR:
-            printf("%s:%d: scanner error: \'%s\' is an illegal operator\n",
+            fprintf(stderr, "%s:%d: scanner error: \'%s\' is an illegal operator\n",
                    filename, lineno, yytext);
             exit(1);
 
@@ -289,7 +289,7 @@ int alctoken(int category)
         case MULTI_STRING:
             t->leaf->sval = consume_sval(category);
             if (t->leaf->sval == NULL) {
-                printf("%s:%d: scanner error: unsupported escape sequence in %s\n",
+                fprintf(stderr, "%s:%d: scanner error: unsupported escape sequence in %s\n",
                        filename, lineno, yytext);
                 exit(1);
             }
