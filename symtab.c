@@ -151,11 +151,11 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         // insert parameters as they are a special case, they are being included in that functions scope, not the parents scope
         struct tree *params = node->kids[3];
-        insert_parameters(params, new_scope, &symtab_err_flag);
+        insert_parameters(params, new_scope, symtab_err_flag);
 
         // traverse body
         for (int i = 0; i < node->nkids; i++)
-            build_symtab(node->kids[i], new_scope, &symtab_err_flag);
+            build_symtab(node->kids[i], new_scope, symtab_err_flag);
 
         return;
     }
@@ -169,7 +169,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         current->child = new_scope;                 // set new scope as current child
 
         // kids[1] = statement_list, so just recurse over this statement list and let the rest of the cases handle it
-        build_symtab(node->kids[1], new_scope, &symtab_err_flag);
+        build_symtab(node->kids[1], new_scope, symtab_err_flag);
         return;
     }
 
@@ -249,7 +249,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     }
 
     for (int i = 0; i < node->nkids; i++)
-        build_symtab(node->kids[i], current, &symtab_err_flag);
+        build_symtab(node->kids[i], current, symtab_err_flag);
 }
 
 void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_flag)
@@ -275,7 +275,7 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
 
     // recursive list
     for (int i = 0; i < node->nkids; i++)
-        insert_parameters(node->kids[i], st, &symtab_err_flag);
+        insert_parameters(node->kids[i], st, symtab_err_flag);
 }
 
 void print_scope(struct sym_table *st, int level)
