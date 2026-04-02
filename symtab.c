@@ -99,7 +99,7 @@ struct sym_entry *lookup_current(struct sym_table *st, char *name)
     return NULL;
 }
 
-void build_symtab(struct tree *node, struct sym_table *current)
+void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_flag)
 {
     if (!node)
         return;
@@ -115,7 +115,8 @@ void build_symtab(struct tree *node, struct sym_table *current)
 
         if (lookup_current(current, name))
         { // so if the name appears twice as a declaration in current symbol table, break out for now
-            printf("Error: redeclaration of %s\n", name);
+            fprintf(stderr, "Error: redeclaration of %s\n", name);
+            *symtab_err_flag = 1;
         }
         else
         {
@@ -134,7 +135,8 @@ void build_symtab(struct tree *node, struct sym_table *current)
         // insert function into global scope
         if (lookup_current(current, name))
         {
-            printf("Error: redeclaration of function %s\n", name); // break out
+            fprintf(stderr, "Error: redeclaration of function %s\n", name); // break out
+            *symtab_err_flag = 1;
         }
         else
         {
@@ -149,11 +151,11 @@ void build_symtab(struct tree *node, struct sym_table *current)
 
         // insert parameters as they are a special case, they are being included in that functions scope, not the parents scope
         struct tree *params = node->kids[3];
-        insert_parameters(params, new_scope);
+        insert_parameters(params, new_scope, &symtab_err_flag);
 
         // traverse body
         for (int i = 0; i < node->nkids; i++)
-            build_symtab(node->kids[i], new_scope);
+            build_symtab(node->kids[i], new_scope, &symtab_err_flag);
 
         return;
     }
@@ -167,7 +169,7 @@ void build_symtab(struct tree *node, struct sym_table *current)
         current->child = new_scope;                 // set new scope as current child
 
         // kids[1] = statement_list, so just recurse over this statement list and let the rest of the cases handle it
-        build_symtab(node->kids[1], new_scope);
+        build_symtab(node->kids[1], new_scope, &symtab_err_flag);
         return;
     }
 
@@ -180,7 +182,8 @@ void build_symtab(struct tree *node, struct sym_table *current)
 
         if (lookup_current(current, name))
         {
-            printf("Error: redeclaration of %s\n", name);
+            fprintf(stderr, "Error: redeclaration of %s\n", name);
+            *symtab_err_flag = 1;
         }
         else
         {
@@ -199,7 +202,8 @@ void build_symtab(struct tree *node, struct sym_table *current)
         struct sym_entry *e = lookup(current, name);
         if (!e)
         {
-            printf("Error: undeclared variable %s\n", name); // look up variable and ensure it has been defined before
+            fprintf(stderr, "Error: undeclared variable %s\n", name); // look up variable and ensure it has been defined before
+            *symtab_err_flag = 1;
         }
         else
         {
@@ -216,7 +220,8 @@ void build_symtab(struct tree *node, struct sym_table *current)
         struct sym_entry *e = lookup(current, name);
         if (!e)
         {
-            printf("Error: undeclared function %s\n", name); // look up function and ensure it has been defined before
+            fprintf(stderr, "Error: undeclared function %s\n", name); // look up function and ensure it has been defined before
+            *symtab_err_flag = 1;
         }
         else
         {
@@ -234,7 +239,8 @@ void build_symtab(struct tree *node, struct sym_table *current)
         struct sym_entry *e = lookup(current, name);
         if (!e)
         {
-            printf("Error: undeclared variable %s\n", name);
+            fprintf(stderr, "Error: undeclared variable %s\n", name);
+            *symtab_err_flag = 1;
         }
         else
         {
@@ -243,10 +249,10 @@ void build_symtab(struct tree *node, struct sym_table *current)
     }
 
     for (int i = 0; i < node->nkids; i++)
-        build_symtab(node->kids[i], current);
+        build_symtab(node->kids[i], current, &symtab_err_flag);
 }
 
-void insert_parameters(struct tree *node, struct sym_table *st)
+void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_flag)
 {
     if (!node)
         return;
@@ -257,7 +263,8 @@ void insert_parameters(struct tree *node, struct sym_table *st)
 
         if (lookup_current(st, name))
         {
-            printf("Error: duplicate parameter %s\n", name);
+            fprintf(stderr, "Error: duplicate parameter %s\n", name);
+            *symtab_err_flag = 1;
         }
         else
         {
@@ -268,7 +275,7 @@ void insert_parameters(struct tree *node, struct sym_table *st)
 
     // recursive list
     for (int i = 0; i < node->nkids; i++)
-        insert_parameters(node->kids[i], st);
+        insert_parameters(node->kids[i], st, &symtab_err_flag);
 }
 
 void print_scope(struct sym_table *st, int level)

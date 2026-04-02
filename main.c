@@ -87,8 +87,14 @@ int main(int argc, char *argv[])
         }
 
         // construct the symbol table
+        int symtab_err_flag = 0;
         struct sym_table *global = mksymtab(64);
-        build_symtab(root, global);
+        build_symtab(root, global, &symtab_err_flag);
+
+        if (!symtab_err_flag)
+        {
+            printf("No semantic errors found in symbol tables\n");
+        }
 
         // print symbol table if specified
         if (symtab_bool)

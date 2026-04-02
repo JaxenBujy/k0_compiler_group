@@ -6,8 +6,8 @@ void printsyms(struct tree *t);
 void insert(struct sym_table *st, char *name);
 struct sym_entry *lookup(struct sym_table *st, char *name);
 struct sym_entry *lookup_current(struct sym_table *st, char *name);
-void build_symtab(struct tree *node, struct sym_table *current);
-void insert_parameters(struct tree *node, struct sym_table *st);
+void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_flag);
+void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_flag);
 void print_scope(struct sym_table *st, int level);
 void print_symtab(struct sym_table *st, int level);
 
