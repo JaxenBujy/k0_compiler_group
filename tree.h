@@ -1,3 +1,5 @@
+#include "type.h"
+
 extern int serial;
 
 struct tree
@@ -9,6 +11,7 @@ struct tree
     struct tree *kids[10]; /* if nkids >0 */
     struct token *leaf;    /* if nkids == 0; NULL for ε productions */
     struct sym_entry *symbol;
+    typeptr type;           // full type information
 };
 
 struct token
@@ -20,6 +23,7 @@ struct token
     int ival;       /* for integer constants, store binary value here */
     double dval;    /* for real constants, store binary value here */
     char *sval;     /* for string constants, malloc space, de-escape, store the string (less quotes and after escapes) here */
+    typeptr type;   // full type information
 };
 
 void free_tree(struct tree *root);

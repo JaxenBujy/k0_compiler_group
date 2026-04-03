@@ -35,27 +35,6 @@ int hash(struct sym_table *st, char *s)
     return h % st->nBuckets;
 }
 
-// print all symbols in the given tree
-void printsyms(struct tree *t)
-{
-    if (t == NULL)
-        return;
-
-    // Leaf node with identifier
-    if (t->leaf != NULL)
-    {
-        if (t->leaf->category == IDENT)
-        {
-            printsymbol(t->leaf->text);
-        }
-    }
-
-    for (int i = 0; i < t->nkids; i++)
-    {
-        printsyms(t->kids[i]);
-    }
-}
-
 void insert(struct sym_table *st, char *name)
 {
     int i = hash(st, name);
@@ -64,6 +43,8 @@ void insert(struct sym_table *st, char *name)
     e->name = strdup(name);
 
     e->next = st->tbl[i];
+    e->type = malloc(sizeof(typeptr));
+    e->type->basetype = 100;
     st->tbl[i] = e;
 
     st->nEntries++;
@@ -295,7 +276,7 @@ void print_scope(struct sym_table *st, int level)
 
         while (e)
         {
-            printf("  %s\n", e->name);
+            printf("  %s, type: %d\n", e->name, e->type->basetype);
             e = e->next;
         }
     }

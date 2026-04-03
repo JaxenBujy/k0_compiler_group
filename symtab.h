@@ -1,4 +1,5 @@
 #include "tree.h"
+#include "type.h"
 
 struct sym_table *mksymtab(int size);
 int hash(struct sym_table *st, char *s);
@@ -14,6 +15,7 @@ void print_symtab(struct sym_table *st, int level);
 struct sym_entry
 {
     char *name;             // identifier name
+    typeptr type;           // full type information
     struct sym_entry *next; // next entry in same bucket
 };
 

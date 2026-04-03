@@ -1,7 +1,11 @@
 Implemented:
-    - symbol table mostly complete from lab 6
-    - added -symtab and -tree options to change output of program
-    - changed all error messages to print to stderr
+    - added type.h, type.c
+    - updated token, symbol table, and tree structs to include types
+    - added basic type implementation to lookup() function
+        - symbol table prints 100 for each ident for now
+    
+To-Do:
+    - create type function that resolves types during symbol table creation
 
 Teammates:
     Jaxen Bujold - 2
