@@ -129,8 +129,9 @@ extern int yydebug;
     DOUBLE_TYPE = 330,             /* DOUBLE_TYPE  */
     BOOLEAN_TYPE = 331,            /* BOOLEAN_TYPE  */
     STRING_TYPE = 332,             /* STRING_TYPE  */
-    ARRAY = 333,                   /* ARRAY  */
-    IFX = 334                      /* IFX  */
+    NULL_TYPE = 333,               /* NULL_TYPE  */
+    ARRAY = 334,                   /* ARRAY  */
+    IFX = 335                      /* IFX  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -143,7 +144,7 @@ union YYSTYPE
 
     struct tree *treeptr;
 
-#line 147 "k0gram.tab.h"
+#line 148 "k0gram.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

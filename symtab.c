@@ -60,7 +60,7 @@ struct sym_table *mksymtab_global(int size)
         // avoid accidental duplicates
         if (!lookup_current(global, name))
         {
-            insert(global, name);
+            insert(global, name, NULL, 0);
         }
     }
 
@@ -81,16 +81,21 @@ int hash(struct sym_table *st, char *s)
     return h % st->nBuckets;
 }
 
-void insert(struct sym_table *st, char *name)
+void insert(struct sym_table *st, char *name, typeptr t, int value)
 {
+    /*if (t)
+    {
+        printf("%s ", name);
+        printf("%d\n", t->basetype);
+    }*/
     int i = hash(st, name);
 
     struct sym_entry *e = malloc(sizeof(struct sym_entry));
     e->name = strdup(name);
-
-    e->next = st->tbl[i];
     e->type = malloc(sizeof(typeptr));
-    e->type->basetype = 100;
+    e->type = t;
+    e->next = st->tbl[i];
+    e->value = value;
     st->tbl[i] = e;
 
     st->nEntries++;
@@ -127,6 +132,19 @@ struct sym_entry *lookup_current(struct sym_table *st, char *name)
     return NULL;
 }
 
+int infer_type(struct token *node)
+{
+    switch(node->category){
+        case INT:
+        {
+            printf("value: %d\n", node->ival);
+            return INT_TYPE;
+        }
+        default:
+            return NULL_TYPE;    
+    }
+}
+
 void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_flag, char *filename)
 {
     if (!node)
@@ -135,26 +153,74 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     switch (node->prodrule)
     {
     // Global variables
-    case PR_GLOBAL_VAR_DECL_SIMPLE:
-    case PR_GLOBAL_VAR_DECL_LITERAL_INIT:
-    case PR_GLOBAL_VAR_INIT_INT:
+    case PR_GLOBAL_VAR_DECL:
     {
+        typeptr t = malloc(sizeof(typeptr));
+        t->basetype = node->kids[3]->leaf->category;
+        
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
 
         if (lookup_current(current, name))
         { // so if the name appears twice as a declaration in current symbol table, break out for now
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of %s\n", filename, node->kids[1]->leaf->lineno, name);
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
         {
-            insert(current, name); // else insert into current symbol table
+            insert(current, name, t, 0); // else insert into current symbol table
+        }
+        break;
+    }
+    case PR_GLOBAL_VAR_DECL_ASSIGN:
+    {
+        // immediately handle type checking
+        if (node->kids[3]->leaf->category == INT_TYPE && node->kids[5]->leaf->category != INT)
+        {
+            fprintf(stderr, "%s:%d: semantic error: type mismatch of variable %s\n", filename, node->kids[1]->leaf->lineno, node->kids[1]->leaf->text);
+            *symtab_err_flag = 1;
+        }
+
+        typeptr t = malloc(sizeof(typeptr));
+
+        t->basetype = node->kids[3]->leaf->category; // IDENT category
+        int value = node->kids[5]->leaf->ival;       // value of integer, only works for int for now
+        
+        char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
+
+        if (lookup_current(current, name))
+        { // so if the name appears twice as a declaration in current symbol table, break out for now
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+        }
+        else
+        {
+            insert(current, name, t, value); // else insert into current symbol table
+        }
+        break;
+    }
+    case PR_GLOBAL_VAR_INIT:
+    {
+        typeptr t = malloc(sizeof(typeptr));
+
+        t->basetype = infer_type(node->kids[3]->leaf);
+        int value = node->kids[3]->leaf->ival;
+        
+        char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
+
+        if (lookup_current(current, name))
+        { // so if the name appears twice as a declaration in current symbol table, break out for now
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+        }
+        else
+        {
+            insert(current, name, t, value); // else insert into current symbol table
         }
         break;
     }
 
     // Function Declarations
-    case PR_FUNCTION_DECL_TYPED:
+    /*case PR_FUNCTION_DECL_TYPED:
     case PR_FUNCTION_DECL_UNTYPED:
     case PR_FUNCTION_DECL_SEMICOLON:
     {
@@ -210,7 +276,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     // Function body variable declarations
     case PR_FUN_BODY_VAR_DECL_SIMPLE:
     case PR_FUN_BODY_VAR_DECL_LITERAL_INIT:
-    case PR_FUN_BODY_VAR_INIT_INT:
     {
         char *name = node->kids[1]->leaf->text;
 
@@ -262,11 +327,11 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             node->kids[0]->symbol = e; // assign symbol info to AST node
         }
         break;
-    }
+    }*/
     }
 
     // Leaf Identifiers
-    if (node->leaf && node->leaf->category == IDENT)
+    /*if (node->leaf && node->leaf->category == IDENT)
     {
         char *name = node->leaf->text;
 
@@ -280,7 +345,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         {
             node->symbol = e;
         }
-    }
+    }*/
 
     for (int i = 0; i < node->nkids; i++)
         build_symtab(node->kids[i], current, symtab_err_flag, filename);
@@ -302,7 +367,7 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
         }
         else
         {
-            insert(st, name);
+            insert(st, name,NULL, 0);
         }
         return;
     }
@@ -322,7 +387,17 @@ void print_scope(struct sym_table *st, int level)
 
         while (e)
         {
-            printf("  %s, type: %d\n", e->name, e->type->basetype);
+
+            if (e->type)
+            {
+                if (e->value == 0)
+                    printf("  %s, type: %d, value: NULL\n", e->name, e->type->basetype);
+                else
+                    printf("  %s, type: %d, value: %d\n", e->name, e->type->basetype, e->value);
+            }
+                
+            else
+                printf("  %s\n", e->name);
             e = e->next;
         }
     }

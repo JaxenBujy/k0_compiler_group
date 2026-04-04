@@ -20,7 +20,7 @@ struct field {			/* members (fields) of structs */
 #define K0_DOUBLE_TYPE   1000002
 #define BOOL_TYPE    1000003
 #define CHAR_TYPE    1000004
-#define NULL_TYPE    1000005
+#define K0_NULL_TYPE    1000005
 #define K0_STRING_TYPE  1000006
 #define ARRAY_TYPE   1000007
 #define FUNC_TYPE    1000008

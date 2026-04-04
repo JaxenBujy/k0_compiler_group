@@ -61,7 +61,7 @@
 %token <treeptr> IDENT
 
 /* Types */
-%token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE
+%token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE NULL_TYPE
 %token <treeptr> ARRAY
 
 /* Production Rules */
@@ -145,6 +145,7 @@ type /* basic types supported in k0 */
     | DOUBLE_TYPE 
     | BOOLEAN_TYPE 
     | STRING_TYPE
+    | NULL_TYPE
     | ARRAY LT type GT {struct tree *kids[10] = {$1, $2, $3, $4}; $$ = alctree(PR_TYPE_ARRAY, "type", 4, kids, NULL); }
     ;
 val_var /* keywords val or var to be used in variable declaration/initialization */
@@ -166,13 +167,13 @@ bool_literal
 /* global variable declaration. Acts as typeConstraints. 
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions */
 global_var_decl 
-    : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL_SIMPLE, "global_var_decl", 5, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 7, kids, NULL); }
+    : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL, "global_var_decl", 5, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_ASSIGN, "global_var_decl", 7, kids, NULL); }
     ;
 /* variable initializations strictly at the top (global) level. 
 k0 allows only simple initializers including int, float and char */
 global_var_init
-    : val_var IDENT ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_INIT_INT, "global_var_init", 5, kids, NULL); }
+    : val_var IDENT ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_INIT, "global_var_init", 5, kids, NULL); }
     ;
 /* function body variable declaration. Acts as typeConstraints. 
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions*/

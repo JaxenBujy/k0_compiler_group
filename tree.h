@@ -78,11 +78,11 @@ enum ProductionRule
     PR_BOOL_FALSE,
 
     /* global_var_decl */
-    PR_GLOBAL_VAR_DECL_SIMPLE,
-    PR_GLOBAL_VAR_DECL_LITERAL_INIT,
-    PR_GLOBAL_VAR_DECL_IDENT_INIT,
+    PR_GLOBAL_VAR_DECL,
+    PR_GLOBAL_VAR_DECL_ASSIGN,
 
     /* global_var_init */
+    PR_GLOBAL_VAR_INIT,
     PR_GLOBAL_VAR_INIT_INT,
     PR_GLOBAL_VAR_INIT_REAL,
     PR_GLOBAL_VAR_INIT_CHAR,
@@ -90,7 +90,6 @@ enum ProductionRule
     /* fun_body_var_decl */
     PR_FUN_BODY_VAR_DECL_SIMPLE,
     PR_FUN_BODY_VAR_DECL_LITERAL_INIT,
-    PR_FUN_BODY_VAR_DECL_IDENT_INIT,
 
     /* fun_body_var_init */
     PR_FUN_BODY_VAR_INIT_INT,
