@@ -4,6 +4,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+// predefined functions in k0. In comments, before the . is the expected type that the method gets called on
+// asking Dr. Zhan about this stuff, particularly if we need to support object-oriented-like method calls e.g "hello world".length vs. length("hello world")
+// for symbol tables, all that matters is that we have the names defined here so that user does not get an error for using them
+char *predefined_functions[] = {
+    "print",     // print with no newline
+    "println",   // print with newline
+    "readln",    // reads a line of input from specified input stream
+    "get",       // String.get
+    "equals",    // String.equals
+    "length",    // String.length
+    "toString",  // String.toString
+    "valueOf",   // String.valueOf
+    "substring", // String.substring
+    "nextInt",   // Random.nextInt
+    "abs",       // Math.abs
+    "max",       // Math.max
+    "min",       // Math.min
+    "pow",       // Math.pow
+    "cos",       // Math.cos
+    "sin",       // Math.sin
+    "tan"        // Math.tan
+};
+
 struct sym_table *mksymtab(int size)
 {
     struct sym_table *t = malloc(sizeof(struct sym_table));
@@ -19,6 +42,29 @@ struct sym_table *mksymtab(int size)
     t->tbl = calloc(size, sizeof(struct sym_entry *));
 
     return t;
+}
+
+// strictly for globally defined functions, including the predefined functions specified in k0 specification.
+struct sym_table *mksymtab_global(int size)
+{
+    struct sym_table *global = mksymtab(size);
+
+    global->scope_name = strdup("global");
+
+    // insert predefined functions
+    int n = sizeof(predefined_functions) / sizeof(predefined_functions[0]);
+    for (int i = 0; i < n; i++)
+    {
+        char *name = predefined_functions[i];
+
+        // avoid accidental duplicates
+        if (!lookup_current(global, name))
+        {
+            insert(global, name);
+        }
+    }
+
+    return global;
 }
 
 int hash(struct sym_table *st, char *s)

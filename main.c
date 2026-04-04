@@ -88,15 +88,25 @@ int main(int argc, char *argv[])
 
         // construct the symbol table
         int symtab_err_flag = 0;
-        struct sym_table *global = mksymtab(64);
 
-        // set package name based on current file name
+        // global scope, predefined functions in k0 specification
+        struct sym_table *global = mksymtab_global(64);
+
+        // package scope, the current file being read
+        struct sym_table *current_package = mksymtab(64);
+        current_package->parent = global;
+
+        // set the current package as a child of the global table
+        current_package->sibling = global->child;
+        global->child = current_package;
+
+        // set package name
         size_t len = strlen("package ") + strlen(filename) + 1;
-        global->scope_name = malloc(len);
-        snprintf(global->scope_name, len, "package %s", filename);
+        current_package->scope_name = malloc(len);
+        snprintf(current_package->scope_name, len, "package %s", filename);
 
-        // build symbol table for global
-        build_symtab(root, global, &symtab_err_flag, filename);
+        // build symbol table starting at package scope
+        build_symtab(root, current_package, &symtab_err_flag, filename);
 
         if (!symtab_err_flag)
         {

@@ -4,12 +4,12 @@
 #include "symtab.h"
 #include "token.h"
 #include "cgram.tab.h"
-   
-struct typeinfo null_type = { NULL_TYPE };
-struct typeinfo integer_type = { INT_TYPE };
-struct typeinfo double_type = { DOUBLE_TYPE };
-struct typeinfo boolean_type = { BOOL_TYPE };
-struct typeinfo char_type = { CHAR_TYPE };
+
+struct typeinfo null_type = {NULL_TYPE};
+struct typeinfo integer_type = {INT_TYPE};
+struct typeinfo double_type = {DOUBLE_TYPE};
+struct typeinfo boolean_type = {BOOL_TYPE};
+struct typeinfo char_type = {CHAR_TYPE};
 
 typeptr null_typeptr = &null_type;
 typeptr integer_typeptr = &integer_type;
@@ -18,21 +18,27 @@ typeptr boolean_typeptr = &boolean_type;
 typeptr char_typeptr = &char_type;
 
 char *typenam[] =
-   {"none", "int", "float", "bool", "char",
-    "string", "array", "func", "class", "package",
-    "any"}; /* "list", "dict", ... */
+    {"none", "int", "float", "bool", "char",
+     "string", "array", "func", "class", "package",
+     "any"}; /* "list", "dict", ... */
 
 typeptr alctype(int base)
 {
    typeptr rv;
-   if (base == NULL_TYPE) return null_typeptr;
-   else if (base == INT_TYPE) return integer_typeptr;
-   else if (base == DOUBLE_TYPE) return double_typeptr;
-   else if (base == BOOL_TYPE) return boolean_typeptr;
-   else if (base == CHAR_TYPE) return char_typeptr;
+   if (base == NULL_TYPE)
+      return null_typeptr;
+   else if (base == INT_TYPE)
+      return integer_typeptr;
+   else if (base == DOUBLE_TYPE)
+      return double_typeptr;
+   else if (base == BOOL_TYPE)
+      return boolean_typeptr;
+   else if (base == CHAR_TYPE)
+      return char_typeptr;
 
-   rv = (typeptr) calloc(1, sizeof(struct typeinfo));
-   if (rv == NULL) return rv;
+   rv = (typeptr)calloc(1, sizeof(struct typeinfo));
+   if (rv == NULL)
+      return rv;
    rv->basetype = base;
    return rv;
 }
@@ -61,10 +67,11 @@ typeptr alcstructtype()
  * for the return type (r) and the parameter list (p), but the calls to
  * to this function in the example are just passing NULL at present!
  */
-typeptr alcfunctype(struct tree * r, struct tree * p, SymbolTable st)
+typeptr alcfunctype(struct tree *r, struct tree *p, SymbolTable st)
 {
    typeptr rv = alctype(FUNC_TYPE);
-   if (rv == NULL) return NULL;
+   if (rv == NULL)
+      return NULL;
    rv->u.f.st = st;
    /* fill in return type and paramlist by traversing subtrees */
    /* rf->u.f.returntype = ... */
@@ -75,17 +82,19 @@ typeptr alcfunctype(struct tree * r, struct tree * p, SymbolTable st)
 typeptr alcarray(typeptr elem, int sz)
 {
    typeptr rv = alctype(ARRAY_TYPE);
-   if (rv == NULL) return NULL;
+   if (rv == NULL)
+      return NULL;
    rv->u.a.size = sz;
    rv->u.a.elemtype = elem;
    return rv;
 }
 
 /* this one should work off the syntax subtrees directly */
-typeptr alcarraytype(struct tree * s /* size */, struct tree * e /* elem */)
+typeptr alcarraytype(struct tree *s /* size */, struct tree *e /* elem */)
 {
    typeptr rv = alctype(ARRAY_TYPE);
-   if (rv == NULL) return NULL;
+   if (rv == NULL)
+      return NULL;
    /* fill in size and elemtype by traversing subtrees */
    /* rv-&gt;u.a.elemtype = ... */
    return rv;
@@ -93,8 +102,10 @@ typeptr alcarraytype(struct tree * s /* size */, struct tree * e /* elem */)
 
 char *typename(typeptr t)
 {
-   if (!t) return "(NULL)";
+   if (!t)
+      return "(NULL)";
    else if (t->basetype < FIRST_TYPE || t->basetype > LAST_TYPE)
       return "(BOGUS)";
-   else return typenam[t->basetype-1000000];
+   else
+      return typenam[t->basetype - 1000000];
 }

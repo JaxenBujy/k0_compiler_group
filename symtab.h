@@ -2,6 +2,7 @@
 #include "type.h"
 
 struct sym_table *mksymtab(int size);
+struct sym_table *mksymtab_global(int size);
 int hash(struct sym_table *st, char *s);
 void printsyms(struct tree *t);
 void insert(struct sym_table *st, char *name);
