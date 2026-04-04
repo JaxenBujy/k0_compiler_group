@@ -81,7 +81,7 @@ struct sym_entry *lookup_current(struct sym_table *st, char *name)
     return NULL;
 }
 
-void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_flag)
+void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_flag, char *filename)
 {
     if (!node)
         return;
@@ -97,7 +97,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         if (lookup_current(current, name))
         { // so if the name appears twice as a declaration in current symbol table, break out for now
-            fprintf(stderr, "Error: redeclaration of %s\n", name);
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of %s\n", filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
@@ -117,7 +117,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         // insert function into global scope
         if (lookup_current(current, name))
         {
-            fprintf(stderr, "Error: redeclaration of function %s\n", name); // break out
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n", filename, node->kids[1]->leaf->lineno, name); // break out
             *symtab_err_flag = 1;
         }
         else
@@ -139,27 +139,27 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         // insert parameters as they are a special case, they are being included in that functions scope, not the parents scope
         struct tree *params = node->kids[3];
-        insert_parameters(params, new_scope, symtab_err_flag);
+        insert_parameters(params, new_scope, symtab_err_flag, filename);
 
         // traverse body
         for (int i = 0; i < node->nkids; i++)
-            build_symtab(node->kids[i], new_scope, symtab_err_flag);
+            build_symtab(node->kids[i], new_scope, symtab_err_flag, filename);
 
         return;
     }
 
-    // Function blocks
-    case PR_BLOCK:
-    {
-        struct sym_table *new_scope = mksymtab(16); // create new scope
-        new_scope->parent = current;                // track new_scopes parent to the current
-        new_scope->sibling = current->child;        // track the new scopes sibling to the child of current
-        current->child = new_scope;                 // set new scope as current child
+    // Scope blocks. Commenting out since hw4 specifies they do not need to be supported
+    // case PR_BLOCK:
+    // {
+    //     struct sym_table *new_scope = mksymtab(16); // create new scope
+    //     new_scope->parent = current;                // track new_scopes parent to the current
+    //     new_scope->sibling = current->child;        // track the new scopes sibling to the child of current
+    //     current->child = new_scope;                 // set new scope as current child
 
-        // kids[1] = statement_list, so just recurse over this statement list and let the rest of the cases handle it
-        build_symtab(node->kids[1], new_scope, symtab_err_flag);
-        return;
-    }
+    //     // kids[1] = statement_list, so just recurse over this statement list and let the rest of the cases handle it
+    //     build_symtab(node->kids[1], new_scope, symtab_err_flag);
+    //     return;
+    // }
 
     // Function body variable declarations
     case PR_FUN_BODY_VAR_DECL_SIMPLE:
@@ -170,7 +170,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         if (lookup_current(current, name))
         {
-            fprintf(stderr, "Error: redeclaration of %s\n", name);
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of %s\n", filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
@@ -190,7 +190,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         struct sym_entry *e = lookup(current, name);
         if (!e)
         {
-            fprintf(stderr, "Error: undeclared variable %s\n", name); // look up variable and ensure it has been defined before
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n", filename, node->kids[0]->leaf->lineno, name); // look up variable and ensure it has been defined before
             *symtab_err_flag = 1;
         }
         else
@@ -208,7 +208,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         struct sym_entry *e = lookup(current, name);
         if (!e)
         {
-            fprintf(stderr, "Error: undeclared function %s\n", name); // look up function and ensure it has been defined before
+            fprintf(stderr, "%s:%d: semantic error: undeclared function %s\n", filename, node->kids[0]->leaf->lineno, name); // look up function and ensure it has been defined before
             *symtab_err_flag = 1;
         }
         else
@@ -227,7 +227,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         struct sym_entry *e = lookup(current, name);
         if (!e)
         {
-            fprintf(stderr, "Error: undeclared variable %s\n", name);
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n", filename, node->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
@@ -237,10 +237,10 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     }
 
     for (int i = 0; i < node->nkids; i++)
-        build_symtab(node->kids[i], current, symtab_err_flag);
+        build_symtab(node->kids[i], current, symtab_err_flag, filename);
 }
 
-void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_flag)
+void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_flag, char *filename)
 {
     if (!node)
         return;
@@ -251,7 +251,7 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
 
         if (lookup_current(st, name))
         {
-            fprintf(stderr, "Error: duplicate parameter %s\n", name);
+            fprintf(stderr, "%s:%d: semantic error: duplicate parameter %s\n", filename, node->kids[0]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
@@ -263,7 +263,7 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
 
     // recursive list
     for (int i = 0; i < node->nkids; i++)
-        insert_parameters(node->kids[i], st, symtab_err_flag);
+        insert_parameters(node->kids[i], st, symtab_err_flag, filename);
 }
 
 void print_scope(struct sym_table *st, int level)

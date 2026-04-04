@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     yyin = fopen(filename, "r");
     if (!yyin)
     {
-        fprintf(stderr, "Error reading file\n");
+        fprintf(stderr, "Error reading file '%s'\n", filename);
         exit(1);
     }
 
@@ -89,8 +89,14 @@ int main(int argc, char *argv[])
         // construct the symbol table
         int symtab_err_flag = 0;
         struct sym_table *global = mksymtab(64);
-        global->scope_name = strdup("global");
-        build_symtab(root, global, &symtab_err_flag);
+
+        // set package name based on current file name
+        size_t len = strlen("package ") + strlen(filename) + 1;
+        global->scope_name = malloc(len);
+        snprintf(global->scope_name, len, "package %s", filename);
+
+        // build symbol table for global
+        build_symtab(root, global, &symtab_err_flag, filename);
 
         if (!symtab_err_flag)
         {
