@@ -1,0 +1,3064 @@
+Terminals unused in grammar
+
+    BREAK
+    CONTINUE
+    DO
+    K_NULL
+    WHEN
+    OP_ERROR
+    ILL_IDENT
+    UNCLOSED_COMMENT
+    COULD_NOT_MATCH
+    KEYWORD_ERROR
+    NEG
+    REQ
+    RNEQ
+    NN_ASSERT
+    LSQUARE
+    SAFE_CALL
+    ELVIS
+    NULLABLE
+    RANGE_EXCL
+    TYPE_CAST
+    RSQUARE
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: top_level_list
+
+    2 top_level_list: top_level_list top_level_decl
+    3               | top_level_decl
+
+    4 top_level_decl: function_decl
+    5               | importHeader
+    6               | global_var_decl
+    7               | global_var_init
+
+    8 importHeader: IMPORT IDENT
+
+    9 type: BYTE_TYPE
+   10     | SHORT_TYPE
+   11     | INT_TYPE
+   12     | LONG_TYPE
+   13     | FLOAT_TYPE
+   14     | DOUBLE_TYPE
+   15     | BOOLEAN_TYPE
+   16     | STRING_TYPE
+   17     | NULL_TYPE
+   18     | ARRAY LT type GT
+
+   19 val_var: VAL
+   20        | VAR
+
+   21 literal: INT
+   22        | REAL
+   23        | STRING
+   24        | MULTI_STRING
+   25        | CHAR
+
+   26 bool_literal: K_TRUE
+   27             | K_FALSE
+
+   28 global_var_decl: val_var IDENT COLON type SEMICOLON
+   29                | val_var IDENT COLON type ASSIGN expr SEMICOLON
+
+   30 global_var_init: val_var IDENT ASSIGN expr SEMICOLON
+
+   31 fun_body_var_decl: val_var IDENT COLON type SEMICOLON
+   32                  | val_var IDENT COLON type ASSIGN expr SEMICOLON
+
+   33 fun_body_var_init: val_var IDENT ASSIGN expr SEMICOLON
+
+   34 function_var_decl: IDENT COLON type
+
+   35 function_decl: FUN IDENT LPAREN parameter_list RPAREN COLON type function_body
+   36              | FUN IDENT LPAREN parameter_list RPAREN function_body
+   37              | FUN IDENT LPAREN parameter_list RPAREN SEMICOLON
+
+   38 parameter_list: function_var_decl
+   39               | parameter_list COMMA function_var_decl
+   40               | literal
+   41               | parameter_list COMMA literal
+   42               | ε
+
+   43 function_body: LBRACE fun_body_var_list statement_list RBRACE
+
+   44 fun_body_var_list: fun_body_var_list fun_body_var_decl
+   45                  | fun_body_var_list fun_body_var_init
+   46                  | ε
+
+   47 statement_list: statement_list statement
+   48               | ε
+
+   49 statement: non_control_statement
+   50          | loop_statement
+   51          | if_statement
+   52          | RETURN expr SEMICOLON
+
+   53 non_control_statement: expr SEMICOLON
+
+   54 expr: assignment_expr
+
+   55 logical_or_expr: logical_and_expr
+   56                | logical_or_expr OR logical_and_expr
+
+   57 logical_and_expr: equality_expr
+   58                 | logical_and_expr AND equality_expr
+
+   59 equality_expr: relational_expr
+   60              | equality_expr EQ relational_expr
+   61              | equality_expr NEQ relational_expr
+
+   62 relational_expr: additive_expr
+   63                | relational_expr LT additive_expr
+   64                | relational_expr GT additive_expr
+   65                | relational_expr LTE additive_expr
+   66                | relational_expr GTE additive_expr
+
+   67 assignment_expr: logical_or_expr
+   68                | IDENT ASSIGN assignment_expr
+   69                | IDENT PLUS_ASSIGN assignment_expr
+   70                | IDENT MINUS_ASSIGN assignment_expr
+
+   71 additive_expr: multiplicative_expr
+   72              | additive_expr PLUS multiplicative_expr
+   73              | additive_expr MINUS multiplicative_expr
+
+   74 multiplicative_expr: unary_expr
+   75                    | multiplicative_expr MUL unary_expr
+   76                    | multiplicative_expr DIV unary_expr
+   77                    | multiplicative_expr MOD unary_expr
+
+   78 unary_expr: primary_expr
+   79           | MINUS unary_expr
+   80           | NOT unary_expr
+   81           | INC unary_expr
+   82           | DEC unary_expr
+
+   83 primary_expr: function_call
+   84             | IDENT
+   85             | literal
+   86             | LPAREN expr RPAREN
+   87             | bool_literal
+
+   88 function_call: IDENT LPAREN function_call_values_list RPAREN
+
+   89 function_call_values_list: functionCallVal
+   90                          | function_call_values_list COMMA functionCallVal
+   91                          | ε
+
+   92 functionCallVal: literal
+   93                | IDENT
+   94                | LPAREN literal RPAREN DOT function_call
+
+   95 block: LBRACE statement_list RBRACE
+
+   96 loop_statement: for_statement
+   97               | while_statement
+
+   98 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body
+   99              | FOR LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body
+  100              | FOR LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body
+  101              | FOR LPAREN IDENT IN literal RANGE_INCL literal RPAREN control_structure_body
+
+  102 while_statement: WHILE LPAREN expr RPAREN control_structure_body
+
+  103 control_structure_body: block
+  104                       | statement
+
+  105 if_statement: IF LPAREN expr RPAREN control_structure_body
+  106             | IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    BREAK <treeptr> (258)
+    CONTINUE <treeptr> (259)
+    DO <treeptr> (260)
+    ELSE <treeptr> (261) 106
+    K_FALSE <treeptr> (262) 27
+    FOR <treeptr> (263) 98 99 100 101
+    FUN <treeptr> (264) 35 36 37
+    IF <treeptr> (265) 105 106
+    IN <treeptr> (266) 98 99 100 101
+    K_NULL <treeptr> (267)
+    RETURN <treeptr> (268) 52
+    K_TRUE <treeptr> (269) 26
+    VAL <treeptr> (270) 19
+    VAR <treeptr> (271) 20
+    WHEN <treeptr> (272)
+    WHILE <treeptr> (273) 102
+    IMPORT <treeptr> (274) 8
+    OP_ERROR <treeptr> (275)
+    ILL_IDENT <treeptr> (276)
+    UNCLOSED_COMMENT <treeptr> (277)
+    COULD_NOT_MATCH <treeptr> (278)
+    KEYWORD_ERROR <treeptr> (279)
+    ASSIGN <treeptr> (280) 29 30 32 33 68
+    PLUS_ASSIGN <treeptr> (281) 69
+    MINUS_ASSIGN <treeptr> (282) 70
+    PLUS <treeptr> (283) 72
+    MINUS <treeptr> (284) 73 79
+    MUL <treeptr> (285) 75
+    DIV <treeptr> (286) 76
+    MOD <treeptr> (287) 77
+    INC <treeptr> (288) 81
+    DEC <treeptr> (289) 82
+    NEG <treeptr> (290)
+    EQ <treeptr> (291) 60
+    NEQ <treeptr> (292) 61
+    GT <treeptr> (293) 18 64
+    LT <treeptr> (294) 18 63
+    GTE <treeptr> (295) 66
+    LTE <treeptr> (296) 65
+    REQ <treeptr> (297)
+    RNEQ <treeptr> (298)
+    AND <treeptr> (299) 58
+    OR <treeptr> (300) 56
+    NOT <treeptr> (301) 80
+    NN_ASSERT <treeptr> (302)
+    LSQUARE <treeptr> (303)
+    DOT <treeptr> (304) 94
+    SAFE_CALL <treeptr> (305)
+    ELVIS <treeptr> (306)
+    NULLABLE <treeptr> (307)
+    RANGE_INCL <treeptr> (308) 98 99 100 101
+    RANGE_EXCL <treeptr> (309)
+    TYPE_CAST <treeptr> (310)
+    LPAREN <treeptr> (311) 35 36 37 86 88 94 98 99 100 101 102 105 106
+    RPAREN <treeptr> (312) 35 36 37 86 88 94 98 99 100 101 102 105 106
+    COMMA <treeptr> (313) 39 41 90
+    SEMICOLON <treeptr> (314) 28 29 30 31 32 33 37 52 53
+    LBRACE <treeptr> (315) 43 95
+    RBRACE <treeptr> (316) 43 95
+    COLON <treeptr> (317) 28 29 31 32 34 35
+    RSQUARE <treeptr> (318)
+    INT <treeptr> (319) 21
+    REAL <treeptr> (320) 22
+    STRING <treeptr> (321) 23
+    MULTI_STRING <treeptr> (322) 24
+    CHAR <treeptr> (323) 25
+    IDENT <treeptr> (324) 8 28 29 30 31 32 33 34 35 36 37 68 69 70 84 88 93 98 99 100 101
+    BYTE_TYPE <treeptr> (325) 9
+    SHORT_TYPE <treeptr> (326) 10
+    INT_TYPE <treeptr> (327) 11
+    LONG_TYPE <treeptr> (328) 12
+    FLOAT_TYPE <treeptr> (329) 13
+    DOUBLE_TYPE <treeptr> (330) 14
+    BOOLEAN_TYPE <treeptr> (331) 15
+    STRING_TYPE <treeptr> (332) 16
+    NULL_TYPE <treeptr> (333) 17
+    ARRAY <treeptr> (334) 18
+    IFX (335)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (81)
+        on left: 0
+    program <treeptr> (82)
+        on left: 1
+        on right: 0
+    top_level_list <treeptr> (83)
+        on left: 2 3
+        on right: 1 2
+    top_level_decl <treeptr> (84)
+        on left: 4 5 6 7
+        on right: 2 3
+    importHeader <treeptr> (85)
+        on left: 8
+        on right: 5
+    type <treeptr> (86)
+        on left: 9 10 11 12 13 14 15 16 17 18
+        on right: 18 28 29 31 32 34 35
+    val_var <treeptr> (87)
+        on left: 19 20
+        on right: 28 29 30 31 32 33
+    literal <treeptr> (88)
+        on left: 21 22 23 24 25
+        on right: 40 41 85 92 94 99 100 101
+    bool_literal <treeptr> (89)
+        on left: 26 27
+        on right: 87
+    global_var_decl <treeptr> (90)
+        on left: 28 29
+        on right: 6
+    global_var_init <treeptr> (91)
+        on left: 30
+        on right: 7
+    fun_body_var_decl <treeptr> (92)
+        on left: 31 32
+        on right: 44
+    fun_body_var_init <treeptr> (93)
+        on left: 33
+        on right: 45
+    function_var_decl <treeptr> (94)
+        on left: 34
+        on right: 38 39
+    function_decl <treeptr> (95)
+        on left: 35 36 37
+        on right: 4
+    parameter_list <treeptr> (96)
+        on left: 38 39 40 41 42
+        on right: 35 36 37 39 41
+    function_body <treeptr> (97)
+        on left: 43
+        on right: 35 36
+    fun_body_var_list <treeptr> (98)
+        on left: 44 45 46
+        on right: 43 44 45
+    statement_list <treeptr> (99)
+        on left: 47 48
+        on right: 43 47 95
+    statement <treeptr> (100)
+        on left: 49 50 51 52
+        on right: 47 104
+    non_control_statement <treeptr> (101)
+        on left: 53
+        on right: 49
+    expr <treeptr> (102)
+        on left: 54
+        on right: 29 30 32 33 52 53 86 102 105 106
+    logical_or_expr <treeptr> (103)
+        on left: 55 56
+        on right: 56 67
+    logical_and_expr <treeptr> (104)
+        on left: 57 58
+        on right: 55 56 58
+    equality_expr <treeptr> (105)
+        on left: 59 60 61
+        on right: 57 58 60 61
+    relational_expr <treeptr> (106)
+        on left: 62 63 64 65 66
+        on right: 59 60 61 63 64 65 66
+    assignment_expr <treeptr> (107)
+        on left: 67 68 69 70
+        on right: 54 68 69 70
+    additive_expr <treeptr> (108)
+        on left: 71 72 73
+        on right: 62 63 64 65 66 72 73
+    multiplicative_expr <treeptr> (109)
+        on left: 74 75 76 77
+        on right: 71 72 73 75 76 77
+    unary_expr <treeptr> (110)
+        on left: 78 79 80 81 82
+        on right: 74 75 76 77 79 80 81 82
+    primary_expr <treeptr> (111)
+        on left: 83 84 85 86 87
+        on right: 78
+    function_call <treeptr> (112)
+        on left: 88
+        on right: 83 94
+    function_call_values_list <treeptr> (113)
+        on left: 89 90 91
+        on right: 88 90
+    functionCallVal <treeptr> (114)
+        on left: 92 93 94
+        on right: 89 90
+    block <treeptr> (115)
+        on left: 95
+        on right: 103
+    loop_statement <treeptr> (116)
+        on left: 96 97
+        on right: 50
+    for_statement <treeptr> (117)
+        on left: 98 99 100 101
+        on right: 96
+    while_statement <treeptr> (118)
+        on left: 102
+        on right: 97
+    control_structure_body <treeptr> (119)
+        on left: 103 104
+        on right: 98 99 100 101 102 105 106
+    if_statement <treeptr> (120)
+        on left: 105 106
+        on right: 51
+
+
+State 0
+
+    0 $accept: • program $end
+
+    FUN     shift, and go to state 1
+    VAL     shift, and go to state 2
+    VAR     shift, and go to state 3
+    IMPORT  shift, and go to state 4
+
+    program          go to state 5
+    top_level_list   go to state 6
+    top_level_decl   go to state 7
+    importHeader     go to state 8
+    val_var          go to state 9
+    global_var_decl  go to state 10
+    global_var_init  go to state 11
+    function_decl    go to state 12
+
+
+State 1
+
+   35 function_decl: FUN • IDENT LPAREN parameter_list RPAREN COLON type function_body
+   36              | FUN • IDENT LPAREN parameter_list RPAREN function_body
+   37              | FUN • IDENT LPAREN parameter_list RPAREN SEMICOLON
+
+    IDENT  shift, and go to state 13
+
+
+State 2
+
+   19 val_var: VAL •
+
+    $default  reduce using rule 19 (val_var)
+
+
+State 3
+
+   20 val_var: VAR •
+
+    $default  reduce using rule 20 (val_var)
+
+
+State 4
+
+    8 importHeader: IMPORT • IDENT
+
+    IDENT  shift, and go to state 14
+
+
+State 5
+
+    0 $accept: program • $end
+
+    $end  shift, and go to state 15
+
+
+State 6
+
+    1 program: top_level_list •
+    2 top_level_list: top_level_list • top_level_decl
+
+    FUN     shift, and go to state 1
+    VAL     shift, and go to state 2
+    VAR     shift, and go to state 3
+    IMPORT  shift, and go to state 4
+
+    $default  reduce using rule 1 (program)
+
+    top_level_decl   go to state 16
+    importHeader     go to state 8
+    val_var          go to state 9
+    global_var_decl  go to state 10
+    global_var_init  go to state 11
+    function_decl    go to state 12
+
+
+State 7
+
+    3 top_level_list: top_level_decl •
+
+    $default  reduce using rule 3 (top_level_list)
+
+
+State 8
+
+    5 top_level_decl: importHeader •
+
+    $default  reduce using rule 5 (top_level_decl)
+
+
+State 9
+
+   28 global_var_decl: val_var • IDENT COLON type SEMICOLON
+   29                | val_var • IDENT COLON type ASSIGN expr SEMICOLON
+   30 global_var_init: val_var • IDENT ASSIGN expr SEMICOLON
+
+    IDENT  shift, and go to state 17
+
+
+State 10
+
+    6 top_level_decl: global_var_decl •
+
+    $default  reduce using rule 6 (top_level_decl)
+
+
+State 11
+
+    7 top_level_decl: global_var_init •
+
+    $default  reduce using rule 7 (top_level_decl)
+
+
+State 12
+
+    4 top_level_decl: function_decl •
+
+    $default  reduce using rule 4 (top_level_decl)
+
+
+State 13
+
+   35 function_decl: FUN IDENT • LPAREN parameter_list RPAREN COLON type function_body
+   36              | FUN IDENT • LPAREN parameter_list RPAREN function_body
+   37              | FUN IDENT • LPAREN parameter_list RPAREN SEMICOLON
+
+    LPAREN  shift, and go to state 18
+
+
+State 14
+
+    8 importHeader: IMPORT IDENT •
+
+    $default  reduce using rule 8 (importHeader)
+
+
+State 15
+
+    0 $accept: program $end •
+
+    $default  accept
+
+
+State 16
+
+    2 top_level_list: top_level_list top_level_decl •
+
+    $default  reduce using rule 2 (top_level_list)
+
+
+State 17
+
+   28 global_var_decl: val_var IDENT • COLON type SEMICOLON
+   29                | val_var IDENT • COLON type ASSIGN expr SEMICOLON
+   30 global_var_init: val_var IDENT • ASSIGN expr SEMICOLON
+
+    ASSIGN  shift, and go to state 19
+    COLON   shift, and go to state 20
+
+
+State 18
+
+   35 function_decl: FUN IDENT LPAREN • parameter_list RPAREN COLON type function_body
+   36              | FUN IDENT LPAREN • parameter_list RPAREN function_body
+   37              | FUN IDENT LPAREN • parameter_list RPAREN SEMICOLON
+
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 26
+
+    $default  reduce using rule 42 (parameter_list)
+
+    literal            go to state 27
+    function_var_decl  go to state 28
+    parameter_list     go to state 29
+
+
+State 19
+
+   30 global_var_init: val_var IDENT ASSIGN • expr SEMICOLON
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 40
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 20
+
+   28 global_var_decl: val_var IDENT COLON • type SEMICOLON
+   29                | val_var IDENT COLON • type ASSIGN expr SEMICOLON
+
+    BYTE_TYPE     shift, and go to state 51
+    SHORT_TYPE    shift, and go to state 52
+    INT_TYPE      shift, and go to state 53
+    LONG_TYPE     shift, and go to state 54
+    FLOAT_TYPE    shift, and go to state 55
+    DOUBLE_TYPE   shift, and go to state 56
+    BOOLEAN_TYPE  shift, and go to state 57
+    STRING_TYPE   shift, and go to state 58
+    NULL_TYPE     shift, and go to state 59
+    ARRAY         shift, and go to state 60
+
+    type  go to state 61
+
+
+State 21
+
+   21 literal: INT •
+
+    $default  reduce using rule 21 (literal)
+
+
+State 22
+
+   22 literal: REAL •
+
+    $default  reduce using rule 22 (literal)
+
+
+State 23
+
+   23 literal: STRING •
+
+    $default  reduce using rule 23 (literal)
+
+
+State 24
+
+   24 literal: MULTI_STRING •
+
+    $default  reduce using rule 24 (literal)
+
+
+State 25
+
+   25 literal: CHAR •
+
+    $default  reduce using rule 25 (literal)
+
+
+State 26
+
+   34 function_var_decl: IDENT • COLON type
+
+    COLON  shift, and go to state 62
+
+
+State 27
+
+   40 parameter_list: literal •
+
+    $default  reduce using rule 40 (parameter_list)
+
+
+State 28
+
+   38 parameter_list: function_var_decl •
+
+    $default  reduce using rule 38 (parameter_list)
+
+
+State 29
+
+   35 function_decl: FUN IDENT LPAREN parameter_list • RPAREN COLON type function_body
+   36              | FUN IDENT LPAREN parameter_list • RPAREN function_body
+   37              | FUN IDENT LPAREN parameter_list • RPAREN SEMICOLON
+   39 parameter_list: parameter_list • COMMA function_var_decl
+   41               | parameter_list • COMMA literal
+
+    RPAREN  shift, and go to state 63
+    COMMA   shift, and go to state 64
+
+
+State 30
+
+   27 bool_literal: K_FALSE •
+
+    $default  reduce using rule 27 (bool_literal)
+
+
+State 31
+
+   26 bool_literal: K_TRUE •
+
+    $default  reduce using rule 26 (bool_literal)
+
+
+State 32
+
+   79 unary_expr: MINUS • unary_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal        go to state 38
+    bool_literal   go to state 39
+    unary_expr     go to state 66
+    primary_expr   go to state 49
+    function_call  go to state 50
+
+
+State 33
+
+   81 unary_expr: INC • unary_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal        go to state 38
+    bool_literal   go to state 39
+    unary_expr     go to state 67
+    primary_expr   go to state 49
+    function_call  go to state 50
+
+
+State 34
+
+   82 unary_expr: DEC • unary_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal        go to state 38
+    bool_literal   go to state 39
+    unary_expr     go to state 68
+    primary_expr   go to state 49
+    function_call  go to state 50
+
+
+State 35
+
+   80 unary_expr: NOT • unary_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal        go to state 38
+    bool_literal   go to state 39
+    unary_expr     go to state 69
+    primary_expr   go to state 49
+    function_call  go to state 50
+
+
+State 36
+
+   86 primary_expr: LPAREN • expr RPAREN
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 70
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 37
+
+   68 assignment_expr: IDENT • ASSIGN assignment_expr
+   69                | IDENT • PLUS_ASSIGN assignment_expr
+   70                | IDENT • MINUS_ASSIGN assignment_expr
+   84 primary_expr: IDENT •
+   88 function_call: IDENT • LPAREN function_call_values_list RPAREN
+
+    ASSIGN        shift, and go to state 71
+    PLUS_ASSIGN   shift, and go to state 72
+    MINUS_ASSIGN  shift, and go to state 73
+    LPAREN        shift, and go to state 74
+
+    $default  reduce using rule 84 (primary_expr)
+
+
+State 38
+
+   85 primary_expr: literal •
+
+    $default  reduce using rule 85 (primary_expr)
+
+
+State 39
+
+   87 primary_expr: bool_literal •
+
+    $default  reduce using rule 87 (primary_expr)
+
+
+State 40
+
+   30 global_var_init: val_var IDENT ASSIGN expr • SEMICOLON
+
+    SEMICOLON  shift, and go to state 75
+
+
+State 41
+
+   56 logical_or_expr: logical_or_expr • OR logical_and_expr
+   67 assignment_expr: logical_or_expr •
+
+    OR  shift, and go to state 76
+
+    $default  reduce using rule 67 (assignment_expr)
+
+
+State 42
+
+   55 logical_or_expr: logical_and_expr •
+   58 logical_and_expr: logical_and_expr • AND equality_expr
+
+    AND  shift, and go to state 77
+
+    $default  reduce using rule 55 (logical_or_expr)
+
+
+State 43
+
+   57 logical_and_expr: equality_expr •
+   60 equality_expr: equality_expr • EQ relational_expr
+   61              | equality_expr • NEQ relational_expr
+
+    EQ   shift, and go to state 78
+    NEQ  shift, and go to state 79
+
+    $default  reduce using rule 57 (logical_and_expr)
+
+
+State 44
+
+   59 equality_expr: relational_expr •
+   63 relational_expr: relational_expr • LT additive_expr
+   64                | relational_expr • GT additive_expr
+   65                | relational_expr • LTE additive_expr
+   66                | relational_expr • GTE additive_expr
+
+    GT   shift, and go to state 80
+    LT   shift, and go to state 81
+    GTE  shift, and go to state 82
+    LTE  shift, and go to state 83
+
+    $default  reduce using rule 59 (equality_expr)
+
+
+State 45
+
+   54 expr: assignment_expr •
+
+    $default  reduce using rule 54 (expr)
+
+
+State 46
+
+   62 relational_expr: additive_expr •
+   72 additive_expr: additive_expr • PLUS multiplicative_expr
+   73              | additive_expr • MINUS multiplicative_expr
+
+    PLUS   shift, and go to state 84
+    MINUS  shift, and go to state 85
+
+    $default  reduce using rule 62 (relational_expr)
+
+
+State 47
+
+   71 additive_expr: multiplicative_expr •
+   75 multiplicative_expr: multiplicative_expr • MUL unary_expr
+   76                    | multiplicative_expr • DIV unary_expr
+   77                    | multiplicative_expr • MOD unary_expr
+
+    MUL  shift, and go to state 86
+    DIV  shift, and go to state 87
+    MOD  shift, and go to state 88
+
+    $default  reduce using rule 71 (additive_expr)
+
+
+State 48
+
+   74 multiplicative_expr: unary_expr •
+
+    $default  reduce using rule 74 (multiplicative_expr)
+
+
+State 49
+
+   78 unary_expr: primary_expr •
+
+    $default  reduce using rule 78 (unary_expr)
+
+
+State 50
+
+   83 primary_expr: function_call •
+
+    $default  reduce using rule 83 (primary_expr)
+
+
+State 51
+
+    9 type: BYTE_TYPE •
+
+    $default  reduce using rule 9 (type)
+
+
+State 52
+
+   10 type: SHORT_TYPE •
+
+    $default  reduce using rule 10 (type)
+
+
+State 53
+
+   11 type: INT_TYPE •
+
+    $default  reduce using rule 11 (type)
+
+
+State 54
+
+   12 type: LONG_TYPE •
+
+    $default  reduce using rule 12 (type)
+
+
+State 55
+
+   13 type: FLOAT_TYPE •
+
+    $default  reduce using rule 13 (type)
+
+
+State 56
+
+   14 type: DOUBLE_TYPE •
+
+    $default  reduce using rule 14 (type)
+
+
+State 57
+
+   15 type: BOOLEAN_TYPE •
+
+    $default  reduce using rule 15 (type)
+
+
+State 58
+
+   16 type: STRING_TYPE •
+
+    $default  reduce using rule 16 (type)
+
+
+State 59
+
+   17 type: NULL_TYPE •
+
+    $default  reduce using rule 17 (type)
+
+
+State 60
+
+   18 type: ARRAY • LT type GT
+
+    LT  shift, and go to state 89
+
+
+State 61
+
+   28 global_var_decl: val_var IDENT COLON type • SEMICOLON
+   29                | val_var IDENT COLON type • ASSIGN expr SEMICOLON
+
+    ASSIGN     shift, and go to state 90
+    SEMICOLON  shift, and go to state 91
+
+
+State 62
+
+   34 function_var_decl: IDENT COLON • type
+
+    BYTE_TYPE     shift, and go to state 51
+    SHORT_TYPE    shift, and go to state 52
+    INT_TYPE      shift, and go to state 53
+    LONG_TYPE     shift, and go to state 54
+    FLOAT_TYPE    shift, and go to state 55
+    DOUBLE_TYPE   shift, and go to state 56
+    BOOLEAN_TYPE  shift, and go to state 57
+    STRING_TYPE   shift, and go to state 58
+    NULL_TYPE     shift, and go to state 59
+    ARRAY         shift, and go to state 60
+
+    type  go to state 92
+
+
+State 63
+
+   35 function_decl: FUN IDENT LPAREN parameter_list RPAREN • COLON type function_body
+   36              | FUN IDENT LPAREN parameter_list RPAREN • function_body
+   37              | FUN IDENT LPAREN parameter_list RPAREN • SEMICOLON
+
+    SEMICOLON  shift, and go to state 93
+    LBRACE     shift, and go to state 94
+    COLON      shift, and go to state 95
+
+    function_body  go to state 96
+
+
+State 64
+
+   39 parameter_list: parameter_list COMMA • function_var_decl
+   41               | parameter_list COMMA • literal
+
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 26
+
+    literal            go to state 97
+    function_var_decl  go to state 98
+
+
+State 65
+
+   84 primary_expr: IDENT •
+   88 function_call: IDENT • LPAREN function_call_values_list RPAREN
+
+    LPAREN  shift, and go to state 74
+
+    $default  reduce using rule 84 (primary_expr)
+
+
+State 66
+
+   79 unary_expr: MINUS unary_expr •
+
+    $default  reduce using rule 79 (unary_expr)
+
+
+State 67
+
+   81 unary_expr: INC unary_expr •
+
+    $default  reduce using rule 81 (unary_expr)
+
+
+State 68
+
+   82 unary_expr: DEC unary_expr •
+
+    $default  reduce using rule 82 (unary_expr)
+
+
+State 69
+
+   80 unary_expr: NOT unary_expr •
+
+    $default  reduce using rule 80 (unary_expr)
+
+
+State 70
+
+   86 primary_expr: LPAREN expr • RPAREN
+
+    RPAREN  shift, and go to state 99
+
+
+State 71
+
+   68 assignment_expr: IDENT ASSIGN • assignment_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 100
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 72
+
+   69 assignment_expr: IDENT PLUS_ASSIGN • assignment_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 101
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 73
+
+   70 assignment_expr: IDENT MINUS_ASSIGN • assignment_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 102
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 74
+
+   88 function_call: IDENT LPAREN • function_call_values_list RPAREN
+
+    LPAREN        shift, and go to state 103
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 104
+
+    $default  reduce using rule 91 (function_call_values_list)
+
+    literal                    go to state 105
+    function_call_values_list  go to state 106
+    functionCallVal            go to state 107
+
+
+State 75
+
+   30 global_var_init: val_var IDENT ASSIGN expr SEMICOLON •
+
+    $default  reduce using rule 30 (global_var_init)
+
+
+State 76
+
+   56 logical_or_expr: logical_or_expr OR • logical_and_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    logical_and_expr     go to state 108
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 77
+
+   58 logical_and_expr: logical_and_expr AND • equality_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    equality_expr        go to state 109
+    relational_expr      go to state 44
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 78
+
+   60 equality_expr: equality_expr EQ • relational_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    relational_expr      go to state 110
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 79
+
+   61 equality_expr: equality_expr NEQ • relational_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    relational_expr      go to state 111
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 80
+
+   64 relational_expr: relational_expr GT • additive_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    additive_expr        go to state 112
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 81
+
+   63 relational_expr: relational_expr LT • additive_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    additive_expr        go to state 113
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 82
+
+   66 relational_expr: relational_expr GTE • additive_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    additive_expr        go to state 114
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 83
+
+   65 relational_expr: relational_expr LTE • additive_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    additive_expr        go to state 115
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 84
+
+   72 additive_expr: additive_expr PLUS • multiplicative_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    multiplicative_expr  go to state 116
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 85
+
+   73 additive_expr: additive_expr MINUS • multiplicative_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    multiplicative_expr  go to state 117
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 86
+
+   75 multiplicative_expr: multiplicative_expr MUL • unary_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal        go to state 38
+    bool_literal   go to state 39
+    unary_expr     go to state 118
+    primary_expr   go to state 49
+    function_call  go to state 50
+
+
+State 87
+
+   76 multiplicative_expr: multiplicative_expr DIV • unary_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal        go to state 38
+    bool_literal   go to state 39
+    unary_expr     go to state 119
+    primary_expr   go to state 49
+    function_call  go to state 50
+
+
+State 88
+
+   77 multiplicative_expr: multiplicative_expr MOD • unary_expr
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 65
+
+    literal        go to state 38
+    bool_literal   go to state 39
+    unary_expr     go to state 120
+    primary_expr   go to state 49
+    function_call  go to state 50
+
+
+State 89
+
+   18 type: ARRAY LT • type GT
+
+    BYTE_TYPE     shift, and go to state 51
+    SHORT_TYPE    shift, and go to state 52
+    INT_TYPE      shift, and go to state 53
+    LONG_TYPE     shift, and go to state 54
+    FLOAT_TYPE    shift, and go to state 55
+    DOUBLE_TYPE   shift, and go to state 56
+    BOOLEAN_TYPE  shift, and go to state 57
+    STRING_TYPE   shift, and go to state 58
+    NULL_TYPE     shift, and go to state 59
+    ARRAY         shift, and go to state 60
+
+    type  go to state 121
+
+
+State 90
+
+   29 global_var_decl: val_var IDENT COLON type ASSIGN • expr SEMICOLON
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 122
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 91
+
+   28 global_var_decl: val_var IDENT COLON type SEMICOLON •
+
+    $default  reduce using rule 28 (global_var_decl)
+
+
+State 92
+
+   34 function_var_decl: IDENT COLON type •
+
+    $default  reduce using rule 34 (function_var_decl)
+
+
+State 93
+
+   37 function_decl: FUN IDENT LPAREN parameter_list RPAREN SEMICOLON •
+
+    $default  reduce using rule 37 (function_decl)
+
+
+State 94
+
+   43 function_body: LBRACE • fun_body_var_list statement_list RBRACE
+
+    $default  reduce using rule 46 (fun_body_var_list)
+
+    fun_body_var_list  go to state 123
+
+
+State 95
+
+   35 function_decl: FUN IDENT LPAREN parameter_list RPAREN COLON • type function_body
+
+    BYTE_TYPE     shift, and go to state 51
+    SHORT_TYPE    shift, and go to state 52
+    INT_TYPE      shift, and go to state 53
+    LONG_TYPE     shift, and go to state 54
+    FLOAT_TYPE    shift, and go to state 55
+    DOUBLE_TYPE   shift, and go to state 56
+    BOOLEAN_TYPE  shift, and go to state 57
+    STRING_TYPE   shift, and go to state 58
+    NULL_TYPE     shift, and go to state 59
+    ARRAY         shift, and go to state 60
+
+    type  go to state 124
+
+
+State 96
+
+   36 function_decl: FUN IDENT LPAREN parameter_list RPAREN function_body •
+
+    $default  reduce using rule 36 (function_decl)
+
+
+State 97
+
+   41 parameter_list: parameter_list COMMA literal •
+
+    $default  reduce using rule 41 (parameter_list)
+
+
+State 98
+
+   39 parameter_list: parameter_list COMMA function_var_decl •
+
+    $default  reduce using rule 39 (parameter_list)
+
+
+State 99
+
+   86 primary_expr: LPAREN expr RPAREN •
+
+    $default  reduce using rule 86 (primary_expr)
+
+
+State 100
+
+   68 assignment_expr: IDENT ASSIGN assignment_expr •
+
+    $default  reduce using rule 68 (assignment_expr)
+
+
+State 101
+
+   69 assignment_expr: IDENT PLUS_ASSIGN assignment_expr •
+
+    $default  reduce using rule 69 (assignment_expr)
+
+
+State 102
+
+   70 assignment_expr: IDENT MINUS_ASSIGN assignment_expr •
+
+    $default  reduce using rule 70 (assignment_expr)
+
+
+State 103
+
+   94 functionCallVal: LPAREN • literal RPAREN DOT function_call
+
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+
+    literal  go to state 125
+
+
+State 104
+
+   93 functionCallVal: IDENT •
+
+    $default  reduce using rule 93 (functionCallVal)
+
+
+State 105
+
+   92 functionCallVal: literal •
+
+    $default  reduce using rule 92 (functionCallVal)
+
+
+State 106
+
+   88 function_call: IDENT LPAREN function_call_values_list • RPAREN
+   90 function_call_values_list: function_call_values_list • COMMA functionCallVal
+
+    RPAREN  shift, and go to state 126
+    COMMA   shift, and go to state 127
+
+
+State 107
+
+   89 function_call_values_list: functionCallVal •
+
+    $default  reduce using rule 89 (function_call_values_list)
+
+
+State 108
+
+   56 logical_or_expr: logical_or_expr OR logical_and_expr •
+   58 logical_and_expr: logical_and_expr • AND equality_expr
+
+    AND  shift, and go to state 77
+
+    $default  reduce using rule 56 (logical_or_expr)
+
+
+State 109
+
+   58 logical_and_expr: logical_and_expr AND equality_expr •
+   60 equality_expr: equality_expr • EQ relational_expr
+   61              | equality_expr • NEQ relational_expr
+
+    EQ   shift, and go to state 78
+    NEQ  shift, and go to state 79
+
+    $default  reduce using rule 58 (logical_and_expr)
+
+
+State 110
+
+   60 equality_expr: equality_expr EQ relational_expr •
+   63 relational_expr: relational_expr • LT additive_expr
+   64                | relational_expr • GT additive_expr
+   65                | relational_expr • LTE additive_expr
+   66                | relational_expr • GTE additive_expr
+
+    GT   shift, and go to state 80
+    LT   shift, and go to state 81
+    GTE  shift, and go to state 82
+    LTE  shift, and go to state 83
+
+    $default  reduce using rule 60 (equality_expr)
+
+
+State 111
+
+   61 equality_expr: equality_expr NEQ relational_expr •
+   63 relational_expr: relational_expr • LT additive_expr
+   64                | relational_expr • GT additive_expr
+   65                | relational_expr • LTE additive_expr
+   66                | relational_expr • GTE additive_expr
+
+    GT   shift, and go to state 80
+    LT   shift, and go to state 81
+    GTE  shift, and go to state 82
+    LTE  shift, and go to state 83
+
+    $default  reduce using rule 61 (equality_expr)
+
+
+State 112
+
+   64 relational_expr: relational_expr GT additive_expr •
+   72 additive_expr: additive_expr • PLUS multiplicative_expr
+   73              | additive_expr • MINUS multiplicative_expr
+
+    PLUS   shift, and go to state 84
+    MINUS  shift, and go to state 85
+
+    $default  reduce using rule 64 (relational_expr)
+
+
+State 113
+
+   63 relational_expr: relational_expr LT additive_expr •
+   72 additive_expr: additive_expr • PLUS multiplicative_expr
+   73              | additive_expr • MINUS multiplicative_expr
+
+    PLUS   shift, and go to state 84
+    MINUS  shift, and go to state 85
+
+    $default  reduce using rule 63 (relational_expr)
+
+
+State 114
+
+   66 relational_expr: relational_expr GTE additive_expr •
+   72 additive_expr: additive_expr • PLUS multiplicative_expr
+   73              | additive_expr • MINUS multiplicative_expr
+
+    PLUS   shift, and go to state 84
+    MINUS  shift, and go to state 85
+
+    $default  reduce using rule 66 (relational_expr)
+
+
+State 115
+
+   65 relational_expr: relational_expr LTE additive_expr •
+   72 additive_expr: additive_expr • PLUS multiplicative_expr
+   73              | additive_expr • MINUS multiplicative_expr
+
+    PLUS   shift, and go to state 84
+    MINUS  shift, and go to state 85
+
+    $default  reduce using rule 65 (relational_expr)
+
+
+State 116
+
+   72 additive_expr: additive_expr PLUS multiplicative_expr •
+   75 multiplicative_expr: multiplicative_expr • MUL unary_expr
+   76                    | multiplicative_expr • DIV unary_expr
+   77                    | multiplicative_expr • MOD unary_expr
+
+    MUL  shift, and go to state 86
+    DIV  shift, and go to state 87
+    MOD  shift, and go to state 88
+
+    $default  reduce using rule 72 (additive_expr)
+
+
+State 117
+
+   73 additive_expr: additive_expr MINUS multiplicative_expr •
+   75 multiplicative_expr: multiplicative_expr • MUL unary_expr
+   76                    | multiplicative_expr • DIV unary_expr
+   77                    | multiplicative_expr • MOD unary_expr
+
+    MUL  shift, and go to state 86
+    DIV  shift, and go to state 87
+    MOD  shift, and go to state 88
+
+    $default  reduce using rule 73 (additive_expr)
+
+
+State 118
+
+   75 multiplicative_expr: multiplicative_expr MUL unary_expr •
+
+    $default  reduce using rule 75 (multiplicative_expr)
+
+
+State 119
+
+   76 multiplicative_expr: multiplicative_expr DIV unary_expr •
+
+    $default  reduce using rule 76 (multiplicative_expr)
+
+
+State 120
+
+   77 multiplicative_expr: multiplicative_expr MOD unary_expr •
+
+    $default  reduce using rule 77 (multiplicative_expr)
+
+
+State 121
+
+   18 type: ARRAY LT type • GT
+
+    GT  shift, and go to state 128
+
+
+State 122
+
+   29 global_var_decl: val_var IDENT COLON type ASSIGN expr • SEMICOLON
+
+    SEMICOLON  shift, and go to state 129
+
+
+State 123
+
+   43 function_body: LBRACE fun_body_var_list • statement_list RBRACE
+   44 fun_body_var_list: fun_body_var_list • fun_body_var_decl
+   45                  | fun_body_var_list • fun_body_var_init
+
+    VAL  shift, and go to state 2
+    VAR  shift, and go to state 3
+
+    $default  reduce using rule 48 (statement_list)
+
+    val_var            go to state 130
+    fun_body_var_decl  go to state 131
+    fun_body_var_init  go to state 132
+    statement_list     go to state 133
+
+
+State 124
+
+   35 function_decl: FUN IDENT LPAREN parameter_list RPAREN COLON type • function_body
+
+    LBRACE  shift, and go to state 94
+
+    function_body  go to state 134
+
+
+State 125
+
+   94 functionCallVal: LPAREN literal • RPAREN DOT function_call
+
+    RPAREN  shift, and go to state 135
+
+
+State 126
+
+   88 function_call: IDENT LPAREN function_call_values_list RPAREN •
+
+    $default  reduce using rule 88 (function_call)
+
+
+State 127
+
+   90 function_call_values_list: function_call_values_list COMMA • functionCallVal
+
+    LPAREN        shift, and go to state 103
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 104
+
+    literal          go to state 105
+    functionCallVal  go to state 136
+
+
+State 128
+
+   18 type: ARRAY LT type GT •
+
+    $default  reduce using rule 18 (type)
+
+
+State 129
+
+   29 global_var_decl: val_var IDENT COLON type ASSIGN expr SEMICOLON •
+
+    $default  reduce using rule 29 (global_var_decl)
+
+
+State 130
+
+   31 fun_body_var_decl: val_var • IDENT COLON type SEMICOLON
+   32                  | val_var • IDENT COLON type ASSIGN expr SEMICOLON
+   33 fun_body_var_init: val_var • IDENT ASSIGN expr SEMICOLON
+
+    IDENT  shift, and go to state 137
+
+
+State 131
+
+   44 fun_body_var_list: fun_body_var_list fun_body_var_decl •
+
+    $default  reduce using rule 44 (fun_body_var_list)
+
+
+State 132
+
+   45 fun_body_var_list: fun_body_var_list fun_body_var_init •
+
+    $default  reduce using rule 45 (fun_body_var_list)
+
+
+State 133
+
+   43 function_body: LBRACE fun_body_var_list statement_list • RBRACE
+   47 statement_list: statement_list • statement
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    RBRACE        shift, and go to state 142
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                go to state 38
+    bool_literal           go to state 39
+    statement              go to state 143
+    non_control_statement  go to state 144
+    expr                   go to state 145
+    logical_or_expr        go to state 41
+    logical_and_expr       go to state 42
+    equality_expr          go to state 43
+    relational_expr        go to state 44
+    assignment_expr        go to state 45
+    additive_expr          go to state 46
+    multiplicative_expr    go to state 47
+    unary_expr             go to state 48
+    primary_expr           go to state 49
+    function_call          go to state 50
+    loop_statement         go to state 146
+    for_statement          go to state 147
+    while_statement        go to state 148
+    if_statement           go to state 149
+
+
+State 134
+
+   35 function_decl: FUN IDENT LPAREN parameter_list RPAREN COLON type function_body •
+
+    $default  reduce using rule 35 (function_decl)
+
+
+State 135
+
+   94 functionCallVal: LPAREN literal RPAREN • DOT function_call
+
+    DOT  shift, and go to state 150
+
+
+State 136
+
+   90 function_call_values_list: function_call_values_list COMMA functionCallVal •
+
+    $default  reduce using rule 90 (function_call_values_list)
+
+
+State 137
+
+   31 fun_body_var_decl: val_var IDENT • COLON type SEMICOLON
+   32                  | val_var IDENT • COLON type ASSIGN expr SEMICOLON
+   33 fun_body_var_init: val_var IDENT • ASSIGN expr SEMICOLON
+
+    ASSIGN  shift, and go to state 151
+    COLON   shift, and go to state 152
+
+
+State 138
+
+   98 for_statement: FOR • LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body
+   99              | FOR • LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body
+  100              | FOR • LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body
+  101              | FOR • LPAREN IDENT IN literal RANGE_INCL literal RPAREN control_structure_body
+
+    LPAREN  shift, and go to state 153
+
+
+State 139
+
+  105 if_statement: IF • LPAREN expr RPAREN control_structure_body
+  106             | IF • LPAREN expr RPAREN control_structure_body ELSE control_structure_body
+
+    LPAREN  shift, and go to state 154
+
+
+State 140
+
+   52 statement: RETURN • expr SEMICOLON
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 155
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 141
+
+  102 while_statement: WHILE • LPAREN expr RPAREN control_structure_body
+
+    LPAREN  shift, and go to state 156
+
+
+State 142
+
+   43 function_body: LBRACE fun_body_var_list statement_list RBRACE •
+
+    $default  reduce using rule 43 (function_body)
+
+
+State 143
+
+   47 statement_list: statement_list statement •
+
+    $default  reduce using rule 47 (statement_list)
+
+
+State 144
+
+   49 statement: non_control_statement •
+
+    $default  reduce using rule 49 (statement)
+
+
+State 145
+
+   53 non_control_statement: expr • SEMICOLON
+
+    SEMICOLON  shift, and go to state 157
+
+
+State 146
+
+   50 statement: loop_statement •
+
+    $default  reduce using rule 50 (statement)
+
+
+State 147
+
+   96 loop_statement: for_statement •
+
+    $default  reduce using rule 96 (loop_statement)
+
+
+State 148
+
+   97 loop_statement: while_statement •
+
+    $default  reduce using rule 97 (loop_statement)
+
+
+State 149
+
+   51 statement: if_statement •
+
+    $default  reduce using rule 51 (statement)
+
+
+State 150
+
+   94 functionCallVal: LPAREN literal RPAREN DOT • function_call
+
+    IDENT  shift, and go to state 158
+
+    function_call  go to state 159
+
+
+State 151
+
+   33 fun_body_var_init: val_var IDENT ASSIGN • expr SEMICOLON
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 160
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 152
+
+   31 fun_body_var_decl: val_var IDENT COLON • type SEMICOLON
+   32                  | val_var IDENT COLON • type ASSIGN expr SEMICOLON
+
+    BYTE_TYPE     shift, and go to state 51
+    SHORT_TYPE    shift, and go to state 52
+    INT_TYPE      shift, and go to state 53
+    LONG_TYPE     shift, and go to state 54
+    FLOAT_TYPE    shift, and go to state 55
+    DOUBLE_TYPE   shift, and go to state 56
+    BOOLEAN_TYPE  shift, and go to state 57
+    STRING_TYPE   shift, and go to state 58
+    NULL_TYPE     shift, and go to state 59
+    ARRAY         shift, and go to state 60
+
+    type  go to state 161
+
+
+State 153
+
+   98 for_statement: FOR LPAREN • IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body
+   99              | FOR LPAREN • IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body
+  100              | FOR LPAREN • IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body
+  101              | FOR LPAREN • IDENT IN literal RANGE_INCL literal RPAREN control_structure_body
+
+    IDENT  shift, and go to state 162
+
+
+State 154
+
+  105 if_statement: IF LPAREN • expr RPAREN control_structure_body
+  106             | IF LPAREN • expr RPAREN control_structure_body ELSE control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 163
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 155
+
+   52 statement: RETURN expr • SEMICOLON
+
+    SEMICOLON  shift, and go to state 164
+
+
+State 156
+
+  102 while_statement: WHILE LPAREN • expr RPAREN control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 165
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 157
+
+   53 non_control_statement: expr SEMICOLON •
+
+    $default  reduce using rule 53 (non_control_statement)
+
+
+State 158
+
+   88 function_call: IDENT • LPAREN function_call_values_list RPAREN
+
+    LPAREN  shift, and go to state 74
+
+
+State 159
+
+   94 functionCallVal: LPAREN literal RPAREN DOT function_call •
+
+    $default  reduce using rule 94 (functionCallVal)
+
+
+State 160
+
+   33 fun_body_var_init: val_var IDENT ASSIGN expr • SEMICOLON
+
+    SEMICOLON  shift, and go to state 166
+
+
+State 161
+
+   31 fun_body_var_decl: val_var IDENT COLON type • SEMICOLON
+   32                  | val_var IDENT COLON type • ASSIGN expr SEMICOLON
+
+    ASSIGN     shift, and go to state 167
+    SEMICOLON  shift, and go to state 168
+
+
+State 162
+
+   98 for_statement: FOR LPAREN IDENT • IN IDENT RANGE_INCL IDENT RPAREN control_structure_body
+   99              | FOR LPAREN IDENT • IN literal RANGE_INCL IDENT RPAREN control_structure_body
+  100              | FOR LPAREN IDENT • IN IDENT RANGE_INCL literal RPAREN control_structure_body
+  101              | FOR LPAREN IDENT • IN literal RANGE_INCL literal RPAREN control_structure_body
+
+    IN  shift, and go to state 169
+
+
+State 163
+
+  105 if_statement: IF LPAREN expr • RPAREN control_structure_body
+  106             | IF LPAREN expr • RPAREN control_structure_body ELSE control_structure_body
+
+    RPAREN  shift, and go to state 170
+
+
+State 164
+
+   52 statement: RETURN expr SEMICOLON •
+
+    $default  reduce using rule 52 (statement)
+
+
+State 165
+
+  102 while_statement: WHILE LPAREN expr • RPAREN control_structure_body
+
+    RPAREN  shift, and go to state 171
+
+
+State 166
+
+   33 fun_body_var_init: val_var IDENT ASSIGN expr SEMICOLON •
+
+    $default  reduce using rule 33 (fun_body_var_init)
+
+
+State 167
+
+   32 fun_body_var_decl: val_var IDENT COLON type ASSIGN • expr SEMICOLON
+
+    K_FALSE       shift, and go to state 30
+    K_TRUE        shift, and go to state 31
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal              go to state 38
+    bool_literal         go to state 39
+    expr                 go to state 172
+    logical_or_expr      go to state 41
+    logical_and_expr     go to state 42
+    equality_expr        go to state 43
+    relational_expr      go to state 44
+    assignment_expr      go to state 45
+    additive_expr        go to state 46
+    multiplicative_expr  go to state 47
+    unary_expr           go to state 48
+    primary_expr         go to state 49
+    function_call        go to state 50
+
+
+State 168
+
+   31 fun_body_var_decl: val_var IDENT COLON type SEMICOLON •
+
+    $default  reduce using rule 31 (fun_body_var_decl)
+
+
+State 169
+
+   98 for_statement: FOR LPAREN IDENT IN • IDENT RANGE_INCL IDENT RPAREN control_structure_body
+   99              | FOR LPAREN IDENT IN • literal RANGE_INCL IDENT RPAREN control_structure_body
+  100              | FOR LPAREN IDENT IN • IDENT RANGE_INCL literal RPAREN control_structure_body
+  101              | FOR LPAREN IDENT IN • literal RANGE_INCL literal RPAREN control_structure_body
+
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 173
+
+    literal  go to state 174
+
+
+State 170
+
+  105 if_statement: IF LPAREN expr RPAREN • control_structure_body
+  106             | IF LPAREN expr RPAREN • control_structure_body ELSE control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    LBRACE        shift, and go to state 175
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                 go to state 38
+    bool_literal            go to state 39
+    statement               go to state 176
+    non_control_statement   go to state 144
+    expr                    go to state 145
+    logical_or_expr         go to state 41
+    logical_and_expr        go to state 42
+    equality_expr           go to state 43
+    relational_expr         go to state 44
+    assignment_expr         go to state 45
+    additive_expr           go to state 46
+    multiplicative_expr     go to state 47
+    unary_expr              go to state 48
+    primary_expr            go to state 49
+    function_call           go to state 50
+    block                   go to state 177
+    loop_statement          go to state 146
+    for_statement           go to state 147
+    while_statement         go to state 148
+    control_structure_body  go to state 178
+    if_statement            go to state 149
+
+
+State 171
+
+  102 while_statement: WHILE LPAREN expr RPAREN • control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    LBRACE        shift, and go to state 175
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                 go to state 38
+    bool_literal            go to state 39
+    statement               go to state 176
+    non_control_statement   go to state 144
+    expr                    go to state 145
+    logical_or_expr         go to state 41
+    logical_and_expr        go to state 42
+    equality_expr           go to state 43
+    relational_expr         go to state 44
+    assignment_expr         go to state 45
+    additive_expr           go to state 46
+    multiplicative_expr     go to state 47
+    unary_expr              go to state 48
+    primary_expr            go to state 49
+    function_call           go to state 50
+    block                   go to state 177
+    loop_statement          go to state 146
+    for_statement           go to state 147
+    while_statement         go to state 148
+    control_structure_body  go to state 179
+    if_statement            go to state 149
+
+
+State 172
+
+   32 fun_body_var_decl: val_var IDENT COLON type ASSIGN expr • SEMICOLON
+
+    SEMICOLON  shift, and go to state 180
+
+
+State 173
+
+   98 for_statement: FOR LPAREN IDENT IN IDENT • RANGE_INCL IDENT RPAREN control_structure_body
+  100              | FOR LPAREN IDENT IN IDENT • RANGE_INCL literal RPAREN control_structure_body
+
+    RANGE_INCL  shift, and go to state 181
+
+
+State 174
+
+   99 for_statement: FOR LPAREN IDENT IN literal • RANGE_INCL IDENT RPAREN control_structure_body
+  101              | FOR LPAREN IDENT IN literal • RANGE_INCL literal RPAREN control_structure_body
+
+    RANGE_INCL  shift, and go to state 182
+
+
+State 175
+
+   95 block: LBRACE • statement_list RBRACE
+
+    $default  reduce using rule 48 (statement_list)
+
+    statement_list  go to state 183
+
+
+State 176
+
+  104 control_structure_body: statement •
+
+    $default  reduce using rule 104 (control_structure_body)
+
+
+State 177
+
+  103 control_structure_body: block •
+
+    $default  reduce using rule 103 (control_structure_body)
+
+
+State 178
+
+  105 if_statement: IF LPAREN expr RPAREN control_structure_body •
+  106             | IF LPAREN expr RPAREN control_structure_body • ELSE control_structure_body
+
+    ELSE  shift, and go to state 184
+
+    $default  reduce using rule 105 (if_statement)
+
+
+State 179
+
+  102 while_statement: WHILE LPAREN expr RPAREN control_structure_body •
+
+    $default  reduce using rule 102 (while_statement)
+
+
+State 180
+
+   32 fun_body_var_decl: val_var IDENT COLON type ASSIGN expr SEMICOLON •
+
+    $default  reduce using rule 32 (fun_body_var_decl)
+
+
+State 181
+
+   98 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL • IDENT RPAREN control_structure_body
+  100              | FOR LPAREN IDENT IN IDENT RANGE_INCL • literal RPAREN control_structure_body
+
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 185
+
+    literal  go to state 186
+
+
+State 182
+
+   99 for_statement: FOR LPAREN IDENT IN literal RANGE_INCL • IDENT RPAREN control_structure_body
+  101              | FOR LPAREN IDENT IN literal RANGE_INCL • literal RPAREN control_structure_body
+
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 187
+
+    literal  go to state 188
+
+
+State 183
+
+   47 statement_list: statement_list • statement
+   95 block: LBRACE statement_list • RBRACE
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    RBRACE        shift, and go to state 189
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                go to state 38
+    bool_literal           go to state 39
+    statement              go to state 143
+    non_control_statement  go to state 144
+    expr                   go to state 145
+    logical_or_expr        go to state 41
+    logical_and_expr       go to state 42
+    equality_expr          go to state 43
+    relational_expr        go to state 44
+    assignment_expr        go to state 45
+    additive_expr          go to state 46
+    multiplicative_expr    go to state 47
+    unary_expr             go to state 48
+    primary_expr           go to state 49
+    function_call          go to state 50
+    loop_statement         go to state 146
+    for_statement          go to state 147
+    while_statement        go to state 148
+    if_statement           go to state 149
+
+
+State 184
+
+  106 if_statement: IF LPAREN expr RPAREN control_structure_body ELSE • control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    LBRACE        shift, and go to state 175
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                 go to state 38
+    bool_literal            go to state 39
+    statement               go to state 176
+    non_control_statement   go to state 144
+    expr                    go to state 145
+    logical_or_expr         go to state 41
+    logical_and_expr        go to state 42
+    equality_expr           go to state 43
+    relational_expr         go to state 44
+    assignment_expr         go to state 45
+    additive_expr           go to state 46
+    multiplicative_expr     go to state 47
+    unary_expr              go to state 48
+    primary_expr            go to state 49
+    function_call           go to state 50
+    block                   go to state 177
+    loop_statement          go to state 146
+    for_statement           go to state 147
+    while_statement         go to state 148
+    control_structure_body  go to state 190
+    if_statement            go to state 149
+
+
+State 185
+
+   98 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT • RPAREN control_structure_body
+
+    RPAREN  shift, and go to state 191
+
+
+State 186
+
+  100 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL literal • RPAREN control_structure_body
+
+    RPAREN  shift, and go to state 192
+
+
+State 187
+
+   99 for_statement: FOR LPAREN IDENT IN literal RANGE_INCL IDENT • RPAREN control_structure_body
+
+    RPAREN  shift, and go to state 193
+
+
+State 188
+
+  101 for_statement: FOR LPAREN IDENT IN literal RANGE_INCL literal • RPAREN control_structure_body
+
+    RPAREN  shift, and go to state 194
+
+
+State 189
+
+   95 block: LBRACE statement_list RBRACE •
+
+    $default  reduce using rule 95 (block)
+
+
+State 190
+
+  106 if_statement: IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body •
+
+    $default  reduce using rule 106 (if_statement)
+
+
+State 191
+
+   98 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN • control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    LBRACE        shift, and go to state 175
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                 go to state 38
+    bool_literal            go to state 39
+    statement               go to state 176
+    non_control_statement   go to state 144
+    expr                    go to state 145
+    logical_or_expr         go to state 41
+    logical_and_expr        go to state 42
+    equality_expr           go to state 43
+    relational_expr         go to state 44
+    assignment_expr         go to state 45
+    additive_expr           go to state 46
+    multiplicative_expr     go to state 47
+    unary_expr              go to state 48
+    primary_expr            go to state 49
+    function_call           go to state 50
+    block                   go to state 177
+    loop_statement          go to state 146
+    for_statement           go to state 147
+    while_statement         go to state 148
+    control_structure_body  go to state 195
+    if_statement            go to state 149
+
+
+State 192
+
+  100 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN • control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    LBRACE        shift, and go to state 175
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                 go to state 38
+    bool_literal            go to state 39
+    statement               go to state 176
+    non_control_statement   go to state 144
+    expr                    go to state 145
+    logical_or_expr         go to state 41
+    logical_and_expr        go to state 42
+    equality_expr           go to state 43
+    relational_expr         go to state 44
+    assignment_expr         go to state 45
+    additive_expr           go to state 46
+    multiplicative_expr     go to state 47
+    unary_expr              go to state 48
+    primary_expr            go to state 49
+    function_call           go to state 50
+    block                   go to state 177
+    loop_statement          go to state 146
+    for_statement           go to state 147
+    while_statement         go to state 148
+    control_structure_body  go to state 196
+    if_statement            go to state 149
+
+
+State 193
+
+   99 for_statement: FOR LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN • control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    LBRACE        shift, and go to state 175
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                 go to state 38
+    bool_literal            go to state 39
+    statement               go to state 176
+    non_control_statement   go to state 144
+    expr                    go to state 145
+    logical_or_expr         go to state 41
+    logical_and_expr        go to state 42
+    equality_expr           go to state 43
+    relational_expr         go to state 44
+    assignment_expr         go to state 45
+    additive_expr           go to state 46
+    multiplicative_expr     go to state 47
+    unary_expr              go to state 48
+    primary_expr            go to state 49
+    function_call           go to state 50
+    block                   go to state 177
+    loop_statement          go to state 146
+    for_statement           go to state 147
+    while_statement         go to state 148
+    control_structure_body  go to state 197
+    if_statement            go to state 149
+
+
+State 194
+
+  101 for_statement: FOR LPAREN IDENT IN literal RANGE_INCL literal RPAREN • control_structure_body
+
+    K_FALSE       shift, and go to state 30
+    FOR           shift, and go to state 138
+    IF            shift, and go to state 139
+    RETURN        shift, and go to state 140
+    K_TRUE        shift, and go to state 31
+    WHILE         shift, and go to state 141
+    MINUS         shift, and go to state 32
+    INC           shift, and go to state 33
+    DEC           shift, and go to state 34
+    NOT           shift, and go to state 35
+    LPAREN        shift, and go to state 36
+    LBRACE        shift, and go to state 175
+    INT           shift, and go to state 21
+    REAL          shift, and go to state 22
+    STRING        shift, and go to state 23
+    MULTI_STRING  shift, and go to state 24
+    CHAR          shift, and go to state 25
+    IDENT         shift, and go to state 37
+
+    literal                 go to state 38
+    bool_literal            go to state 39
+    statement               go to state 176
+    non_control_statement   go to state 144
+    expr                    go to state 145
+    logical_or_expr         go to state 41
+    logical_and_expr        go to state 42
+    equality_expr           go to state 43
+    relational_expr         go to state 44
+    assignment_expr         go to state 45
+    additive_expr           go to state 46
+    multiplicative_expr     go to state 47
+    unary_expr              go to state 48
+    primary_expr            go to state 49
+    function_call           go to state 50
+    block                   go to state 177
+    loop_statement          go to state 146
+    for_statement           go to state 147
+    while_statement         go to state 148
+    control_structure_body  go to state 198
+    if_statement            go to state 149
+
+
+State 195
+
+   98 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body •
+
+    $default  reduce using rule 98 (for_statement)
+
+
+State 196
+
+  100 for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body •
+
+    $default  reduce using rule 100 (for_statement)
+
+
+State 197
+
+   99 for_statement: FOR LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body •
+
+    $default  reduce using rule 99 (for_statement)
+
+
+State 198
+
+  101 for_statement: FOR LPAREN IDENT IN literal RANGE_INCL literal RPAREN control_structure_body •
+
+    $default  reduce using rule 101 (for_statement)

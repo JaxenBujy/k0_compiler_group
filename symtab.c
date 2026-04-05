@@ -60,7 +60,9 @@ struct sym_table *mksymtab_global(int size)
         // avoid accidental duplicates
         if (!lookup_current(global, name))
         {
-            insert(global, name, NULL, 0);
+            typeptr t = malloc(sizeof(*t));
+            t->basetype = FUNC_TYPE;
+            insert(global, name, t);
         }
     }
 
@@ -81,7 +83,7 @@ int hash(struct sym_table *st, char *s)
     return h % st->nBuckets;
 }
 
-void insert(struct sym_table *st, char *name, typeptr t, int value)
+void insert(struct sym_table *st, char *name, typeptr t)
 {
     /*if (t)
     {
@@ -94,7 +96,6 @@ void insert(struct sym_table *st, char *name, typeptr t, int value)
     e->name = strdup(name);
     e->type = t;
     e->next = st->tbl[i];
-    e->value = value;
     st->tbl[i] = e;
 
     st->nEntries++;
@@ -137,7 +138,6 @@ int infer_type(struct token *node)
     {
     case INT:
     {
-        printf("value: %d\n", node->ival);
         return INT_TYPE;
     }
     default:
@@ -169,7 +169,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         else
         {
-            insert(current, name, t, 0); // else insert into current symbol table
+            insert(current, name, t); // else insert into current symbol table
         }
         break;
     }
@@ -188,7 +188,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         typeptr t = malloc(sizeof(*t));
 
         t->basetype = node->kids[3]->leaf->category; // IDENT category
-        int value = node->kids[5]->leaf->ival;       // value of integer, only works for int for now
 
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
 
@@ -199,7 +198,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         else
         {
-            insert(current, name, t, value); // else insert into current symbol table
+            insert(current, name, t); // else insert into current symbol table
         }
         break;
     }
@@ -211,7 +210,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         typeptr t = malloc(sizeof(*t));
 
         t->basetype = infer_type(node->kids[3]->leaf);
-        int value = node->kids[3]->leaf->ival;
 
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
 
@@ -222,7 +220,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         else
         {
-            insert(current, name, t, value); // else insert into current symbol table
+            insert(current, name, t); // else insert into current symbol table
         }
         break;
     }
@@ -241,23 +239,23 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             return;
         }
 
-        // --- Build type ---
+        // Build function type
         typeptr t = malloc(sizeof(*t));
         t->basetype = FUNC_TYPE;
 
-        // minimal func info
         t->u.f.name = name;
         t->u.f.defined = 1;
+
         t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
         t->u.f.returntype->basetype = node->kids[6]->leaf->category;
 
         t->u.f.nparams = 0;
-        t->u.f.parameters = build_param_list(node->kids[3], &t->u.f.nparams);
+        t->u.f.parameters = NULL;  // will fill later
 
-        // insert into current scope
-        insert(current, name, t, 0);
+        // insert function into current scope FIRST
+        insert(current, name, t);
 
-        // --- Create new scope for this function ---
+        // Create new scope for function
         struct sym_table *new_scope = mksymtab(16);
         new_scope->parent = current;
         new_scope->sibling = current->child;
@@ -269,13 +267,13 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         strcat(buf, name);
         new_scope->scope_name = buf;
 
-        // link scope to type
+        // link scope to function type
         t->u.f.st = new_scope;
 
-        // parameters go into function scope
-        insert_parameters(node->kids[3], new_scope, symtab_err_flag, filename);
+        // Build params and insert into function scope 
+        t->u.f.parameters = build_and_insert_params( node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
-        // traverse body ONLY
+        // Traverse function body
         build_symtab(node->kids[7], new_scope, symtab_err_flag, filename);
 
         return;
@@ -294,7 +292,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             return;
         }
 
-        // --- Build type ---
+        // Build type
         typeptr t = malloc(sizeof(*t));
         t->basetype = FUNC_TYPE;
 
@@ -306,26 +304,30 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         t->u.f.returntype->basetype = NONE_TYPE;
 
         t->u.f.nparams = 0;
-        t->u.f.parameters = build_param_list(node->kids[3], &t->u.f.nparams);
 
-        insert(current, name, t, 0);
+        // insert function into current scope
+        insert(current, name, t);
 
-        // --- Create new scope for this function ---
+        // Create new scope for function
         struct sym_table *new_scope = mksymtab(16);
         new_scope->parent = current;
         new_scope->sibling = current->child;
         current->child = new_scope;
 
+        // scope name
         char *buf = malloc(strlen("func ") + strlen(name) + 1);
         strcpy(buf, "func ");
         strcat(buf, name);
         new_scope->scope_name = buf;
 
+        // link scope to function type
         t->u.f.st = new_scope;
 
-        insert_parameters(node->kids[3], new_scope, symtab_err_flag, filename);
+        // Build params and insert into function scope 
+        t->u.f.parameters = build_and_insert_params( node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
-        build_symtab(node->kids[5], new_scope, symtab_err_flag, filename);
+        // Traverse function body
+        build_symtab(node->kids[7], new_scope, symtab_err_flag, filename);
 
         return;
     }
@@ -343,7 +345,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             return;
         }
 
-        // --- Build type ---
+        // Build type 
         typeptr t = malloc(sizeof(*t));
         t->basetype = FUNC_TYPE;
 
@@ -354,11 +356,16 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         t->u.f.returntype->basetype = NONE_TYPE;
 
         t->u.f.nparams = 0;
-        t->u.f.parameters = build_param_list(node->kids[3], &t->u.f.nparams);
 
-        t->u.f.st = NULL; // no new scope
+        // Only build param list
+        t->u.f.parameters = build_param_list_only(
+            node->kids[3],
+            &t->u.f.nparams
+        );
 
-        insert(current, name, t, 0);
+        t->u.f.st = NULL; // no scope for prototype
+
+        insert(current, name, t);
 
         return;
     }
@@ -436,35 +443,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         build_symtab(node->kids[i], current, symtab_err_flag, filename);
 }
 
-void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_flag, char *filename)
-{
-    if (!node)
-        return;
-
-    if (node->prodrule == PR_FUNCTION_VAR_DECL)
-    {
-        char *name = node->kids[0]->leaf->text;
-
-        if (lookup_current(st, name))
-        {
-            fprintf(stderr, "%s:%d: semantic error: duplicate parameter %s\n", filename, node->kids[0]->leaf->lineno, name);
-            *symtab_err_flag = 1;
-        }
-        else
-        {
-            typeptr t = malloc(sizeof(*t));
-            t->basetype = node->kids[2]->leaf->category;
-
-            insert(st, name, t, 0);
-        }
-        return;
-    }
-
-    // recursive list
-    for (int i = 0; i < node->nkids; i++)
-        insert_parameters(node->kids[i], st, symtab_err_flag, filename);
-}
-
 void print_scope(struct sym_table *st, int level)
 {
     printf("--- Level %d, Symbol table for: %s ---\n", level, st->scope_name);
@@ -478,10 +456,43 @@ void print_scope(struct sym_table *st, int level)
 
             if (e->type)
             {
-                if (e->value == 0)
-                    printf("  %s, type: %d, value: NULL\n", e->name, e->type->basetype);
-                else
-                    printf("  %s, type: %d, value: %d\n", e->name, e->type->basetype, e->value);
+                switch(e->type->basetype)
+                {
+                    case BYTE_TYPE:
+                        printf("  %s, type: BYTE\n", e->name);
+                        break;
+                    case SHORT_TYPE:
+                        printf("  %s, type: SHORT\n", e->name);
+                        break;
+                    case INT_TYPE:
+                        printf("  %s, type: INT\n", e->name);
+                        break;
+                    case LONG_TYPE:
+                        printf("  %s, type: LONG\n", e->name);
+                        break;
+                    case FLOAT_TYPE:
+                        printf("  %s, type: FLOAT\n", e->name);
+                        break;
+                    case DOUBLE_TYPE:
+                        printf("  %s, type: DOUBLE\n", e->name);
+                        break;
+                    case BOOLEAN_TYPE:
+                        printf("  %s, type: BOOLEAN\n", e->name);
+                        break;
+                    case STRING_TYPE:
+                        printf("  %s, type: STRING\n", e->name);
+                        break;
+                    case NONE_TYPE:
+                        printf("  %s, type: NONE\n", e->name);
+                        break;
+                    case FUNC_TYPE:
+                        printf("  %s\n", e->name);
+                        break;
+                    default:
+                        printf("  %s, type: %d\n", e->name, e->type->basetype);
+                        break;
+                }
+                
             }
 
             else
@@ -508,7 +519,7 @@ void print_symtab(struct sym_table *st, int level)
     }
 }
 
-paramlist build_param_list(struct tree *node, int *count)
+paramlist build_and_insert_params(struct tree *node, struct sym_table *st, int *count, int *symtab_err_flag, char *filename)
 {
     if (!node)
         return NULL;
@@ -516,16 +527,31 @@ paramlist build_param_list(struct tree *node, int *count)
     paramlist head = NULL;
     paramlist tail = NULL;
 
-    // recursive traversal
     if (node->prodrule == PR_FUNCTION_VAR_DECL)
     {
-        struct param *p = malloc(sizeof(struct param));
-
         char *name = node->kids[0]->leaf->text;
 
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = node->kids[2]->leaf->category; // type node
+        // Duplicate check
+        if (lookup_current(st, name))
+        {
+            fprintf(stderr, "%s:%d: semantic error: duplicate parameter %s\n",
+                    filename,
+                    node->kids[0]->leaf->lineno,
+                    name);
 
+            *symtab_err_flag = 1;
+            return NULL;  // don't add duplicate to list
+        }
+
+        // Build type
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = node->kids[2]->leaf->category;
+
+        // Insert into symbol table
+        insert(st, name, t);
+
+        // Build param list node
+        struct param *p = malloc(sizeof(struct param));
         p->name = strdup(name);
         p->type = t;
         p->next = NULL;
@@ -535,10 +561,16 @@ paramlist build_param_list(struct tree *node, int *count)
         return p;
     }
 
-    // handle lists
+    // Recursive traversal
     for (int i = 0; i < node->nkids; i++)
     {
-        paramlist sub = build_param_list(node->kids[i], count);
+        paramlist sub = build_and_insert_params(
+            node->kids[i],
+            st,
+            count,
+            symtab_err_flag,
+            filename
+        );
 
         if (!sub)
             continue;
@@ -553,7 +585,60 @@ paramlist build_param_list(struct tree *node, int *count)
             tail->next = sub;
         }
 
-        // move tail to end
+        // Move tail to end
+        while (tail->next)
+            tail = tail->next;
+    }
+
+    return head;
+}
+
+paramlist build_param_list_only(struct tree *node, int *count)
+{
+    if (!node)
+        return NULL;
+
+    paramlist head = NULL;
+    paramlist tail = NULL;
+
+    // Base case: parameter declaration
+    if (node->prodrule == PR_FUNCTION_VAR_DECL)
+    {
+        struct param *p = malloc(sizeof(struct param));
+
+        char *name = node->kids[0]->leaf->text;
+
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = node->kids[2]->leaf->category;
+
+        p->name = strdup(name);
+        p->type = t;
+        p->next = NULL;
+
+        (*count)++;
+
+        return p;
+    }
+
+    // Recursive traversal for parameter lists
+    for (int i = 0; i < node->nkids; i++)
+    {
+        paramlist sub = build_param_list_only(node->kids[i], count);
+
+        if (!sub)
+            continue;
+
+        if (!head)
+        {
+            head = sub;
+            tail = sub;
+        }
+        else
+        {
+            tail->next = sub;
+        }
+
+        // Move tail to end of list
         while (tail->next)
             tail = tail->next;
     }
