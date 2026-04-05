@@ -92,7 +92,6 @@ void insert(struct sym_table *st, char *name, typeptr t, int value)
 
     struct sym_entry *e = malloc(sizeof(struct sym_entry));
     e->name = strdup(name);
-    e->type = malloc(sizeof(typeptr));
     e->type = t;
     e->next = st->tbl[i];
     e->value = value;
@@ -134,14 +133,15 @@ struct sym_entry *lookup_current(struct sym_table *st, char *name)
 
 int infer_type(struct token *node)
 {
-    switch(node->category){
-        case INT:
-        {
-            printf("value: %d\n", node->ival);
-            return INT_TYPE;
-        }
-        default:
-            return NULL_TYPE;    
+    switch (node->category)
+    {
+    case INT:
+    {
+        printf("value: %d\n", node->ival);
+        return INT_TYPE;
+    }
+    default:
+        return NULL_TYPE;
     }
 }
 
@@ -152,12 +152,14 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
     switch (node->prodrule)
     {
-    // Global variables
+    // variable declaration
+    // val x: Int;
     case PR_GLOBAL_VAR_DECL:
+    case PR_FUN_BODY_VAR_DECL:
     {
-        typeptr t = malloc(sizeof(typeptr));
+        typeptr t = malloc(sizeof(*t));
         t->basetype = node->kids[3]->leaf->category;
-        
+
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
 
         if (lookup_current(current, name))
@@ -171,7 +173,10 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         break;
     }
+    // variable declaration with assignment
+    // var x: Int = 5;
     case PR_GLOBAL_VAR_DECL_ASSIGN:
+    case PR_FUN_BODY_VAR_DECL_ASSIGN:
     {
         // immediately handle type checking
         if (node->kids[3]->leaf->category == INT_TYPE && node->kids[5]->leaf->category != INT)
@@ -180,11 +185,11 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             *symtab_err_flag = 1;
         }
 
-        typeptr t = malloc(sizeof(typeptr));
+        typeptr t = malloc(sizeof(*t));
 
         t->basetype = node->kids[3]->leaf->category; // IDENT category
         int value = node->kids[5]->leaf->ival;       // value of integer, only works for int for now
-        
+
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
 
         if (lookup_current(current, name))
@@ -198,13 +203,16 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         break;
     }
+    // variable initialization (inferred)
+    // val x = 6;
     case PR_GLOBAL_VAR_INIT:
+    case PR_FUN_BODY_VAR_INIT:
     {
-        typeptr t = malloc(sizeof(typeptr));
+        typeptr t = malloc(sizeof(*t));
 
         t->basetype = infer_type(node->kids[3]->leaf);
         int value = node->kids[3]->leaf->ival;
-        
+
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
 
         if (lookup_current(current, name))
@@ -219,43 +227,138 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         break;
     }
 
-    // Function Declarations
-    /*case PR_FUNCTION_DECL_TYPED:
-    case PR_FUNCTION_DECL_UNTYPED:
-    case PR_FUNCTION_DECL_SEMICOLON:
+    // Typed Function Declarations
+    // fun foo(<parameter list>): Int {}
+    case PR_FUNCTION_DECL_TYPED:
     {
-        char *name = node->kids[1]->leaf->text; // finding where IDENT lives within function declarations kids array
+        char *name = node->kids[1]->leaf->text;
 
-        // insert function into global scope
         if (lookup_current(current, name))
         {
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n", filename, node->kids[1]->leaf->lineno, name); // break out
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
-        }
-        else
-        {
-            insert(current, name); // insert into current symbol table
+            return;
         }
 
-        // create function scope
-        struct sym_table *new_scope = mksymtab(16); // create new scope
-        new_scope->parent = current;                // track new_scopes parent to the current
-        new_scope->sibling = current->child;        // track the new scopes sibling to the child of current
-        current->child = new_scope;                 // set new scope as current child
+        // --- Build type ---
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = FUNC_TYPE;
 
-        // set current symtables scope name, since we know it's a function declaration, we say func <name>
+        // minimal func info
+        t->u.f.name = name;
+        t->u.f.defined = 1;
+        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
+        t->u.f.returntype->basetype = node->kids[6]->leaf->category;
+
+        t->u.f.nparams = 0;
+        t->u.f.parameters = build_param_list(node->kids[3], &t->u.f.nparams);
+
+        // insert into current scope
+        insert(current, name, t, 0);
+
+        // --- Create new scope for this function ---
+        struct sym_table *new_scope = mksymtab(16);
+        new_scope->parent = current;
+        new_scope->sibling = current->child;
+        current->child = new_scope;
+
+        // scope name
         char *buf = malloc(strlen("func ") + strlen(name) + 1);
         strcpy(buf, "func ");
         strcat(buf, name);
         new_scope->scope_name = buf;
 
-        // insert parameters as they are a special case, they are being included in that functions scope, not the parents scope
-        struct tree *params = node->kids[3];
-        insert_parameters(params, new_scope, symtab_err_flag, filename);
+        // link scope to type
+        t->u.f.st = new_scope;
 
-        // traverse body
-        for (int i = 0; i < node->nkids; i++)
-            build_symtab(node->kids[i], new_scope, symtab_err_flag, filename);
+        // parameters go into function scope
+        insert_parameters(node->kids[3], new_scope, symtab_err_flag, filename);
+
+        // traverse body ONLY
+        build_symtab(node->kids[7], new_scope, symtab_err_flag, filename);
+
+        return;
+    }
+    // Untyped Function Declarations
+    // fun foo(<parameter list>) {}
+    case PR_FUNCTION_DECL_UNTYPED:
+    {
+        char *name = node->kids[1]->leaf->text;
+
+        if (lookup_current(current, name))
+        {
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            return;
+        }
+
+        // --- Build type ---
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = FUNC_TYPE;
+
+        t->u.f.name = name;
+        t->u.f.defined = 1;
+
+        // no return type -> NONE_TYPE
+        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
+        t->u.f.returntype->basetype = NONE_TYPE;
+
+        t->u.f.nparams = 0;
+        t->u.f.parameters = build_param_list(node->kids[3], &t->u.f.nparams);
+
+        insert(current, name, t, 0);
+
+        // --- Create new scope for this function ---
+        struct sym_table *new_scope = mksymtab(16);
+        new_scope->parent = current;
+        new_scope->sibling = current->child;
+        current->child = new_scope;
+
+        char *buf = malloc(strlen("func ") + strlen(name) + 1);
+        strcpy(buf, "func ");
+        strcat(buf, name);
+        new_scope->scope_name = buf;
+
+        t->u.f.st = new_scope;
+
+        insert_parameters(node->kids[3], new_scope, symtab_err_flag, filename);
+
+        build_symtab(node->kids[5], new_scope, symtab_err_flag, filename);
+
+        return;
+    }
+    // Strictly a function declaration
+    // fun foo(<parameter list>);
+    case PR_FUNCTION_DECL_SEMICOLON:
+    {
+        char *name = node->kids[1]->leaf->text;
+
+        if (lookup_current(current, name))
+        {
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            return;
+        }
+
+        // --- Build type ---
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = FUNC_TYPE;
+
+        t->u.f.name = name;
+        t->u.f.defined = 0; // prototype only
+
+        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
+        t->u.f.returntype->basetype = NONE_TYPE;
+
+        t->u.f.nparams = 0;
+        t->u.f.parameters = build_param_list(node->kids[3], &t->u.f.nparams);
+
+        t->u.f.st = NULL; // no new scope
+
+        insert(current, name, t, 0);
 
         return;
     }
@@ -272,24 +375,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     //     build_symtab(node->kids[1], new_scope, symtab_err_flag);
     //     return;
     // }
-
-    // Function body variable declarations
-    case PR_FUN_BODY_VAR_DECL_SIMPLE:
-    case PR_FUN_BODY_VAR_DECL_LITERAL_INIT:
-    {
-        char *name = node->kids[1]->leaf->text;
-
-        if (lookup_current(current, name))
-        {
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of %s\n", filename, node->kids[1]->leaf->lineno, name);
-            *symtab_err_flag = 1;
-        }
-        else
-        {
-            insert(current, name);
-        }
-        break;
-    }
 
     // Assignment and arithmetic assignment
     case PR_ASSIGNMENT_ASSIGN:
@@ -327,7 +412,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             node->kids[0]->symbol = e; // assign symbol info to AST node
         }
         break;
-    }*/
+    }
     }
 
     // Leaf Identifiers
@@ -367,7 +452,10 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
         }
         else
         {
-            insert(st, name,NULL, 0);
+            typeptr t = malloc(sizeof(*t));
+            t->basetype = node->kids[2]->leaf->category;
+
+            insert(st, name, t, 0);
         }
         return;
     }
@@ -379,7 +467,7 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
 
 void print_scope(struct sym_table *st, int level)
 {
-    printf("Level %d, Symbol table for %s:\n", level, st->scope_name);
+    printf("--- Level %d, Symbol table for: %s ---\n", level, st->scope_name);
 
     for (int i = 0; i < st->nBuckets; i++)
     {
@@ -395,7 +483,7 @@ void print_scope(struct sym_table *st, int level)
                 else
                     printf("  %s, type: %d, value: %d\n", e->name, e->type->basetype, e->value);
             }
-                
+
             else
                 printf("  %s\n", e->name);
             e = e->next;
@@ -418,4 +506,57 @@ void print_symtab(struct sym_table *st, int level)
         print_symtab(child, level + 1);
         child = child->sibling;
     }
+}
+
+paramlist build_param_list(struct tree *node, int *count)
+{
+    if (!node)
+        return NULL;
+
+    paramlist head = NULL;
+    paramlist tail = NULL;
+
+    // recursive traversal
+    if (node->prodrule == PR_FUNCTION_VAR_DECL)
+    {
+        struct param *p = malloc(sizeof(struct param));
+
+        char *name = node->kids[0]->leaf->text;
+
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = node->kids[2]->leaf->category; // type node
+
+        p->name = strdup(name);
+        p->type = t;
+        p->next = NULL;
+
+        (*count)++;
+
+        return p;
+    }
+
+    // handle lists
+    for (int i = 0; i < node->nkids; i++)
+    {
+        paramlist sub = build_param_list(node->kids[i], count);
+
+        if (!sub)
+            continue;
+
+        if (!head)
+        {
+            head = sub;
+            tail = sub;
+        }
+        else
+        {
+            tail->next = sub;
+        }
+
+        // move tail to end
+        while (tail->next)
+            tail = tail->next;
+    }
+
+    return head;
 }

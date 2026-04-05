@@ -13,11 +13,12 @@ void insert_parameters(struct tree *node, struct sym_table *st, int *symtab_err_
 void print_scope(struct sym_table *st, int level);
 void print_symtab(struct sym_table *st, int level);
 int infer_type(struct token *node);
+paramlist build_param_list(struct tree *node, int *count);
 
 struct sym_entry
 {
-    char *name;             // identifier name
-    typeptr type;           // full type information
+    char *name;   // identifier name
+    typeptr type; // full type information
     int value;
     struct sym_entry *next; // next entry in same bucket
 };

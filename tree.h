@@ -11,7 +11,7 @@ struct tree
     struct tree *kids[10]; /* if nkids >0 */
     struct token *leaf;    /* if nkids == 0; NULL for ε productions */
     struct sym_entry *symbol;
-    typeptr type;           // full type information
+    typeptr type; // full type information
 };
 
 struct token
@@ -88,10 +88,11 @@ enum ProductionRule
     PR_GLOBAL_VAR_INIT_CHAR,
 
     /* fun_body_var_decl */
-    PR_FUN_BODY_VAR_DECL_SIMPLE,
-    PR_FUN_BODY_VAR_DECL_LITERAL_INIT,
+    PR_FUN_BODY_VAR_DECL,
+    PR_FUN_BODY_VAR_DECL_ASSIGN,
 
     /* fun_body_var_init */
+    PR_FUN_BODY_VAR_INIT,
     PR_FUN_BODY_VAR_INIT_INT,
     PR_FUN_BODY_VAR_INIT_REAL,
     PR_FUN_BODY_VAR_INIT_CHAR,
