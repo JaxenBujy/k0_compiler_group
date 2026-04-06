@@ -169,6 +169,8 @@ In k0, declaration syntax is only allowed for global variables and at the top of
 global_var_decl 
     : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL, "global_var_decl", 5, kids, NULL); }
     | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_ASSIGN, "global_var_decl", 7, kids, NULL); }
+    | val_var IDENT COLON type NULLABLE SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_GLOBAL_VAR_DECL_NULLABLE, "global_var_decl", 6, kids, NULL); }
+    | val_var IDENT COLON type NULLABLE ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8}; $$ = alctree(PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE, "global_var_decl", 8, kids, NULL); }
     ;
 /* variable initializations strictly at the top (global) level. 
 k0 allows only simple initializers including int, float and char */
@@ -180,6 +182,8 @@ In k0, declaration syntax is only allowed for global variables and at the top of
 fun_body_var_decl 
     : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUN_BODY_VAR_DECL, "fun_body_var_decl", 5, kids, NULL); }
     | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_FUN_BODY_VAR_DECL_ASSIGN, "fun_body_var_decl", 7, kids, NULL); }
+    | val_var IDENT COLON type NULLABLE SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_FUN_BODY_VAR_DECL_NULLABLE, "fun_body_var_decl", 6, kids, NULL); }
+    | val_var IDENT COLON type NULLABLE ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8}; $$ = alctree(PR_FUN_BODY_VAR_DECL_ASSIGN_NULLABLE, "fun_body_var_decl", 8, kids, NULL); }
     ;
 /* variable initializations strictly at the start of function bodies. 
 k0 allows only simple initializers including int, float and char */

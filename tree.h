@@ -80,6 +80,8 @@ enum ProductionRule
     /* global_var_decl */
     PR_GLOBAL_VAR_DECL,
     PR_GLOBAL_VAR_DECL_ASSIGN,
+    PR_GLOBAL_VAR_DECL_NULLABLE,
+    PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE,
 
     /* global_var_init */
     PR_GLOBAL_VAR_INIT,
@@ -90,6 +92,8 @@ enum ProductionRule
     /* fun_body_var_decl */
     PR_FUN_BODY_VAR_DECL,
     PR_FUN_BODY_VAR_DECL_ASSIGN,
+    PR_FUN_BODY_VAR_DECL_NULLABLE,
+    PR_FUN_BODY_VAR_DECL_ASSIGN_NULLABLE,
 
     /* fun_body_var_init */
     PR_FUN_BODY_VAR_INIT,
