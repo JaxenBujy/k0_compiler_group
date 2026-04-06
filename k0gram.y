@@ -192,6 +192,7 @@ fun_body_var_init
     ;
 function_var_decl /* just var_decl without val_var, to be placed within function declarations only */
     : IDENT COLON type {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_FUNCTION_VAR_DECL, "function_var_decl", 3, kids, NULL); }
+    | IDENT COLON type NULLABLE {struct tree *kids[10] = {$1,$2,$3,$4}; $$ = alctree(PR_FUNCTION_VAR_DECL_NULLABLE, "function_var_decl", 4, kids, NULL); }
     ;
 
 /* the basic function declaration of kotlin. Fulfills functionDeclaration. */
@@ -199,14 +200,12 @@ function_var_decl /* just var_decl without val_var, to be placed within function
 /* Kotlin does not do function declaration and definition separately like C. So we can choose to allow declarations like fun main() <no body>, but they seem useless */
 function_decl 
     : FUN IDENT LPAREN parameter_list RPAREN COLON type function_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8}; $$ = alctree(PR_FUNCTION_DECL_TYPED, "function_decl", 8, kids, NULL); } // fun main(args: Array<String>, arg_count: Int): Int {}
+    | FUN IDENT LPAREN parameter_list RPAREN COLON type NULLABLE function_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7,$8,$9}; $$ = alctree(PR_FUNCTION_DECL_TYPED_NULLABLE, "function_decl", 9, kids, NULL); } // fun main(args: Array<String>, arg_count: Int): Int? {}
     | FUN IDENT LPAREN parameter_list RPAREN function_body {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_FUNCTION_DECL_UNTYPED, "function_decl", 6, kids, NULL); } // fun main() {} - the colon and return type may be omitted for functions with no return
-    | FUN IDENT LPAREN parameter_list RPAREN SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6}; $$ = alctree(PR_FUNCTION_DECL_SEMICOLON, "function_decl", 6, kids, NULL); } // fun main() <no body> - a strict declaration that is useless other than the programmer wanting to strictly declare a function
     ;
 parameter_list /* allows for multiple parameters in a function declaration */
     : function_var_decl
     | parameter_list COMMA function_var_decl {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_PARAMETER_RECUR, "parameter_list", 3, kids, NULL); }
-    | literal
-    | parameter_list COMMA literal
     | {$$ = NULL; };
     ;
 

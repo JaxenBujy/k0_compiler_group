@@ -103,11 +103,12 @@ enum ProductionRule
 
     /* function_var_decl */
     PR_FUNCTION_VAR_DECL,
+    PR_FUNCTION_VAR_DECL_NULLABLE,
 
     /* function_decl */
     PR_FUNCTION_DECL_TYPED,
     PR_FUNCTION_DECL_UNTYPED,
-    PR_FUNCTION_DECL_SEMICOLON,
+    PR_FUNCTION_DECL_TYPED_NULLABLE,
 
     /* parameter_list */
     PR_PARAMETER_SINGLE,

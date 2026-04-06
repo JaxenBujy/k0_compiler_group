@@ -355,6 +355,58 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         return;
     }
+    case PR_FUNCTION_DECL_TYPED_NULLABLE:
+    {
+        char *name = node->kids[1]->leaf->text;
+
+        if (lookup_current(current, name))
+        {
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            return;
+        }
+
+        // Build function type
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = FUNC_TYPE;
+
+        t->u.f.name = name;
+        t->u.f.defined = 1;
+
+        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
+        t->u.f.returntype->basetype = node->kids[6]->leaf->category;
+
+        t->u.f.nparams = 0;
+        t->u.f.parameters = NULL; // will fill later
+
+        // insert function into current scope FIRST
+        // return type is nullable, so send 1 for nullable
+        insert(current, name, t, 0, 1);
+
+        // Create new scope for function
+        struct sym_table *new_scope = mksymtab(16);
+        new_scope->parent = current;
+        new_scope->sibling = current->child;
+        current->child = new_scope;
+
+        // scope name
+        char *buf = malloc(strlen("func ") + strlen(name) + 1);
+        strcpy(buf, "func ");
+        strcat(buf, name);
+        new_scope->scope_name = buf;
+
+        // link scope to function type
+        t->u.f.st = new_scope;
+
+        // Build params and insert into function scope
+        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
+
+        // Traverse function body
+        build_symtab(node->kids[8], new_scope, symtab_err_flag, filename);
+
+        return;
+    }
     // Untyped Function Declarations
     // fun foo(<parameter list>) {}
     case PR_FUNCTION_DECL_UNTYPED:
@@ -408,56 +460,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         return;
     }
-    // Strictly a function declaration
-    // fun foo(<parameter list>);
-    case PR_FUNCTION_DECL_SEMICOLON:
-    {
-        char *name = node->kids[1]->leaf->text;
-
-        if (lookup_current(current, name))
-        {
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
-                    filename, node->kids[1]->leaf->lineno, name);
-            *symtab_err_flag = 1;
-            return;
-        }
-
-        // Build type
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = FUNC_TYPE;
-
-        t->u.f.name = name;
-        t->u.f.defined = 0; // prototype only
-
-        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
-        t->u.f.returntype->basetype = NONE_TYPE;
-
-        t->u.f.nparams = 0;
-
-        // Only build param list
-        t->u.f.parameters = build_param_list_only(
-            node->kids[3],
-            &t->u.f.nparams);
-
-        t->u.f.st = NULL; // no scope for prototype
-
-        insert(current, name, t, 0, 0);
-
-        return;
-    }
-
-    // Scope blocks. Commenting out since hw4 specifies they do not need to be supported
-    // case PR_BLOCK:
-    // {
-    //     struct sym_table *new_scope = mksymtab(16); // create new scope
-    //     new_scope->parent = current;                // track new_scopes parent to the current
-    //     new_scope->sibling = current->child;        // track the new scopes sibling to the child of current
-    //     current->child = new_scope;                 // set new scope as current child
-
-    //     // kids[1] = statement_list, so just recurse over this statement list and let the rest of the cases handle it
-    //     build_symtab(node->kids[1], new_scope, symtab_err_flag);
-    //     return;
-    // }
 
     // Assignment and arithmetic assignment
     case PR_ASSIGNMENT_ASSIGN:

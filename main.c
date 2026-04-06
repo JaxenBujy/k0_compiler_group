@@ -14,6 +14,7 @@ extern int multi_line_start;
 extern int yyparse();
 extern int yydebug;
 extern struct tree *root;
+int exit_status = 0; // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
 
 char *filename; // defined globally to share with k0lex.l
 void print_graph(struct tree *t, char *filename);
@@ -25,7 +26,6 @@ char *escape(char *s);
 
 int main(int argc, char *argv[])
 {
-    int exit_status = 0; // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
 
     if (argc < 2)
     {
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("Opening file '%s'...\n", filename);
+    printf("Opening file '%s'...\n\n", filename);
     yyin = fopen(filename, "r");
     if (!yyin)
     {
@@ -72,9 +72,8 @@ int main(int argc, char *argv[])
     yydebug = 0;
     int rv = yyparse(); // parse the given file, constructing an AST
 
-    if (rv == 0) // yyparse returned no syntax errors
+    if (rv == 0 && exit_status == 0) // yyparse returned no syntax errors
     {
-
         // construct the symbol table
         int symtab_err_flag = 0;
 
@@ -129,8 +128,11 @@ int main(int argc, char *argv[])
     }
     else
     {
-
-        exit_status = 2; // exit status 2 for parser errors
+        // if no scanner errors were found, otherwise exit_status would be 1
+        if (exit_status == 0)
+        {
+            exit_status = 2; // exit status 2 for parser errors
+        }
     }
 
     free_tree(root);
@@ -140,7 +142,7 @@ int main(int argc, char *argv[])
 
 int yyerror(const char *s)
 {
-    fprintf(stderr, "\nparser error: %s:%d: %s\n", filename, lineno, s); // print sytax error message with file name and line number
+    fprintf(stderr, "%s:%d: parser error: %s\n", filename, lineno, s); // print sytax error message with file name and line number
     return 0;
 }
 
