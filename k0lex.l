@@ -9,6 +9,7 @@
     int alctoken(int category);
     char *consume_sval(int str_type);
     extern char *filename;
+    extern int exit_status; // overall exit status of main. Will be set to 1 in this file if there are any errors
     int lineno = 1; // keep track of line number 
     int multi_line_start; // keep track of when a multi line comment begins to give error if it is unclosed
 %}
@@ -245,27 +246,32 @@ int alctoken(int category)
         case KEYWORD_ERROR:
             fprintf(stderr, "%s:%d: scanner error: Kotlin reserved keyword: \"%s\" is not a part of k0\n",
                    filename, lineno, yytext);
-            exit(1);
+            exit_status = 1;
+            break;
 
         case UNCLOSED_COMMENT:
             fprintf(stderr, "%s:%d: scanner error: unclosed multi-line comment\n",
                    filename, multi_line_start);
-            exit(1);
+            exit_status = 1;
+            break;
 
         case COULD_NOT_MATCH:
             fprintf(stderr, "%s:%d: scanner error: \'%s\' could not be matched\n",
                    filename, lineno, yytext);
-            exit(1);
+            exit_status = 1;
+            break;
 
         case ILL_IDENT:
             fprintf(stderr, "%s:%d: scanner error: \'%s\' is an illegal identifier\n",
                    filename, lineno, yytext);
-            exit(1);
+            exit_status = 1;
+            break;
 
         case OP_ERROR:
             fprintf(stderr, "%s:%d: scanner error: \'%s\' is an illegal operator\n",
                    filename, lineno, yytext);
-            exit(1);
+            exit_status = 1;
+            break;
 
         default:
             break;
@@ -299,7 +305,7 @@ int alctoken(int category)
             if (t->leaf->sval == NULL) {
                 fprintf(stderr, "%s:%d: scanner error: unsupported escape sequence in %s\n",
                        filename, lineno, yytext);
-                exit(1);
+                exit_status = 1;
             }
             t->leaf->type->basetype = K0_STRING_TYPE;
             break;

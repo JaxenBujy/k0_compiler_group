@@ -78,7 +78,7 @@ struct sym_table *mksymtab_global(int size)
             t->u.f.st = NULL;
 
             // insert into global table
-            insert(global, name, t, 0);
+            insert(global, name, t, 0, 0);
         }
     }
 
@@ -99,7 +99,7 @@ int hash(struct sym_table *st, char *s)
     return h % st->nBuckets;
 }
 
-void insert(struct sym_table *st, char *name, typeptr t, int is_mutable)
+void insert(struct sym_table *st, char *name, typeptr t, int is_mutable, int is_nullable)
 {
     int i = hash(st, name);
 
@@ -107,6 +107,7 @@ void insert(struct sym_table *st, char *name, typeptr t, int is_mutable)
     e->name = strdup(name);
     e->type = t;
     e->is_mutable = is_mutable;
+    e->is_nullable = is_nullable;
     e->next = st->tbl[i];
     st->tbl[i] = e;
 
@@ -176,6 +177,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         node->kids[1]->leaf->type = t; // for printout at AST
 
         int is_mutable = (node->kids[0]->leaf->category == VAR);
+        int is_nullable = 0; // we know it's not nullable
 
         if (lookup_current(current, name))
         {
@@ -185,7 +187,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         else
         {
-            insert(current, name, t, is_mutable);
+            insert(current, name, t, is_mutable, is_nullable);
         }
         break;
     }
@@ -207,6 +209,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
         int is_mutable = (node->kids[0]->leaf->category == VAR);
+        int is_nullable = 0; // we know it's not nullable
 
         node->kids[1]->leaf->type = t; // for printout at AST
 
@@ -217,7 +220,59 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         else
         {
-            insert(current, name, t, is_mutable); // else insert into current symbol table
+            insert(current, name, t, is_mutable, is_nullable); // else insert into current symbol table
+        }
+        break;
+    }
+    // nullable variable declaration
+    // val x: Int?;
+    case PR_GLOBAL_VAR_DECL_NULLABLE:
+    case PR_FUN_BODY_VAR_DECL_NULLABLE:
+    {
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = node->kids[3]->leaf->category;
+
+        char *name = node->kids[1]->leaf->text;
+
+        int is_mutable = (node->kids[0]->leaf->category == VAR);
+        int is_nullable = (node->kids[4]->leaf->category == NULLABLE);
+
+        if (lookup_current(current, name))
+        {
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+        }
+        else
+        {
+            insert(current, name, t, is_mutable, is_nullable);
+        }
+        break;
+    }
+    // nullable variable declaration with assignment
+    // var x: Int? = 5;
+    case PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE:
+    case PR_FUN_BODY_VAR_DECL_ASSIGN_NULLABLE:
+    {
+
+        typeptr t = malloc(sizeof(*t));
+
+        t->basetype = node->kids[3]->leaf->category; // IDENT category
+
+        char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
+        int is_mutable = (node->kids[0]->leaf->category == VAR);
+        int is_nullable = (node->kids[4]->leaf->category == NULLABLE); // a bit redudant since we know its nullable from the switch case but good to assing it the same way as mutability
+
+        node->kids[1]->leaf->type = t; // for printout at AST
+
+        if (lookup_current(current, name))
+        { // so if the name appears twice as a declaration in current symbol table, break out for now
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+        }
+        else
+        {
+            insert(current, name, t, is_mutable, is_nullable); // else insert into current symbol table
         }
         break;
     }
@@ -232,6 +287,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
         int is_mutable = (node->kids[0]->leaf->category == VAR);
+        int is_nullable = 0;           // we know its not nullable
         node->kids[1]->leaf->type = t; // for printout at AST
 
         if (lookup_current(current, name))
@@ -241,7 +297,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         else
         {
-            insert(current, name, t, is_mutable); // else insert into current symbol table
+            insert(current, name, t, is_mutable, is_nullable); // else insert into current symbol table
         }
         break;
     }
@@ -274,7 +330,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         t->u.f.parameters = NULL; // will fill later
 
         // insert function into current scope FIRST
-        insert(current, name, t, 0);
+        insert(current, name, t, 0, 0);
 
         // Create new scope for function
         struct sym_table *new_scope = mksymtab(16);
@@ -296,6 +352,58 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         // Traverse function body
         build_symtab(node->kids[7], new_scope, symtab_err_flag, filename);
+
+        return;
+    }
+    case PR_FUNCTION_DECL_TYPED_NULLABLE:
+    {
+        char *name = node->kids[1]->leaf->text;
+
+        if (lookup_current(current, name))
+        {
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            return;
+        }
+
+        // Build function type
+        typeptr t = malloc(sizeof(*t));
+        t->basetype = FUNC_TYPE;
+
+        t->u.f.name = name;
+        t->u.f.defined = 1;
+
+        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
+        t->u.f.returntype->basetype = node->kids[6]->leaf->category;
+
+        t->u.f.nparams = 0;
+        t->u.f.parameters = NULL; // will fill later
+
+        // insert function into current scope FIRST
+        // return type is nullable, so send 1 for nullable
+        insert(current, name, t, 0, 1);
+
+        // Create new scope for function
+        struct sym_table *new_scope = mksymtab(16);
+        new_scope->parent = current;
+        new_scope->sibling = current->child;
+        current->child = new_scope;
+
+        // scope name
+        char *buf = malloc(strlen("func ") + strlen(name) + 1);
+        strcpy(buf, "func ");
+        strcat(buf, name);
+        new_scope->scope_name = buf;
+
+        // link scope to function type
+        t->u.f.st = new_scope;
+
+        // Build params and insert into function scope
+        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
+
+        // Traverse function body
+        build_symtab(node->kids[8], new_scope, symtab_err_flag, filename);
 
         return;
     }
@@ -327,7 +435,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         t->u.f.nparams = 0;
 
         // insert function into current scope
-        insert(current, name, t, 0);
+        insert(current, name, t, 0, 0);
 
         // Create new scope for function
         struct sym_table *new_scope = mksymtab(16);
@@ -352,56 +460,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         return;
     }
-    // Strictly a function declaration
-    // fun foo(<parameter list>);
-    case PR_FUNCTION_DECL_SEMICOLON:
-    {
-        char *name = node->kids[1]->leaf->text;
-
-        if (lookup_current(current, name))
-        {
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
-                    filename, node->kids[1]->leaf->lineno, name);
-            *symtab_err_flag = 1;
-            return;
-        }
-
-        // Build type
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = FUNC_TYPE;
-
-        t->u.f.name = name;
-        t->u.f.defined = 0; // prototype only
-
-        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
-        t->u.f.returntype->basetype = NONE_TYPE;
-
-        t->u.f.nparams = 0;
-
-        // Only build param list
-        t->u.f.parameters = build_param_list_only(
-            node->kids[3],
-            &t->u.f.nparams);
-
-        t->u.f.st = NULL; // no scope for prototype
-
-        insert(current, name, t, 0);
-
-        return;
-    }
-
-    // Scope blocks. Commenting out since hw4 specifies they do not need to be supported
-    // case PR_BLOCK:
-    // {
-    //     struct sym_table *new_scope = mksymtab(16); // create new scope
-    //     new_scope->parent = current;                // track new_scopes parent to the current
-    //     new_scope->sibling = current->child;        // track the new scopes sibling to the child of current
-    //     current->child = new_scope;                 // set new scope as current child
-
-    //     // kids[1] = statement_list, so just recurse over this statement list and let the rest of the cases handle it
-    //     build_symtab(node->kids[1], new_scope, symtab_err_flag);
-    //     return;
-    // }
 
     // Assignment and arithmetic assignment
     case PR_ASSIGNMENT_ASSIGN:
@@ -484,38 +542,39 @@ void print_scope(struct sym_table *st, int level)
                 {
                     // Variable case
                     const char *mut = e->is_mutable ? "var" : "val";
+                    const char *nullable = e->is_nullable ? "?" : "";
 
                     switch (e->type->basetype)
                     {
                     case BYTE_TYPE:
-                        printf("  %s %s, type: BYTE\n", mut, e->name);
+                        printf("  %s %s, type: Byte%s\n", mut, e->name, nullable);
                         break;
                     case SHORT_TYPE:
-                        printf("  %s %s, type: SHORT\n", mut, e->name);
+                        printf("  %s %s, type: Short%s\n", mut, e->name, nullable);
                         break;
                     case INT_TYPE:
-                        printf("  %s %s, type: INT\n", mut, e->name);
+                        printf("  %s %s, type: Int%s\n", mut, e->name, nullable);
                         break;
                     case LONG_TYPE:
-                        printf("  %s %s, type: LONG\n", mut, e->name);
+                        printf("  %s %s, type: Long%s\n", mut, e->name, nullable);
                         break;
                     case FLOAT_TYPE:
-                        printf("  %s %s, type: FLOAT\n", mut, e->name);
+                        printf("  %s %s, type: Float%s\n", mut, e->name, nullable);
                         break;
                     case DOUBLE_TYPE:
-                        printf("  %s %s, type: DOUBLE\n", mut, e->name);
+                        printf("  %s %s, type: Double%s\n", mut, e->name, nullable);
                         break;
                     case BOOLEAN_TYPE:
-                        printf("  %s %s, type: BOOLEAN\n", mut, e->name);
+                        printf("  %s %s, type: Boolean%s\n", mut, e->name, nullable);
                         break;
                     case STRING_TYPE:
-                        printf("  %s %s, type: STRING\n", mut, e->name);
+                        printf("  %s %s, type: String%s\n", mut, e->name, nullable);
                         break;
                     case NONE_TYPE:
-                        printf("  %s %s, type: NONE\n", mut, e->name);
+                        printf("  %s %s, type: NONE%s\n", mut, e->name, nullable);
                         break;
                     default:
-                        printf("  %s %s, type: %d\n", mut, e->name, e->type->basetype);
+                        printf("  %s %s, type: %d%s\n", mut, e->name, e->type->basetype, nullable);
                         break;
                     }
                 }
@@ -577,7 +636,7 @@ paramlist build_and_insert_params(struct tree *node, struct sym_table *st, int *
         t->basetype = node->kids[2]->leaf->category;
 
         // Insert into symbol table
-        insert(st, name, t, 0);
+        insert(st, name, t, 0, 0);
 
         // Build param list node
         struct param *p = malloc(sizeof(struct param));
