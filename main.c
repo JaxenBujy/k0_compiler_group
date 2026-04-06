@@ -25,6 +25,7 @@ char *escape(char *s);
 
 int main(int argc, char *argv[])
 {
+    int exit_status = 0; // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
 
     if (argc < 2)
     {
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
     yyin = fopen(filename, "r");
     if (!yyin)
     {
-        fprintf(stderr, "Error reading file\n");
+        fprintf(stderr, "Error reading file '%s'\n", filename);
         exit(1);
     }
 
@@ -71,43 +72,70 @@ int main(int argc, char *argv[])
     yydebug = 0;
     int rv = yyparse(); // parse the given file, constructing an AST
 
-    if (rv == 0) // yyparse returned no syntax errors, proceed to semantics
+    if (rv == 0) // yyparse returned no syntax errors
     {
-        // print the tree if specified. May not be a complete tree since yyparse rv has not been checked yet
+
+        // construct the symbol table
+        int symtab_err_flag = 0;
+
+        // global scope, predefined functions in k0 specification
+        struct sym_table *global = mksymtab_global(64);
+
+        // package scope, the current file being read
+        struct sym_table *current_package = mksymtab(64);
+        current_package->parent = global;
+
+        // set the current package as a child of the global table
+        current_package->sibling = global->child;
+        global->child = current_package;
+
+        // set package name to be the name of the file being read
+        size_t len = strlen("package ") + strlen(filename) + 1;
+        current_package->scope_name = malloc(len);
+        snprintf(current_package->scope_name, len, "package %s", filename);
+
+        // build symbol table starting at package scope
+        build_symtab(root, current_package, &symtab_err_flag, filename);
+
+        // print the tree if specified
         if (tree_bool)
         {
             printf("\n---print_tree output---\n");
             print_tree(root);
         }
-        // make dot file of the tree if specified. May not be a complete tree since yyparse rv has not been checked yet
+        // make dot file of the tree if specified
         if (dot_bool)
         {
             print_graph(root, filename);
             printf("dot file of AST generated in %s_tree.dot. To generate png image of the tree, run \"dot -Tpng %s_tree.dot > tree_img.png\"\n", filename, filename);
         }
 
-        // construct the symbol table
-        struct sym_table *global = mksymtab(64);
-        build_symtab(root, global);
-
-        // print symbol table if specified
-        if (symtab_bool)
+        // if no semantic errors were found
+        if (!symtab_err_flag)
         {
-            printf("\n---print_symtab output---\n");
-            print_symtab(global, 0);
+            printf("No semantic errors found in symbol tables\n");
+            // print symbol table if specified
+            if (symtab_bool)
+            {
+                printf("\n---print_symtab output---\n");
+                print_symtab(global, 0);
+            }
         }
+        else
+        {
 
-        free_tree(root);
-        printf("yyparse returned %d\n", rv);
+            exit_status = 3; // exit status 3 for semantic errors
+        }
     }
     else
     {
-        free_tree(root);
-        printf("exiting with status 2...\n");
-        exit(2); // exit status 2 for parser errors
+
+        exit_status = 2; // exit status 2 for parser errors
     }
 
-    return 0;
+    free_tree(root);
+    printf("\nexiting with status %d...\n\n", exit_status);
+    return exit_status;
 }
 
 int yyerror(const char *s)

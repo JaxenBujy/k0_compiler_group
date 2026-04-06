@@ -1,3 +1,5 @@
+#include "type.h"
+
 extern int serial;
 
 struct tree
@@ -9,6 +11,7 @@ struct tree
     struct tree *kids[10]; /* if nkids >0 */
     struct token *leaf;    /* if nkids == 0; NULL for ε productions */
     struct sym_entry *symbol;
+    typeptr type; // full type information
 };
 
 struct token
@@ -20,6 +23,7 @@ struct token
     int ival;       /* for integer constants, store binary value here */
     double dval;    /* for real constants, store binary value here */
     char *sval;     /* for string constants, malloc space, de-escape, store the string (less quotes and after escapes) here */
+    typeptr type;   // full type information
 };
 
 void free_tree(struct tree *root);
@@ -74,21 +78,21 @@ enum ProductionRule
     PR_BOOL_FALSE,
 
     /* global_var_decl */
-    PR_GLOBAL_VAR_DECL_SIMPLE,
-    PR_GLOBAL_VAR_DECL_LITERAL_INIT,
-    PR_GLOBAL_VAR_DECL_IDENT_INIT,
+    PR_GLOBAL_VAR_DECL,
+    PR_GLOBAL_VAR_DECL_ASSIGN,
 
     /* global_var_init */
+    PR_GLOBAL_VAR_INIT,
     PR_GLOBAL_VAR_INIT_INT,
     PR_GLOBAL_VAR_INIT_REAL,
     PR_GLOBAL_VAR_INIT_CHAR,
 
     /* fun_body_var_decl */
-    PR_FUN_BODY_VAR_DECL_SIMPLE,
-    PR_FUN_BODY_VAR_DECL_LITERAL_INIT,
-    PR_FUN_BODY_VAR_DECL_IDENT_INIT,
+    PR_FUN_BODY_VAR_DECL,
+    PR_FUN_BODY_VAR_DECL_ASSIGN,
 
     /* fun_body_var_init */
+    PR_FUN_BODY_VAR_INIT,
     PR_FUN_BODY_VAR_INIT_INT,
     PR_FUN_BODY_VAR_INIT_REAL,
     PR_FUN_BODY_VAR_INIT_CHAR,

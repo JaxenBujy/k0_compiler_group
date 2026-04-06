@@ -1,10 +1,8 @@
-fun main() {
-    var n : Int = 5;
-    var x = 10;
+var x = 15;
 
-    if (n < 0) {
-        println("{n} is negative");
-    } else {
-        println("{n} is zero");
-    }
+fun main(y: Int): Int {
+    var n : Int = 67;
+    var hello_string: String = "hello";
+
+    println("{n}");
 }

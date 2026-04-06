@@ -1,7 +1,15 @@
 Implemented:
-    - symbol table mostly complete from lab 6
-    - added -symtab and -tree options to change output of program
-    - changed all error messages to print to stderr
+    - changed prod rule categories in tree.h to reflect current grammar
+    - updated buildsymtab() to reflect current prod rule categories
+    - implemented integer type reading for few production rules in symtab
+    - implemented basic infer_type() that returns correct type for cases where type inference is needed
+    - implemented basic type mismatch error handling for integers only
+    - added value to symentry, only works for integer for time being
+
+    
+To-Do:
+    - create type function that resolves types during symbol table creation
+    - in tree.h, have cases for global variable declaration of int, real, and char, but don't enforce that in our grammar
 
 Teammates:
     Jaxen Bujold - 2

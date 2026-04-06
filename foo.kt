@@ -1,5 +1,5 @@
 fun foo(x : Int, y : String) : Int {
-   return x;
+   return 5;
 }
 fun main() {
    var z : Int;

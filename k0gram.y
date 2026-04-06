@@ -2,7 +2,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #include "tree.h"
+    #include "symtab.h"
     extern int yylex();
     extern int yyerror(const char *s);
     struct tree *alctree(int prod_rule, char *symbol_name, int nkids, struct tree *kids[10], struct token *leaf);
@@ -61,7 +61,7 @@
 %token <treeptr> IDENT
 
 /* Types */
-%token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE
+%token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE NULL_TYPE
 %token <treeptr> ARRAY
 
 /* Production Rules */
@@ -145,6 +145,7 @@ type /* basic types supported in k0 */
     | DOUBLE_TYPE 
     | BOOLEAN_TYPE 
     | STRING_TYPE
+    | NULL_TYPE
     | ARRAY LT type GT {struct tree *kids[10] = {$1, $2, $3, $4}; $$ = alctree(PR_TYPE_ARRAY, "type", 4, kids, NULL); }
     ;
 val_var /* keywords val or var to be used in variable declaration/initialization */
@@ -152,9 +153,9 @@ val_var /* keywords val or var to be used in variable declaration/initialization
     | VAR
     ;
 literal /* literals */
-    : INT  // per lab 4 specification, print info about a leaf node
+    : INT
     | REAL 
-    | STRING // per lab 4 specification, print info about a leaf node
+    | STRING
     | MULTI_STRING 
     | CHAR
     ;
@@ -166,24 +167,24 @@ bool_literal
 /* global variable declaration. Acts as typeConstraints. 
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions */
 global_var_decl 
-    : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL_SIMPLE, "global_var_decl", 5, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_LITERAL_INIT, "global_var_decl", 7, kids, NULL); }
+    : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_DECL, "global_var_decl", 5, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_GLOBAL_VAR_DECL_ASSIGN, "global_var_decl", 7, kids, NULL); }
     ;
 /* variable initializations strictly at the top (global) level. 
 k0 allows only simple initializers including int, float and char */
 global_var_init
-    : val_var IDENT ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_INIT_INT, "global_var_init", 5, kids, NULL); }
+    : val_var IDENT ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_GLOBAL_VAR_INIT, "global_var_init", 5, kids, NULL); }
     ;
 /* function body variable declaration. Acts as typeConstraints. 
 In k0, declaration syntax is only allowed for global variables and at the top of the bodies of function definitions*/
 fun_body_var_decl 
-    : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUN_BODY_VAR_DECL_SIMPLE, "fun_body_var_decl", 5, kids, NULL); }
-    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_FUN_BODY_VAR_DECL_LITERAL_INIT, "fun_body_var_decl", 7, kids, NULL); }
+    : val_var IDENT COLON type SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUN_BODY_VAR_DECL, "fun_body_var_decl", 5, kids, NULL); }
+    | val_var IDENT COLON type ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5,$6,$7}; $$ = alctree(PR_FUN_BODY_VAR_DECL_ASSIGN, "fun_body_var_decl", 7, kids, NULL); }
     ;
 /* variable initializations strictly at the start of function bodies. 
 k0 allows only simple initializers including int, float and char */
 fun_body_var_init 
-    : val_var IDENT ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUN_BODY_VAR_INIT_INT, "fun_body_var_init", 5, kids, NULL); }
+    : val_var IDENT ASSIGN expr SEMICOLON {struct tree *kids[10] = {$1,$2,$3,$4,$5}; $$ = alctree(PR_FUN_BODY_VAR_INIT, "fun_body_var_init", 5, kids, NULL); }
     ;
 function_var_decl /* just var_decl without val_var, to be placed within function declarations only */
     : IDENT COLON type {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_FUNCTION_VAR_DECL, "function_var_decl", 3, kids, NULL); }
@@ -200,6 +201,8 @@ function_decl
 parameter_list /* allows for multiple parameters in a function declaration */
     : function_var_decl
     | parameter_list COMMA function_var_decl {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_PARAMETER_RECUR, "parameter_list", 3, kids, NULL); }
+    | literal
+    | parameter_list COMMA literal
     | {$$ = NULL; };
     ;
 
@@ -329,6 +332,7 @@ struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kid
     t->symbolname = strdup(symbolname);
     t->nkids = nkids;
     t->leaf = leaf;
+    t->type = NULL;
 
     // fill with NULL kids first before inserting real kids so that none of them are garbage
     for (int i = 0; i < 10; i++) {
