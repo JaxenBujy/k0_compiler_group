@@ -332,6 +332,7 @@ struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kid
     t->symbolname = strdup(symbolname);
     t->nkids = nkids;
     t->leaf = leaf;
+    t->type = NULL;
 
     // fill with NULL kids first before inserting real kids so that none of them are garbage
     for (int i = 0; i < 10; i++) {

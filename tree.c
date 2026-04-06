@@ -26,25 +26,22 @@ void print_tree_with_depth(struct tree *root, int depth)
         // Print leaf if present
         if (root->leaf != NULL)
         {
-                if (root->leaf->category == IDENT)
-                {
-                        printsymbol(root->leaf->text);
-                }
-
                 for (int i = 0; i < depth + 1; i++)
                         printf("  ");
-                printf("Leaf Node: %s\t",
-                       root->leaf->text);
-                printf("Serial #: %d\n",
-                       root->id);
+
+                printf("Leaf Node: %s\t", root->leaf->text);
+                if (root->leaf->type)
+                        printf("Type: %d\t", root->leaf->type->basetype);
+
+                printf("Serial #: %d\n", root->id);
         }
         else
         {
-                // Print tree node info
-                printf("Internal Node: %s\t",
-                       root->symbolname);
-                printf("Serial #: %d\n",
-                       root->id);
+                printf("Internal Node: %s\t", root->symbolname);
+                if (root->type)
+                        printf("Type: %d\t", root->type->basetype);
+
+                printf("Serial #: %d\n", root->id);
         }
 
         for (int i = 0; i < root->nkids; i++)

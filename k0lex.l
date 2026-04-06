@@ -228,17 +228,17 @@ int alctoken(int category)
     t->symbolname = NULL;
     t->nkids = 0;
 
-    t->type = malloc(sizeof(typeptr));
-    if (t->type == NULL) {
-        fprintf(stderr, "Failed to allocate memory for type\n");
-        exit(1);
-    }
+    t->type = NULL; // not needed for leaf typing
+    
 
     t->leaf = malloc(sizeof(struct token));
     if (t->leaf == NULL) {
         fprintf(stderr, "Failed to allocate memory for token\n");
         exit(1);
     }
+    // lab 7
+    t->leaf->type = malloc(sizeof(*(t->leaf->type)));
+    memset(t->leaf->type, 0, sizeof(*(t->leaf->type)));
 
     switch (category)
     {
@@ -285,12 +285,12 @@ int alctoken(int category)
     {
         case INT:
             t->leaf->ival = atoi(yytext);
-            t->type->basetype = INTEGER_TYPE;
+            t->leaf->type->basetype = INTEGER_TYPE;
             break;
 
         case REAL:
             t->leaf->dval = atof(yytext);
-            t->type->basetype = K0_DOUBLE_TYPE;
+            t->leaf->type->basetype = K0_DOUBLE_TYPE;
             break;
 
         case STRING:
@@ -301,10 +301,10 @@ int alctoken(int category)
                        filename, lineno, yytext);
                 exit(1);
             }
-            t->type->basetype = K0_STRING_TYPE;
+            t->leaf->type->basetype = K0_STRING_TYPE;
             break;
         case CHAR:
-            t->type->basetype = CHAR_TYPE;
+            t->leaf->type->basetype = CHAR_TYPE;
             break;
     }
 

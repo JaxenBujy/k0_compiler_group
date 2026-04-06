@@ -1,12 +1,8 @@
 var x = 15;
 
-fun main(x: Int, 6): Int {
+fun main(y: Int): Int {
     var n : Int = 67;
-    var chud: String = "chung";
+    var hello_string: String = "hello";
 
-    if (n < 0) {
-        println("{n} is negative");
-    } else {
-        println("{n} is zero");
-    }
+    println("{n}");
 }
