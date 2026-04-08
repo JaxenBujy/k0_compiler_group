@@ -146,6 +146,8 @@ enum ProductionRule
     PR_EQUALITY_SINGLE,
     PR_EQUALITY_EQ,
     PR_EQUALITY_NEQ,
+    PR_EQUALITY_REQ,
+    PR_EQUALITY_RNEQ,
 
     /* relational_expr */
     PR_RELATIONAL_SINGLE,

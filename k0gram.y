@@ -243,6 +243,8 @@ equality_expr
     : relational_expr
     | equality_expr EQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_EQ, "equality_expr", 3, kids, NULL); }
     | equality_expr NEQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_NEQ, "equality_expr", 3, kids, NULL); }
+    | equality_expr REQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_REQ, "equality_expr", 3, kids, NULL); }
+    | equality_expr RNEQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_RNEQ, "equality_expr", 3, kids, NULL); }
     ;
 relational_expr
     : additive_expr
@@ -281,6 +283,8 @@ primary_expr /* refactored expr into primary_expr, that includes everything from
     | literal
     | LPAREN expr RPAREN {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_PRIMARY_PAREN, "primary_expr", 3, kids, NULL); }
     | bool_literal
+    | primary_expr INC
+    | primary_expr DEC
     ;
 function_call /* a function call is a form of expression that calls functions */
     : IDENT LPAREN function_call_values_list RPAREN {struct tree *kids[10] = {$1,$2,$3,$4}; $$ = alctree(PR_FUNCTION_CALL, "function_call", 4, kids, NULL); }

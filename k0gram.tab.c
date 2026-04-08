@@ -533,16 +533,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  15
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   257
+#define YYLAST   259
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  81
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  40
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  107
+#define YYNRULES  111
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  199
+#define YYNSTATES  205
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   335
@@ -605,11 +605,12 @@ static const yytype_int16 yyrline[] =
      171,   176,   181,   182,   187,   190,   197,   198,   199,   202,
      203,   204,   205,   206,   211,   214,   215,   216,   219,   220,
      223,   224,   225,   226,   229,   232,   235,   236,   239,   240,
-     243,   244,   245,   248,   249,   250,   251,   252,   255,   256,
-     257,   258,   261,   262,   263,   266,   267,   268,   269,   272,
-     273,   274,   275,   276,   279,   280,   281,   282,   283,   286,
-     289,   290,   291,   294,   295,   296,   299,   302,   303,   306,
-     307,   308,   309,   312,   315,   316,   319,   320
+     243,   244,   245,   246,   247,   250,   251,   252,   253,   254,
+     257,   258,   259,   260,   263,   264,   265,   268,   269,   270,
+     271,   274,   275,   276,   277,   278,   281,   282,   283,   284,
+     285,   286,   287,   290,   293,   294,   295,   298,   299,   300,
+     303,   306,   307,   310,   311,   312,   313,   316,   319,   320,
+     323,   324
 };
 #endif
 
@@ -654,7 +655,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-126)
+#define YYPACT_NINF (-135)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -668,26 +669,27 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-      22,   -62,  -126,  -126,   -56,    24,    22,  -126,  -126,   -37,
-    -126,  -126,  -126,   -16,  -126,  -126,  -126,   -14,   147,   140,
-     155,  -126,  -126,  -126,  -126,  -126,   -19,  -126,  -126,   -31,
-    -126,  -126,   154,   154,   154,   154,   140,    52,  -126,  -126,
-       0,    27,    40,    -1,   -23,  -126,    25,    50,  -126,  -126,
-    -126,  -126,  -126,  -126,  -126,  -126,  -126,  -126,  -126,  -126,
-      51,   -20,   155,    36,   147,    57,  -126,  -126,  -126,  -126,
-      35,   140,   140,   140,   125,  -126,   154,   154,   154,   154,
-     154,   154,   154,   154,   154,   154,   154,   154,   154,   155,
-     140,  -126,  -126,  -126,  -126,   155,  -126,  -126,  -126,  -126,
-    -126,  -126,  -126,   189,  -126,  -126,    11,  -126,    40,    -1,
-     -23,   -23,    25,    25,    25,    25,    50,    50,  -126,  -126,
-    -126,    82,    63,    84,    68,    75,  -126,   125,  -126,  -126,
-      64,  -126,  -126,    -4,  -126,    86,  -126,   -13,    80,    85,
-     140,    87,  -126,  -126,  -126,    79,  -126,  -126,  -126,  -126,
-      73,   140,   155,    77,   140,    89,   140,  -126,    57,  -126,
-      90,     8,   141,    96,  -126,    98,  -126,   140,  -126,   171,
-      37,    37,    97,   105,   106,  -126,  -126,  -126,   156,  -126,
-    -126,   177,   183,   111,    37,   103,   108,   109,   113,  -126,
-    -126,    37,    37,    37,    37,  -126,  -126,  -126,  -126
+      12,   -56,  -135,  -135,   -49,    26,    12,  -135,  -135,    -2,
+    -135,  -135,  -135,    27,  -135,  -135,  -135,   -13,   137,   130,
+     155,  -135,  -135,  -135,  -135,  -135,     6,  -135,  -135,   -50,
+    -135,  -135,   154,   154,   154,   154,   130,    10,  -135,  -135,
+      23,    49,    57,    48,   134,  -135,    -5,     9,  -135,     0,
+    -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,  -135,
+      63,   -14,   155,   -44,   137,    54,  -135,  -135,  -135,  -135,
+      59,   130,   130,   130,    56,  -135,   154,   154,   154,   154,
+     154,   154,   154,   154,   154,   154,   154,   154,   154,   154,
+     154,  -135,  -135,   155,   130,  -135,  -135,  -135,  -135,   155,
+    -135,  -135,  -135,  -135,  -135,  -135,  -135,   125,  -135,  -135,
+      18,  -135,    57,    48,   134,   134,   134,   134,    -5,    -5,
+      -5,    -5,     9,     9,  -135,  -135,  -135,    73,    58,    28,
+      53,    69,  -135,    56,  -135,  -135,    61,  -135,  -135,    -4,
+    -135,    78,  -135,    -3,    72,    76,   130,    77,  -135,  -135,
+    -135,    79,  -135,  -135,  -135,  -135,    70,   130,   155,    86,
+     130,    83,   130,  -135,    54,  -135,    88,    -8,   149,    91,
+    -135,   105,  -135,   130,  -135,   147,    40,    40,   106,   113,
+     114,  -135,  -135,  -135,   176,  -135,  -135,   171,   177,    85,
+      40,   120,   127,   128,   150,  -135,  -135,    40,    40,    40,
+      40,  -135,  -135,  -135,  -135
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -698,41 +700,42 @@ static const yytype_int8 yydefact[] =
        0,     0,    20,    21,     0,     0,     2,     4,     6,     0,
        7,     8,     5,     0,     9,     1,     3,     0,    43,     0,
        0,    22,    23,    24,    25,    26,     0,    41,    39,     0,
-      28,    27,     0,     0,     0,     0,     0,    85,    86,    88,
-       0,    68,    56,    58,    60,    55,    63,    72,    75,    79,
-      84,    10,    11,    12,    13,    14,    15,    16,    17,    18,
-       0,     0,     0,     0,     0,    85,    80,    82,    83,    81,
-       0,     0,     0,     0,    92,    31,     0,     0,     0,     0,
+      28,    27,     0,     0,     0,     0,     0,    87,    88,    90,
+       0,    70,    56,    58,    60,    55,    65,    74,    77,    81,
+      86,    10,    11,    12,    13,    14,    15,    16,    17,    18,
+       0,     0,     0,     0,     0,    87,    82,    84,    85,    83,
+       0,     0,     0,     0,    96,    31,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,    29,    35,    38,    47,     0,    37,    42,    40,    87,
-      69,    70,    71,     0,    94,    93,     0,    90,    57,    59,
-      61,    62,    65,    64,    67,    66,    73,    74,    76,    77,
-      78,     0,     0,    49,     0,     0,    89,     0,    19,    30,
-       0,    45,    46,     0,    36,     0,    91,     0,     0,     0,
-       0,     0,    44,    48,    50,     0,    51,    97,    98,    52,
-       0,     0,     0,     0,     0,     0,     0,    54,     0,    95,
-       0,     0,     0,     0,    53,     0,    34,     0,    32,     0,
-       0,     0,     0,     0,     0,    49,   105,   104,   106,   103,
-      33,     0,     0,     0,     0,     0,     0,     0,     0,    96,
-     107,     0,     0,     0,     0,    99,   101,   100,   102
+       0,    91,    92,     0,     0,    29,    35,    38,    47,     0,
+      37,    42,    40,    89,    71,    72,    73,     0,    98,    97,
+       0,    94,    57,    59,    61,    62,    63,    64,    67,    66,
+      69,    68,    75,    76,    78,    79,    80,     0,     0,    49,
+       0,     0,    93,     0,    19,    30,     0,    45,    46,     0,
+      36,     0,    95,     0,     0,     0,     0,     0,    44,    48,
+      50,     0,    51,   101,   102,    52,     0,     0,     0,     0,
+       0,     0,     0,    54,     0,    99,     0,     0,     0,     0,
+      53,     0,    34,     0,    32,     0,     0,     0,     0,     0,
+       0,    49,   109,   108,   110,   107,    33,     0,     0,     0,
+       0,     0,     0,     0,     0,   100,   111,     0,     0,     0,
+       0,   103,   105,   104,   106
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -126,  -126,  -126,   165,  -126,   -61,    59,   -18,  -126,  -126,
-    -126,  -126,  -126,   120,  -126,  -126,    61,  -126,    20,  -125,
-    -126,   -17,  -126,   121,   122,    48,    39,     6,    46,   -12,
-    -126,    53,  -126,    71,  -126,  -126,  -126,  -126,   -77,  -126
+    -135,  -135,  -135,   202,  -135,   -61,    80,   -18,  -135,  -135,
+    -135,  -135,  -135,   153,  -135,  -135,    94,  -135,    75,  -134,
+    -135,   -17,  -135,   175,   180,   169,    -1,   170,     1,    46,
+    -135,   102,  -135,   126,  -135,  -135,  -135,  -135,   -19,  -135
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_uint8 yydefgoto[] =
 {
        0,     5,     6,     7,     8,    61,     9,    38,    39,    10,
-      11,   131,   132,    28,    12,    29,    96,   123,   133,   176,
-     144,   145,    41,    42,    43,    44,    45,    46,    47,    48,
-      49,    50,   106,   107,   177,   146,   147,   148,   178,   149
+      11,   137,   138,    28,    12,    29,   100,   129,   139,   182,
+     150,   151,    41,    42,    43,    44,    45,    46,    47,    48,
+      49,    50,   110,   111,   183,   152,   153,   154,   184,   155
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -740,62 +743,62 @@ static const yytype_uint8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      27,    92,    40,    30,   138,    90,   139,    13,   143,   140,
-      31,    19,   151,    14,   141,    80,    81,    82,    83,    70,
-      66,    67,    68,    69,    15,    32,    63,    64,   121,    33,
-      34,     1,    17,   167,   124,    78,    79,     2,     3,    91,
-      18,     4,    35,    62,    30,   138,    97,   139,    20,   152,
-     140,    31,    36,    84,    85,   141,   105,   142,   143,    75,
-      21,    22,    23,    24,    25,    37,    32,   168,   126,   127,
-      33,    34,    76,   122,   118,   119,   120,    71,    72,    73,
-      86,    87,    88,    35,    77,   125,   112,   113,   114,   115,
-      89,   161,    99,    36,   179,    93,    94,   175,    95,     2,
-       3,    21,    22,    23,    24,    25,    37,   190,    74,   105,
-     100,   101,   102,    74,   195,   196,   197,   198,    30,   138,
-     128,   139,   129,   155,   140,    31,   110,   111,    94,   141,
-     116,   117,   135,   137,   160,   150,   153,   163,   157,   165,
-      32,   154,   158,   156,    33,    34,   162,    30,   164,   166,
-     172,   174,   169,   170,    31,   171,   180,    35,   181,   182,
-     191,    30,   184,   186,   188,   192,   193,    36,    31,    32,
-     194,    16,   189,    33,    34,    21,    22,    23,    24,    25,
-      37,   103,   130,    32,    98,   134,    35,    33,    34,    21,
-      22,    23,    24,    25,   104,   183,    36,   108,   136,   109,
-      35,     0,     0,   159,    21,    22,    23,    24,    25,    37,
-      36,    21,    22,    23,    24,    25,    26,     0,    21,    22,
-      23,    24,    25,    65,     0,    51,    52,    53,    54,    55,
+      27,    96,    40,    30,   144,   149,   145,    63,    64,   146,
+      31,    94,    19,    13,   147,    97,    98,   173,    99,    70,
+      14,     1,   157,    86,    87,    32,    15,     2,     3,    33,
+      34,     4,   127,    91,    92,    71,    72,    73,   130,    88,
+      89,    90,    35,     2,     3,    95,   101,    30,   144,    20,
+     145,   174,    36,   146,    31,   149,   109,   148,   147,   158,
+      21,    22,    23,    24,    25,    37,    74,    17,    62,    32,
+     104,   105,   106,    33,    34,   132,   133,   128,    66,    67,
+      68,    69,    75,    18,    78,    79,    35,   122,   123,   131,
+      80,    81,    30,   144,    76,   145,    36,   167,   146,    31,
+     181,    77,    93,   147,    21,    22,    23,    24,    25,    37,
+      74,   134,   107,    98,    32,   109,   103,   135,    33,    34,
+      21,    22,    23,    24,    25,   108,   141,   156,   159,   161,
+     143,    35,   160,   162,   124,   125,   126,    30,   163,   164,
+     166,    36,   170,   169,    31,   171,   195,   172,   176,    21,
+      22,    23,    24,    25,    37,   168,   178,   180,   185,    32,
+     175,    30,   177,    33,    34,   186,   187,   188,    31,   192,
+     194,   196,    82,    83,    84,    85,    35,   197,   201,   202,
+     203,   204,   190,    32,   198,   199,    36,    33,    34,    21,
+      22,    23,    24,    25,    21,    22,    23,    24,    25,    37,
+      35,    21,    22,    23,    24,    25,    26,   200,    16,   136,
+      36,    21,    22,    23,    24,    25,   179,   102,    21,    22,
+      23,    24,    25,    65,   140,    51,    52,    53,    54,    55,
       56,    57,    58,    59,    60,    21,    22,    23,    24,    25,
-     173,    21,    22,    23,    24,    25,   185,    21,    22,    23,
-      24,    25,   187,    21,    22,    23,    24,    25
+     191,    21,    22,    23,    24,    25,   193,   114,   115,   116,
+     117,   112,   118,   119,   120,   121,   189,   113,   165,   142
 };
 
-static const yytype_int16 yycheck[] =
+static const yytype_uint8 yycheck[] =
 {
-      18,    62,    19,     7,     8,    25,    10,    69,   133,    13,
-      14,    25,    25,    69,    18,    38,    39,    40,    41,    36,
-      32,    33,    34,    35,     0,    29,    57,    58,    89,    33,
-      34,     9,    69,    25,    95,    36,    37,    15,    16,    59,
-      56,    19,    46,    62,     7,     8,    64,    10,    62,    62,
-      13,    14,    56,    28,    29,    18,    74,    61,   183,    59,
-      64,    65,    66,    67,    68,    69,    29,    59,    57,    58,
-      33,    34,    45,    90,    86,    87,    88,    25,    26,    27,
-      30,    31,    32,    46,    44,   103,    80,    81,    82,    83,
-      39,   152,    57,    56,   171,    59,    60,    60,    62,    15,
-      16,    64,    65,    66,    67,    68,    69,   184,    56,   127,
-      71,    72,    73,    56,   191,   192,   193,   194,     7,     8,
-      38,    10,    59,   140,    13,    14,    78,    79,    60,    18,
-      84,    85,    57,    69,   151,    49,    56,   154,    59,   156,
-      29,    56,    69,    56,    33,    34,    69,     7,    59,    59,
-     167,   169,    11,    57,    14,    57,    59,    46,    53,    53,
-      57,     7,     6,   181,   182,    57,    57,    56,    14,    29,
-      57,     6,    61,    33,    34,    64,    65,    66,    67,    68,
-      69,    56,   123,    29,    64,   124,    46,    33,    34,    64,
-      65,    66,    67,    68,    69,   175,    56,    76,   127,    77,
-      46,    -1,    -1,   150,    64,    65,    66,    67,    68,    69,
-      56,    64,    65,    66,    67,    68,    69,    -1,    64,    65,
-      66,    67,    68,    69,    -1,    70,    71,    72,    73,    74,
+      18,    62,    19,     7,     8,   139,    10,    57,    58,    13,
+      14,    25,    25,    69,    18,    59,    60,    25,    62,    36,
+      69,     9,    25,    28,    29,    29,     0,    15,    16,    33,
+      34,    19,    93,    33,    34,    25,    26,    27,    99,    30,
+      31,    32,    46,    15,    16,    59,    64,     7,     8,    62,
+      10,    59,    56,    13,    14,   189,    74,    61,    18,    62,
+      64,    65,    66,    67,    68,    69,    56,    69,    62,    29,
+      71,    72,    73,    33,    34,    57,    58,    94,    32,    33,
+      34,    35,    59,    56,    36,    37,    46,    86,    87,   107,
+      42,    43,     7,     8,    45,    10,    56,   158,    13,    14,
+      60,    44,    39,    18,    64,    65,    66,    67,    68,    69,
+      56,    38,    56,    60,    29,   133,    57,    59,    33,    34,
+      64,    65,    66,    67,    68,    69,    57,    49,    56,   146,
+      69,    46,    56,    56,    88,    89,    90,     7,    59,    69,
+     157,    56,    59,   160,    14,   162,    61,    59,    57,    64,
+      65,    66,    67,    68,    69,    69,   173,   175,   177,    29,
+      11,     7,    57,    33,    34,    59,    53,    53,    14,   187,
+     188,   190,    38,    39,    40,    41,    46,    57,   197,   198,
+     199,   200,     6,    29,    57,    57,    56,    33,    34,    64,
+      65,    66,    67,    68,    64,    65,    66,    67,    68,    69,
+      46,    64,    65,    66,    67,    68,    69,    57,     6,   129,
+      56,    64,    65,    66,    67,    68,    69,    64,    64,    65,
+      66,    67,    68,    69,   130,    70,    71,    72,    73,    74,
       75,    76,    77,    78,    79,    64,    65,    66,    67,    68,
-      69,    64,    65,    66,    67,    68,    69,    64,    65,    66,
-      67,    68,    69,    64,    65,    66,    67,    68
+      69,    64,    65,    66,    67,    68,    69,    78,    79,    80,
+      81,    76,    82,    83,    84,    85,   181,    77,   156,   133
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -810,18 +813,19 @@ static const yytype_int8 yystos[] =
      112,    70,    71,    72,    73,    74,    75,    76,    77,    78,
       79,    86,    62,    57,    58,    69,   110,   110,   110,   110,
      102,    25,    26,    27,    56,    59,    45,    44,    36,    37,
-      38,    39,    40,    41,    28,    29,    30,    31,    32,    39,
-      25,    59,    86,    59,    60,    62,    97,    88,    94,    57,
-     107,   107,   107,    56,    69,    88,   113,   114,   104,   105,
-     106,   106,   108,   108,   108,   108,   109,   109,   110,   110,
-     110,    86,   102,    98,    86,    88,    57,    58,    38,    59,
-      87,    92,    93,    99,    97,    57,   114,    69,     8,    10,
-      13,    18,    61,   100,   101,   102,   116,   117,   118,   120,
-      49,    25,    62,    56,    56,   102,    56,    59,    69,   112,
-     102,    86,    69,   102,    59,   102,    59,    25,    59,    11,
-      57,    57,   102,    69,    88,    60,   100,   115,   119,   119,
-      59,    53,    53,    99,     6,    69,    88,    69,    88,    61,
-     119,    57,    57,    57,    57,   119,   119,   119,   119
+      42,    43,    38,    39,    40,    41,    28,    29,    30,    31,
+      32,    33,    34,    39,    25,    59,    86,    59,    60,    62,
+      97,    88,    94,    57,   107,   107,   107,    56,    69,    88,
+     113,   114,   104,   105,   106,   106,   106,   106,   108,   108,
+     108,   108,   109,   109,   110,   110,   110,    86,   102,    98,
+      86,    88,    57,    58,    38,    59,    87,    92,    93,    99,
+      97,    57,   114,    69,     8,    10,    13,    18,    61,   100,
+     101,   102,   116,   117,   118,   120,    49,    25,    62,    56,
+      56,   102,    56,    59,    69,   112,   102,    86,    69,   102,
+      59,   102,    59,    25,    59,    11,    57,    57,   102,    69,
+      88,    60,   100,   115,   119,   119,    59,    53,    53,    99,
+       6,    69,    88,    69,    88,    61,   119,    57,    57,    57,
+      57,   119,   119,   119,   119
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -833,11 +837,12 @@ static const yytype_int8 yyr1[] =
       90,    91,    92,    92,    93,    94,    95,    95,    95,    96,
       96,    96,    96,    96,    97,    98,    98,    98,    99,    99,
      100,   100,   100,   100,   101,   102,   103,   103,   104,   104,
-     105,   105,   105,   106,   106,   106,   106,   106,   107,   107,
-     107,   107,   108,   108,   108,   109,   109,   109,   109,   110,
-     110,   110,   110,   110,   111,   111,   111,   111,   111,   112,
-     113,   113,   113,   114,   114,   114,   115,   116,   116,   117,
-     117,   117,   117,   118,   119,   119,   120,   120
+     105,   105,   105,   105,   105,   106,   106,   106,   106,   106,
+     107,   107,   107,   107,   108,   108,   108,   109,   109,   109,
+     109,   110,   110,   110,   110,   110,   111,   111,   111,   111,
+     111,   111,   111,   112,   113,   113,   113,   114,   114,   114,
+     115,   116,   116,   117,   117,   117,   117,   118,   119,   119,
+     120,   120
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -849,11 +854,12 @@ static const yytype_int8 yyr2[] =
        7,     5,     5,     7,     5,     3,     8,     6,     6,     1,
        3,     1,     3,     0,     4,     2,     2,     0,     2,     0,
        1,     1,     1,     3,     2,     1,     1,     3,     1,     3,
-       1,     3,     3,     1,     3,     3,     3,     3,     1,     3,
-       3,     3,     1,     3,     3,     1,     3,     3,     3,     1,
-       2,     2,     2,     2,     1,     1,     1,     3,     1,     4,
-       1,     3,     0,     1,     1,     5,     3,     1,     1,     9,
-       9,     9,     9,     5,     1,     1,     5,     7
+       1,     3,     3,     3,     3,     1,     3,     3,     3,     3,
+       1,     3,     3,     3,     1,     3,     3,     1,     3,     3,
+       3,     1,     2,     2,     2,     2,     1,     1,     1,     3,
+       1,     2,     2,     4,     1,     3,     0,     1,     1,     5,
+       3,     1,     1,     9,     9,     9,     9,     5,     1,     1,
+       5,     7
 };
 
 
@@ -1800,377 +1806,389 @@ yyreduce:
   case 2: /* program: top_level_list  */
 #line 124 "k0gram.y"
                      {root = (yyval.treeptr); }
-#line 1804 "k0gram.tab.c"
+#line 1810 "k0gram.tab.c"
     break;
 
   case 3: /* top_level_list: top_level_list top_level_decl  */
 #line 127 "k0gram.y"
                                     {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_TOP_LEVEL_LIST_RECUR, "top_level_list", 2, kids, NULL); }
-#line 1810 "k0gram.tab.c"
+#line 1816 "k0gram.tab.c"
     break;
 
   case 4: /* top_level_list: top_level_decl  */
 #line 128 "k0gram.y"
                      {struct tree *kids[10] = {(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_TOP_LEVEL_LIST_SINGLE, "top_level_list", 1, kids, NULL); }
-#line 1816 "k0gram.tab.c"
+#line 1822 "k0gram.tab.c"
     break;
 
   case 5: /* top_level_decl: function_decl  */
 #line 131 "k0gram.y"
                     {struct tree *kids[10] = {(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_TOP_LEVEL_DECL_FUNCTION, "top_level_decl", 1, kids, NULL); }
-#line 1822 "k0gram.tab.c"
+#line 1828 "k0gram.tab.c"
     break;
 
   case 6: /* top_level_decl: importHeader  */
 #line 132 "k0gram.y"
                    {struct tree *kids[10] = {(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_TOP_LEVEL_DECL_IMPORT, "top_level_decl", 1, kids, NULL); }
-#line 1828 "k0gram.tab.c"
+#line 1834 "k0gram.tab.c"
     break;
 
   case 7: /* top_level_decl: global_var_decl  */
 #line 133 "k0gram.y"
                       {struct tree *kids[10] = {(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_TOP_LEVEL_DECL_GLOBAL_VAR_DECL, "top_level_decl", 1, kids, NULL); }
-#line 1834 "k0gram.tab.c"
+#line 1840 "k0gram.tab.c"
     break;
 
   case 8: /* top_level_decl: global_var_init  */
 #line 134 "k0gram.y"
                       {struct tree *kids[10] = {(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_TOP_LEVEL_DECL_GLOBAL_VAR_INIT, "top_level_decl", 1, kids, NULL); }
-#line 1840 "k0gram.tab.c"
+#line 1846 "k0gram.tab.c"
     break;
 
   case 9: /* importHeader: IMPORT IDENT  */
 #line 137 "k0gram.y"
                    {struct tree *kids[10] = {(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_IMPORT_HEADER, "importHeader", 2, kids, NULL); }
-#line 1846 "k0gram.tab.c"
+#line 1852 "k0gram.tab.c"
     break;
 
   case 19: /* type: ARRAY LT type GT  */
 #line 149 "k0gram.y"
                        {struct tree *kids[10] = {(yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_TYPE_ARRAY, "type", 4, kids, NULL); }
-#line 1852 "k0gram.tab.c"
+#line 1858 "k0gram.tab.c"
     break;
 
   case 29: /* global_var_decl: val_var IDENT COLON type SEMICOLON  */
 #line 170 "k0gram.y"
                                          {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_GLOBAL_VAR_DECL, "global_var_decl", 5, kids, NULL); }
-#line 1858 "k0gram.tab.c"
+#line 1864 "k0gram.tab.c"
     break;
 
   case 30: /* global_var_decl: val_var IDENT COLON type ASSIGN expr SEMICOLON  */
 #line 171 "k0gram.y"
                                                      {struct tree *kids[10] = {(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_GLOBAL_VAR_DECL_ASSIGN, "global_var_decl", 7, kids, NULL); }
-#line 1864 "k0gram.tab.c"
+#line 1870 "k0gram.tab.c"
     break;
 
   case 31: /* global_var_init: val_var IDENT ASSIGN expr SEMICOLON  */
 #line 176 "k0gram.y"
                                           {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_GLOBAL_VAR_INIT, "global_var_init", 5, kids, NULL); }
-#line 1870 "k0gram.tab.c"
+#line 1876 "k0gram.tab.c"
     break;
 
   case 32: /* fun_body_var_decl: val_var IDENT COLON type SEMICOLON  */
 #line 181 "k0gram.y"
                                          {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUN_BODY_VAR_DECL, "fun_body_var_decl", 5, kids, NULL); }
-#line 1876 "k0gram.tab.c"
+#line 1882 "k0gram.tab.c"
     break;
 
   case 33: /* fun_body_var_decl: val_var IDENT COLON type ASSIGN expr SEMICOLON  */
 #line 182 "k0gram.y"
                                                      {struct tree *kids[10] = {(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUN_BODY_VAR_DECL_ASSIGN, "fun_body_var_decl", 7, kids, NULL); }
-#line 1882 "k0gram.tab.c"
+#line 1888 "k0gram.tab.c"
     break;
 
   case 34: /* fun_body_var_init: val_var IDENT ASSIGN expr SEMICOLON  */
 #line 187 "k0gram.y"
                                           {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUN_BODY_VAR_INIT, "fun_body_var_init", 5, kids, NULL); }
-#line 1888 "k0gram.tab.c"
+#line 1894 "k0gram.tab.c"
     break;
 
   case 35: /* function_var_decl: IDENT COLON type  */
 #line 190 "k0gram.y"
                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_VAR_DECL, "function_var_decl", 3, kids, NULL); }
-#line 1894 "k0gram.tab.c"
+#line 1900 "k0gram.tab.c"
     break;
 
   case 36: /* function_decl: FUN IDENT LPAREN parameter_list RPAREN COLON type function_body  */
 #line 197 "k0gram.y"
                                                                       {struct tree *kids[10] = {(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_DECL_TYPED, "function_decl", 8, kids, NULL); }
-#line 1900 "k0gram.tab.c"
+#line 1906 "k0gram.tab.c"
     break;
 
   case 37: /* function_decl: FUN IDENT LPAREN parameter_list RPAREN function_body  */
 #line 198 "k0gram.y"
                                                            {struct tree *kids[10] = {(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_DECL_UNTYPED, "function_decl", 6, kids, NULL); }
-#line 1906 "k0gram.tab.c"
+#line 1912 "k0gram.tab.c"
     break;
 
   case 38: /* function_decl: FUN IDENT LPAREN parameter_list RPAREN SEMICOLON  */
 #line 199 "k0gram.y"
                                                        {struct tree *kids[10] = {(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_DECL_SEMICOLON, "function_decl", 6, kids, NULL); }
-#line 1912 "k0gram.tab.c"
+#line 1918 "k0gram.tab.c"
     break;
 
   case 40: /* parameter_list: parameter_list COMMA function_var_decl  */
 #line 203 "k0gram.y"
                                              {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_PARAMETER_RECUR, "parameter_list", 3, kids, NULL); }
-#line 1918 "k0gram.tab.c"
+#line 1924 "k0gram.tab.c"
     break;
 
   case 43: /* parameter_list: %empty  */
 #line 206 "k0gram.y"
       {(yyval.treeptr) = NULL; }
-#line 1924 "k0gram.tab.c"
+#line 1930 "k0gram.tab.c"
     break;
 
   case 44: /* function_body: LBRACE fun_body_var_list statement_list RBRACE  */
 #line 211 "k0gram.y"
                                                      {struct tree *kids[10] = {(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_BODY, "function_body", 4, kids, NULL); }
-#line 1930 "k0gram.tab.c"
+#line 1936 "k0gram.tab.c"
     break;
 
   case 45: /* fun_body_var_list: fun_body_var_list fun_body_var_decl  */
 #line 214 "k0gram.y"
                                           {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUN_BODY_VAR_LIST_DECL, "fun_body_var_list", 2, kids, NULL); }
-#line 1936 "k0gram.tab.c"
+#line 1942 "k0gram.tab.c"
     break;
 
   case 46: /* fun_body_var_list: fun_body_var_list fun_body_var_init  */
 #line 215 "k0gram.y"
                                           {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUN_BODY_VAR_LIST_INIT, "fun_body_var_list", 2, kids, NULL); }
-#line 1942 "k0gram.tab.c"
+#line 1948 "k0gram.tab.c"
     break;
 
   case 47: /* fun_body_var_list: %empty  */
 #line 216 "k0gram.y"
       {(yyval.treeptr) = NULL; }
-#line 1948 "k0gram.tab.c"
+#line 1954 "k0gram.tab.c"
     break;
 
   case 48: /* statement_list: statement_list statement  */
 #line 219 "k0gram.y"
                                {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_STATEMENT_LIST_RECUR, "statement_list", 2, kids, NULL); }
-#line 1954 "k0gram.tab.c"
+#line 1960 "k0gram.tab.c"
     break;
 
   case 49: /* statement_list: %empty  */
 #line 220 "k0gram.y"
       {(yyval.treeptr) = NULL; }
-#line 1960 "k0gram.tab.c"
+#line 1966 "k0gram.tab.c"
     break;
 
   case 53: /* statement: RETURN expr SEMICOLON  */
 #line 226 "k0gram.y"
                             {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_STATEMENT_RETURN, "statement", 3, kids, NULL); }
-#line 1966 "k0gram.tab.c"
+#line 1972 "k0gram.tab.c"
     break;
 
   case 54: /* non_control_statement: expr SEMICOLON  */
 #line 229 "k0gram.y"
                      {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_NON_CONTROL_STATEMENT, "non_control_statement", 2, kids, NULL); }
-#line 1972 "k0gram.tab.c"
+#line 1978 "k0gram.tab.c"
     break;
 
   case 57: /* logical_or_expr: logical_or_expr OR logical_and_expr  */
 #line 236 "k0gram.y"
                                           {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_LOGICAL_OR_RECUR, "logical_or_expr", 3, kids, NULL); }
-#line 1978 "k0gram.tab.c"
+#line 1984 "k0gram.tab.c"
     break;
 
   case 59: /* logical_and_expr: logical_and_expr AND equality_expr  */
 #line 240 "k0gram.y"
                                          {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_LOGICAL_AND_RECUR, "logical_and_expr", 3, kids, NULL); }
-#line 1984 "k0gram.tab.c"
+#line 1990 "k0gram.tab.c"
     break;
 
   case 61: /* equality_expr: equality_expr EQ relational_expr  */
 #line 244 "k0gram.y"
                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_EQUALITY_EQ, "equality_expr", 3, kids, NULL); }
-#line 1990 "k0gram.tab.c"
+#line 1996 "k0gram.tab.c"
     break;
 
   case 62: /* equality_expr: equality_expr NEQ relational_expr  */
 #line 245 "k0gram.y"
                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_EQUALITY_NEQ, "equality_expr", 3, kids, NULL); }
-#line 1996 "k0gram.tab.c"
-    break;
-
-  case 64: /* relational_expr: relational_expr LT additive_expr  */
-#line 249 "k0gram.y"
-                                       {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_LT, "relational_expr", 3, kids, NULL); }
 #line 2002 "k0gram.tab.c"
     break;
 
-  case 65: /* relational_expr: relational_expr GT additive_expr  */
-#line 250 "k0gram.y"
-                                       {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_GT, "relational_expr", 3, kids, NULL); }
+  case 63: /* equality_expr: equality_expr REQ relational_expr  */
+#line 246 "k0gram.y"
+                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_EQUALITY_REQ, "equality_expr", 3, kids, NULL); }
 #line 2008 "k0gram.tab.c"
     break;
 
-  case 66: /* relational_expr: relational_expr LTE additive_expr  */
-#line 251 "k0gram.y"
-                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_LTE, "relational_expr", 3, kids, NULL); }
+  case 64: /* equality_expr: equality_expr RNEQ relational_expr  */
+#line 247 "k0gram.y"
+                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_EQUALITY_RNEQ, "equality_expr", 3, kids, NULL); }
 #line 2014 "k0gram.tab.c"
     break;
 
-  case 67: /* relational_expr: relational_expr GTE additive_expr  */
-#line 252 "k0gram.y"
-                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_GTE, "relational_expr", 3, kids, NULL); }
+  case 66: /* relational_expr: relational_expr LT additive_expr  */
+#line 251 "k0gram.y"
+                                       {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_LT, "relational_expr", 3, kids, NULL); }
 #line 2020 "k0gram.tab.c"
     break;
 
-  case 69: /* assignment_expr: IDENT ASSIGN assignment_expr  */
-#line 256 "k0gram.y"
-                                   {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ASSIGNMENT_ASSIGN, "assignment_expr", 3, kids, NULL); }
+  case 67: /* relational_expr: relational_expr GT additive_expr  */
+#line 252 "k0gram.y"
+                                       {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_GT, "relational_expr", 3, kids, NULL); }
 #line 2026 "k0gram.tab.c"
     break;
 
-  case 70: /* assignment_expr: IDENT PLUS_ASSIGN assignment_expr  */
-#line 257 "k0gram.y"
-                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ASSIGNMENT_PLUS, "assignment_expr", 3, kids, NULL); }
+  case 68: /* relational_expr: relational_expr LTE additive_expr  */
+#line 253 "k0gram.y"
+                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_LTE, "relational_expr", 3, kids, NULL); }
 #line 2032 "k0gram.tab.c"
     break;
 
-  case 71: /* assignment_expr: IDENT MINUS_ASSIGN assignment_expr  */
-#line 258 "k0gram.y"
-                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ASSIGNMENT_MINUS, "assignment_expr", 3, kids, NULL); }
+  case 69: /* relational_expr: relational_expr GTE additive_expr  */
+#line 254 "k0gram.y"
+                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_RELATIONAL_GTE, "relational_expr", 3, kids, NULL); }
 #line 2038 "k0gram.tab.c"
     break;
 
-  case 73: /* additive_expr: additive_expr PLUS multiplicative_expr  */
-#line 262 "k0gram.y"
-                                             {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ADDITIVE_PLUS, "additive_expr", 3, kids, NULL); }
+  case 71: /* assignment_expr: IDENT ASSIGN assignment_expr  */
+#line 258 "k0gram.y"
+                                   {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ASSIGNMENT_ASSIGN, "assignment_expr", 3, kids, NULL); }
 #line 2044 "k0gram.tab.c"
     break;
 
-  case 74: /* additive_expr: additive_expr MINUS multiplicative_expr  */
-#line 263 "k0gram.y"
-                                              {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ADDITIVE_MINUS, "additive_expr", 3, kids, NULL); }
+  case 72: /* assignment_expr: IDENT PLUS_ASSIGN assignment_expr  */
+#line 259 "k0gram.y"
+                                        {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ASSIGNMENT_PLUS, "assignment_expr", 3, kids, NULL); }
 #line 2050 "k0gram.tab.c"
     break;
 
-  case 76: /* multiplicative_expr: multiplicative_expr MUL unary_expr  */
-#line 267 "k0gram.y"
-                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_MULT_MUL, "multiplicative_expr", 3, kids, NULL); }
+  case 73: /* assignment_expr: IDENT MINUS_ASSIGN assignment_expr  */
+#line 260 "k0gram.y"
+                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ASSIGNMENT_MINUS, "assignment_expr", 3, kids, NULL); }
 #line 2056 "k0gram.tab.c"
     break;
 
-  case 77: /* multiplicative_expr: multiplicative_expr DIV unary_expr  */
-#line 268 "k0gram.y"
-                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_MULT_DIV, "multiplicative_expr", 3, kids, NULL); }
+  case 75: /* additive_expr: additive_expr PLUS multiplicative_expr  */
+#line 264 "k0gram.y"
+                                             {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ADDITIVE_PLUS, "additive_expr", 3, kids, NULL); }
 #line 2062 "k0gram.tab.c"
     break;
 
-  case 78: /* multiplicative_expr: multiplicative_expr MOD unary_expr  */
-#line 269 "k0gram.y"
-                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_MULT_MOD, "multiplicative_expr", 3, kids, NULL); }
+  case 76: /* additive_expr: additive_expr MINUS multiplicative_expr  */
+#line 265 "k0gram.y"
+                                              {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr), (yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_ADDITIVE_MINUS, "additive_expr", 3, kids, NULL); }
 #line 2068 "k0gram.tab.c"
     break;
 
-  case 80: /* unary_expr: MINUS unary_expr  */
-#line 273 "k0gram.y"
-                       {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_MINUS, "unary_expr", 2, kids, NULL); }
+  case 78: /* multiplicative_expr: multiplicative_expr MUL unary_expr  */
+#line 269 "k0gram.y"
+                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_MULT_MUL, "multiplicative_expr", 3, kids, NULL); }
 #line 2074 "k0gram.tab.c"
     break;
 
-  case 81: /* unary_expr: NOT unary_expr  */
-#line 274 "k0gram.y"
-                     {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_NOT, "unary_expr", 2, kids, NULL); }
+  case 79: /* multiplicative_expr: multiplicative_expr DIV unary_expr  */
+#line 270 "k0gram.y"
+                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_MULT_DIV, "multiplicative_expr", 3, kids, NULL); }
 #line 2080 "k0gram.tab.c"
     break;
 
-  case 82: /* unary_expr: INC unary_expr  */
-#line 275 "k0gram.y"
-                     {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_INC, "unary_expr", 2, kids, NULL); }
+  case 80: /* multiplicative_expr: multiplicative_expr MOD unary_expr  */
+#line 271 "k0gram.y"
+                                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_MULT_MOD, "multiplicative_expr", 3, kids, NULL); }
 #line 2086 "k0gram.tab.c"
     break;
 
-  case 83: /* unary_expr: DEC unary_expr  */
-#line 276 "k0gram.y"
-                     {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_DEC, "unary_expr", 2, kids, NULL); }
+  case 82: /* unary_expr: MINUS unary_expr  */
+#line 275 "k0gram.y"
+                       {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_MINUS, "unary_expr", 2, kids, NULL); }
 #line 2092 "k0gram.tab.c"
     break;
 
-  case 87: /* primary_expr: LPAREN expr RPAREN  */
-#line 282 "k0gram.y"
-                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_PRIMARY_PAREN, "primary_expr", 3, kids, NULL); }
+  case 83: /* unary_expr: NOT unary_expr  */
+#line 276 "k0gram.y"
+                     {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_NOT, "unary_expr", 2, kids, NULL); }
 #line 2098 "k0gram.tab.c"
     break;
 
-  case 89: /* function_call: IDENT LPAREN function_call_values_list RPAREN  */
-#line 286 "k0gram.y"
-                                                    {struct tree *kids[10] = {(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_CALL, "function_call", 4, kids, NULL); }
+  case 84: /* unary_expr: INC unary_expr  */
+#line 277 "k0gram.y"
+                     {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_INC, "unary_expr", 2, kids, NULL); }
 #line 2104 "k0gram.tab.c"
     break;
 
-  case 91: /* function_call_values_list: function_call_values_list COMMA functionCallVal  */
-#line 290 "k0gram.y"
-                                                      {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_CALL_VALUES_RECUR, "function_call_values_list", 3, kids, NULL); }
+  case 85: /* unary_expr: DEC unary_expr  */
+#line 278 "k0gram.y"
+                     {struct tree *kids[10] = {(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_UNARY_DEC, "unary_expr", 2, kids, NULL); }
 #line 2110 "k0gram.tab.c"
     break;
 
-  case 92: /* function_call_values_list: %empty  */
-#line 291 "k0gram.y"
-      {(yyval.treeptr) = NULL; }
+  case 89: /* primary_expr: LPAREN expr RPAREN  */
+#line 284 "k0gram.y"
+                         {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_PRIMARY_PAREN, "primary_expr", 3, kids, NULL); }
 #line 2116 "k0gram.tab.c"
     break;
 
-  case 95: /* functionCallVal: LPAREN literal RPAREN DOT function_call  */
-#line 296 "k0gram.y"
-                                              {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_CALL_OBJECT_CALL, "functionCallVal", 5, kids, NULL);}
+  case 93: /* function_call: IDENT LPAREN function_call_values_list RPAREN  */
+#line 290 "k0gram.y"
+                                                    {struct tree *kids[10] = {(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_CALL, "function_call", 4, kids, NULL); }
 #line 2122 "k0gram.tab.c"
     break;
 
-  case 96: /* block: LBRACE statement_list RBRACE  */
-#line 299 "k0gram.y"
-                                   {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_BLOCK, "block", 3, kids, NULL); }
+  case 95: /* function_call_values_list: function_call_values_list COMMA functionCallVal  */
+#line 294 "k0gram.y"
+                                                      {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_CALL_VALUES_RECUR, "function_call_values_list", 3, kids, NULL); }
 #line 2128 "k0gram.tab.c"
     break;
 
-  case 99: /* for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body  */
-#line 306 "k0gram.y"
-                                                                               {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_IDENT_IDENT, "for_statement", 9, kids, NULL); }
+  case 96: /* function_call_values_list: %empty  */
+#line 295 "k0gram.y"
+      {(yyval.treeptr) = NULL; }
 #line 2134 "k0gram.tab.c"
     break;
 
-  case 100: /* for_statement: FOR LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body  */
-#line 307 "k0gram.y"
-                                                                                 {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_LITERAL_IDENT, "for_statement", 9, kids, NULL); }
+  case 99: /* functionCallVal: LPAREN literal RPAREN DOT function_call  */
+#line 300 "k0gram.y"
+                                              {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FUNCTION_CALL_OBJECT_CALL, "functionCallVal", 5, kids, NULL);}
 #line 2140 "k0gram.tab.c"
     break;
 
-  case 101: /* for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body  */
-#line 308 "k0gram.y"
-                                                                                 {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_IDENT_LITERAL, "for_statement", 9, kids, NULL); }
+  case 100: /* block: LBRACE statement_list RBRACE  */
+#line 303 "k0gram.y"
+                                   {struct tree *kids[10] = {(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_BLOCK, "block", 3, kids, NULL); }
 #line 2146 "k0gram.tab.c"
     break;
 
-  case 102: /* for_statement: FOR LPAREN IDENT IN literal RANGE_INCL literal RPAREN control_structure_body  */
-#line 309 "k0gram.y"
-                                                                                   {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_LITERAL_LITERAL, "for_statement", 9, kids, NULL); }
+  case 103: /* for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL IDENT RPAREN control_structure_body  */
+#line 310 "k0gram.y"
+                                                                               {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_IDENT_IDENT, "for_statement", 9, kids, NULL); }
 #line 2152 "k0gram.tab.c"
     break;
 
-  case 103: /* while_statement: WHILE LPAREN expr RPAREN control_structure_body  */
-#line 312 "k0gram.y"
-                                                      {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_WHILE, "while_statement", 5, kids, NULL); }
+  case 104: /* for_statement: FOR LPAREN IDENT IN literal RANGE_INCL IDENT RPAREN control_structure_body  */
+#line 311 "k0gram.y"
+                                                                                 {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_LITERAL_IDENT, "for_statement", 9, kids, NULL); }
 #line 2158 "k0gram.tab.c"
     break;
 
-  case 106: /* if_statement: IF LPAREN expr RPAREN control_structure_body  */
-#line 319 "k0gram.y"
-                                                             {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_IF_SIMPLE, "if_statement", 5, kids, NULL); }
+  case 105: /* for_statement: FOR LPAREN IDENT IN IDENT RANGE_INCL literal RPAREN control_structure_body  */
+#line 312 "k0gram.y"
+                                                                                 {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_IDENT_LITERAL, "for_statement", 9, kids, NULL); }
 #line 2164 "k0gram.tab.c"
     break;
 
-  case 107: /* if_statement: IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body  */
-#line 320 "k0gram.y"
-                                                                               {struct tree *kids[10] = {(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_IF_ELSE, "if_statement", 7, kids, NULL); }
+  case 106: /* for_statement: FOR LPAREN IDENT IN literal RANGE_INCL literal RPAREN control_structure_body  */
+#line 313 "k0gram.y"
+                                                                                   {struct tree *kids[10] = {(yyvsp[-8].treeptr),(yyvsp[-7].treeptr),(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_FOR_LITERAL_LITERAL, "for_statement", 9, kids, NULL); }
 #line 2170 "k0gram.tab.c"
     break;
 
+  case 107: /* while_statement: WHILE LPAREN expr RPAREN control_structure_body  */
+#line 316 "k0gram.y"
+                                                      {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_WHILE, "while_statement", 5, kids, NULL); }
+#line 2176 "k0gram.tab.c"
+    break;
 
-#line 2174 "k0gram.tab.c"
+  case 110: /* if_statement: IF LPAREN expr RPAREN control_structure_body  */
+#line 323 "k0gram.y"
+                                                             {struct tree *kids[10] = {(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_IF_SIMPLE, "if_statement", 5, kids, NULL); }
+#line 2182 "k0gram.tab.c"
+    break;
+
+  case 111: /* if_statement: IF LPAREN expr RPAREN control_structure_body ELSE control_structure_body  */
+#line 324 "k0gram.y"
+                                                                               {struct tree *kids[10] = {(yyvsp[-6].treeptr),(yyvsp[-5].treeptr),(yyvsp[-4].treeptr),(yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr)}; (yyval.treeptr) = alctree(PR_IF_ELSE, "if_statement", 7, kids, NULL); }
+#line 2188 "k0gram.tab.c"
+    break;
+
+
+#line 2192 "k0gram.tab.c"
 
         default: break;
       }
@@ -2405,7 +2423,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 322 "k0gram.y"
+#line 326 "k0gram.y"
 
 
 struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kids[10], struct token *leaf) {
