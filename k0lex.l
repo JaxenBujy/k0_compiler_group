@@ -20,7 +20,7 @@ single_delim        \/\*[^\n]*
 hash_line           \#[^\n]*
 identifier          [a-zA-Z_][a-zA-Z0-9_]*
 illegal_identifier [0-9]+[a-zA-Z_][a-zA-Z0-9_]*
-basic_type "Byte"|"Short"|"Int"|"Long"|"Float"|"Double"|"Boolean"|"String"
+basic_type "Byte"|"Short"|"Int"|"Long"|"Float"|"Double"|"Boolean"|"String"|"Char"
 integer_literal  [0-9]+[1-9]*|0[xX][0-9A-Fa-f]+
 real_literal  ([0-9]+\.[0-9]*|\.[0-9]+)
 string_literal \"([^\\\"\n]|\\.)*\"
@@ -190,6 +190,7 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 "Double"    { return alctoken(DOUBLE_TYPE); }
 "Boolean"   { return alctoken(BOOLEAN_TYPE); }
 "String"    { return alctoken(STRING_TYPE); }
+"Char"    { return alctoken(CHAR_TYPE); }
 "Array"     { return alctoken(ARRAY); }
 
  /* Literals */
@@ -237,7 +238,8 @@ int alctoken(int category)
         fprintf(stderr, "Failed to allocate memory for token\n");
         exit(1);
     }
-    // lab 7
+
+    // malloc the type pointer for this token
     t->leaf->type = malloc(sizeof(*(t->leaf->type)));
     memset(t->leaf->type, 0, sizeof(*(t->leaf->type)));
 
@@ -291,12 +293,12 @@ int alctoken(int category)
     {
         case INT:
             t->leaf->ival = atoi(yytext);
-            t->leaf->type->basetype = INTEGER_TYPE;
+            t->leaf->type->basetype = INT_TYPE;
             break;
 
         case REAL:
             t->leaf->dval = atof(yytext);
-            t->leaf->type->basetype = K0_DOUBLE_TYPE;
+            t->leaf->type->basetype = DOUBLE_TYPE;
             break;
 
         case STRING:
@@ -307,11 +309,16 @@ int alctoken(int category)
                        filename, lineno, yytext);
                 exit_status = 1;
             }
-            t->leaf->type->basetype = K0_STRING_TYPE;
+            t->leaf->type->basetype = STRING_TYPE;
             break;
         case CHAR:
             t->leaf->type->basetype = CHAR_TYPE;
             break;
+        case K_FALSE:
+        case K_TRUE:
+            t->leaf->type->basetype = BOOLEAN_TYPE;
+            break;
+
     }
 
     yylval.treeptr = t;

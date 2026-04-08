@@ -60,8 +60,8 @@
 /* Identifiers */
 %token <treeptr> IDENT
 
-/* Types */
-%token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE NULL_TYPE
+/* The literal string words of all types */
+%token <treeptr> BYTE_TYPE SHORT_TYPE INT_TYPE LONG_TYPE FLOAT_TYPE DOUBLE_TYPE BOOLEAN_TYPE STRING_TYPE CHAR_TYPE NULL_TYPE
 %token <treeptr> ARRAY
 
 /* Production Rules */
@@ -146,6 +146,7 @@ type /* basic types supported in k0 */
     | BOOLEAN_TYPE 
     | STRING_TYPE
     | NULL_TYPE
+    | CHAR_TYPE
     | ARRAY LT type GT {struct tree *kids[10] = {$1, $2, $3, $4}; $$ = alctree(PR_TYPE_ARRAY, "type", 4, kids, NULL); }
     ;
 val_var /* keywords val or var to be used in variable declaration/initialization */

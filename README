@@ -1,15 +1,13 @@
 Implemented:
-    - changed prod rule categories in tree.h to reflect current grammar
-    - updated buildsymtab() to reflect current prod rule categories
-    - implemented integer type reading for few production rules in symtab
-    - implemented basic infer_type() that returns correct type for cases where type inference is needed
-    - implemented basic type mismatch error handling for integers only
-    - added value to symentry, only works for integer for time being
-
+    - nested typechecking of right hand side in variable declarations and assignments
+    - mutability checking
+    - assigned return types to all predefined functions in the mksymtab_global function
     
 To-Do:
-    - create type function that resolves types during symbol table creation
-    - in tree.h, have cases for global variable declaration of int, real, and char, but don't enforce that in our grammar
+    - check/validation function for when we see function calls. Check their signature vs. their declaration
+    - check/validation function for arrays. Check that all their members are the same type, subscript in range, etc.
+    - operator checking. Example: something like "chung" + "nug" should not be okay. Also need to add in boolean operators into type checking.
+    - nullability checking
 
 Teammates:
     Jaxen Bujold - 2

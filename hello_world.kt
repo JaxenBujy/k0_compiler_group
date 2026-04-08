@@ -1,9 +1,13 @@
-var x = 15;
+fun foo(): Char {
+
+}
 
 fun main(y: Int?): Int? {
-    var n : Int? = 67;
-    var hello_string: String = "hello\0";
-    val chung: String = "hello\0";
+    var y: Char;
+    var n : Int? = 67 + 3;
+    val jeg: String = "chung" + "nug";
+    n = 4;
+    
 
     println("{n}");
 }

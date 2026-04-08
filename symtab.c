@@ -43,11 +43,9 @@ struct sym_table *mksymtab(int size)
     return t;
 }
 
-// strictly for globally defined functions, including the predefined functions specified in k0 specification.
 struct sym_table *mksymtab_global(int size)
 {
     struct sym_table *global = mksymtab(size);
-
     global->scope_name = strdup("global");
 
     int n = sizeof(predefined_functions) / sizeof(predefined_functions[0]);
@@ -58,26 +56,68 @@ struct sym_table *mksymtab_global(int size)
 
         if (!lookup_current(global, name))
         {
-            // --- Build function type ---
             typeptr t = malloc(sizeof(*t));
             memset(t, 0, sizeof(*t));
 
             t->basetype = FUNC_TYPE;
 
             t->u.f.name = strdup(name);
-            t->u.f.defined = 1; // built-ins are "defined"
+            t->u.f.defined = 1;
 
-            // No real signature info yet so use NONE_TYPE
+            // allocate return type
             t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
-            t->u.f.returntype->basetype = INT_TYPE;
+
+            // assign return types, these could change
+            if (!strcmp(name, "print") || !strcmp(name, "println"))
+            {
+                t->u.f.returntype->basetype = NONE_TYPE;
+            }
+            else if (!strcmp(name, "readln"))
+            {
+                t->u.f.returntype->basetype = STRING_TYPE;
+            }
+            else if (!strcmp(name, "get"))
+            {
+                t->u.f.returntype->basetype = STRING_TYPE;
+            }
+            else if (!strcmp(name, "equals"))
+            {
+                t->u.f.returntype->basetype = BOOL_TYPE;
+            }
+            else if (!strcmp(name, "length"))
+            {
+                t->u.f.returntype->basetype = INT_TYPE;
+            }
+            else if (!strcmp(name, "toString") || !strcmp(name, "valueOf"))
+            {
+                t->u.f.returntype->basetype = STRING_TYPE;
+            }
+            else if (!strcmp(name, "substring"))
+            {
+                t->u.f.returntype->basetype = STRING_TYPE;
+            }
+            else if (!strcmp(name, "nextInt"))
+            {
+                t->u.f.returntype->basetype = INT_TYPE;
+            }
+            else if (!strcmp(name, "abs") || !strcmp(name, "max") || !strcmp(name, "min"))
+            {
+                t->u.f.returntype->basetype = INT_TYPE;
+            }
+            else if (!strcmp(name, "pow") || !strcmp(name, "cos") ||
+                     !strcmp(name, "sin") || !strcmp(name, "tan"))
+            {
+                t->u.f.returntype->basetype = FLOAT_TYPE;
+            }
+            else
+            {
+                t->u.f.returntype->basetype = NONE_TYPE; // fallback if we don't know it
+            }
 
             t->u.f.nparams = 0;
             t->u.f.parameters = NULL;
-
-            // No scope needed for built-ins
             t->u.f.st = NULL;
 
-            // insert into global table
             insert(global, name, t, 0, 0);
         }
     }
@@ -174,7 +214,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         t->basetype = node->kids[3]->leaf->category;
 
         char *name = node->kids[1]->leaf->text;
-        node->kids[1]->leaf->type = t; // for printout at AST
 
         int is_mutable = (node->kids[0]->leaf->category == VAR);
         int is_nullable = 0; // we know it's not nullable
@@ -197,21 +236,28 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     case PR_FUN_BODY_VAR_DECL_ASSIGN:
     {
         // immediately handle type checking
-        if (node->kids[3]->leaf->category == INT_TYPE && node->kids[5]->leaf->category != INT)
+        typeptr declared = malloc(sizeof(*declared));
+        declared->basetype = node->kids[3]->leaf->category;
+
+        typeptr expr_t = typecheck_expr(node->kids[5], current,
+                                        symtab_err_flag, filename);
+
+        if (!type_equal(declared, expr_t))
         {
-            fprintf(stderr, "%s:%d: semantic error: type mismatch of variable %s\n", filename, node->kids[1]->leaf->lineno, node->kids[1]->leaf->text);
+            fprintf(stderr, "%s:%d: semantic error: type mismatch of variable %s\n",
+                    filename,
+                    node->kids[1]->leaf->lineno,
+                    node->kids[1]->leaf->text);
             *symtab_err_flag = 1;
         }
 
         typeptr t = malloc(sizeof(*t));
 
-        t->basetype = node->kids[3]->leaf->category; // IDENT category
+        t->basetype = declared->basetype; // passed type checks, so make the basetype the declared type
 
-        char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
+        char *name = node->kids[1]->leaf->text;
         int is_mutable = (node->kids[0]->leaf->category == VAR);
         int is_nullable = 0; // we know it's not nullable
-
-        node->kids[1]->leaf->type = t; // for printout at AST
 
         if (lookup_current(current, name))
         { // so if the name appears twice as a declaration in current symbol table, break out for now
@@ -234,8 +280,9 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         char *name = node->kids[1]->leaf->text;
 
+        // assign mutability and nullability
         int is_mutable = (node->kids[0]->leaf->category == VAR);
-        int is_nullable = (node->kids[4]->leaf->category == NULLABLE);
+        int is_nullable = 1;
 
         if (lookup_current(current, name))
         {
@@ -254,16 +301,29 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     case PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE:
     case PR_FUN_BODY_VAR_DECL_ASSIGN_NULLABLE:
     {
+        typeptr declared = malloc(sizeof(*declared));
+        declared->basetype = node->kids[3]->leaf->category;
+
+        typeptr expr_t = typecheck_expr(node->kids[6], current,
+                                        symtab_err_flag, filename);
+
+        /* allow null if you support it later */
+        if (expr_t && !type_equal(declared, expr_t))
+        {
+            fprintf(stderr, "%s:%d: semantic error: type mismatch of variable %s\n",
+                    filename,
+                    node->kids[1]->leaf->lineno,
+                    node->kids[1]->leaf->text);
+            *symtab_err_flag = 1;
+        }
 
         typeptr t = malloc(sizeof(*t));
 
-        t->basetype = node->kids[3]->leaf->category; // IDENT category
+        t->basetype = declared->basetype;
 
-        char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
+        char *name = node->kids[1]->leaf->text;
         int is_mutable = (node->kids[0]->leaf->category == VAR);
-        int is_nullable = (node->kids[4]->leaf->category == NULLABLE); // a bit redudant since we know its nullable from the switch case but good to assing it the same way as mutability
-
-        node->kids[1]->leaf->type = t; // for printout at AST
+        int is_nullable = 1;
 
         if (lookup_current(current, name))
         { // so if the name appears twice as a declaration in current symbol table, break out for now
@@ -281,24 +341,51 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     case PR_GLOBAL_VAR_INIT:
     case PR_FUN_BODY_VAR_INIT:
     {
+        typeptr expr_t = typecheck_expr(node->kids[3], current,
+                                        symtab_err_flag, filename);
+
+        if (!expr_t)
+        {
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        // only INT, CHAR, DOUBLE/REAL allowed
+        int bt = expr_t->basetype;
+        if (bt != INT_TYPE && bt != CHAR_TYPE && bt != DOUBLE_TYPE)
+        {
+            fprintf(stderr,
+                    "%s:%d: semantic error: inferred type not allowed for %s\n",
+                    filename,
+                    node->kids[1]->leaf->lineno,
+                    node->kids[1]->leaf->text);
+            *symtab_err_flag = 1;
+
+            /* still assign something to avoid crashing later */
+            bt = NONE_TYPE;
+        }
+
         typeptr t = malloc(sizeof(*t));
+        t->basetype = bt;
 
-        t->basetype = infer_type(node->kids[3]->leaf);
-
-        char *name = node->kids[1]->leaf->text; // finding where IDENT name lives within global variable declarations kids array
+        char *name = node->kids[1]->leaf->text;
         int is_mutable = (node->kids[0]->leaf->category == VAR);
-        int is_nullable = 0;           // we know its not nullable
-        node->kids[1]->leaf->type = t; // for printout at AST
+        int is_nullable = 0;
 
         if (lookup_current(current, name))
-        { // so if the name appears twice as a declaration in current symbol table, break out for now
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
+        {
+            fprintf(stderr,
+                    "%s:%d: semantic error: redeclaration of variable %s\n",
+                    filename,
+                    node->kids[1]->leaf->lineno,
+                    name);
             *symtab_err_flag = 1;
         }
         else
         {
-            insert(current, name, t, is_mutable, is_nullable); // else insert into current symbol table
+            insert(current, name, t, is_mutable, is_nullable);
         }
+
         break;
     }
 
@@ -468,15 +555,33 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     {
         char *name = node->kids[0]->leaf->text;
 
+        // lookup if variable exists
         struct sym_entry *e = lookup(current, name);
         if (!e)
         {
-            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n", filename, node->kids[0]->leaf->lineno, name); // look up variable and ensure it has been defined before
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
             *symtab_err_flag = 1;
+            break;
         }
-        else
+
+        // it exists, lookup if it is mutable
+        if (!e->is_mutable)
         {
-            node->kids[0]->symbol = e; // assign symbol info to AST node
+            fprintf(stderr, "%s:%d: semantic error: attempt to modify immutable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        // it is mutable and exists, so type check the right hand side
+        typeptr rhs = typecheck_expr(node->kids[2], current, symtab_err_flag, filename);
+
+        if (rhs && !type_equal(e->type, rhs))
+        {
+            fprintf(stderr, "%s:%d: semantic error: type mismatch in assignment to %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
         }
         break;
     }
@@ -569,6 +674,9 @@ void print_scope(struct sym_table *st, int level)
                         break;
                     case STRING_TYPE:
                         printf("  %s %s, type: String%s\n", mut, e->name, nullable);
+                        break;
+                    case CHAR_TYPE:
+                        printf("  %s %s, type: Char%s\n", mut, e->name, nullable);
                         break;
                     case NONE_TYPE:
                         printf("  %s %s, type: NONE%s\n", mut, e->name, nullable);
@@ -731,4 +839,122 @@ paramlist build_param_list_only(struct tree *node, int *count)
     }
 
     return head;
+}
+
+typeptr typecheck_expr(struct tree *node, struct sym_table *current,
+                       int *err, char *filename)
+{
+    if (!node)
+        return NULL;
+
+    switch (node->prodrule)
+    {
+
+    // literals
+    case INT:
+    case REAL:
+    case STRING:
+    case MULTI_STRING:
+    case CHAR:
+    case K_TRUE:
+    case K_FALSE:
+    {
+        return node->leaf->type;
+    }
+
+    // identifiers
+    case IDENT:
+    {
+        char *name = node->leaf->text;
+        struct sym_entry *e = lookup(current, name);
+
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: undeclared variable %s\n",
+                    filename, node->leaf->lineno, name);
+            *err = 1;
+            return NULL;
+        }
+
+        node->symbol = e;
+        return e->type;
+    }
+
+    // parentheses: ( expr )
+    case PR_PRIMARY_PAREN:
+        return typecheck_expr(node->kids[1], current, err, filename);
+
+    // arithmetic
+    case PR_ADDITIVE_PLUS:
+    case PR_ADDITIVE_MINUS:
+    case PR_MULT_MUL:
+    case PR_MULT_DIV:
+    case PR_MULT_MOD:
+    {
+        typeptr left = typecheck_expr(node->kids[0], current, err, filename);
+        typeptr right = typecheck_expr(node->kids[2], current, err, filename);
+
+        if (!left || !right)
+            return NULL;
+
+        if (!type_equal(left, right))
+        {
+            fprintf(stderr, "%s:%d: type mismatch in binary expression\n",
+                    filename, node->kids[1]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+
+        return left;
+    }
+
+    // unary
+    case PR_UNARY_MINUS:
+        return typecheck_expr(node->kids[1], current, err, filename);
+
+    case PR_UNARY_NOT:
+    {
+        typeptr t = typecheck_expr(node->kids[1], current, err, filename);
+
+        if (!t)
+            return NULL;
+
+        if (t->basetype != BOOL_TYPE)
+        {
+            fprintf(stderr, "%s:%d: ! requires boolean\n",
+                    filename, node->kids[0]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+
+        return t;
+    }
+
+    // function call
+    case PR_FUNCTION_CALL:
+    {
+        char *name = node->kids[0]->leaf->text;
+        struct sym_entry *e = lookup(current, name);
+
+        if (!e || e->type->basetype != FUNC_TYPE)
+        {
+            fprintf(stderr, "%s:%d: invalid function call %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *err = 1;
+            return NULL;
+        }
+
+        // need to add a check function call function here to validate the function call
+
+        return e->type->u.f.returntype;
+    }
+    }
+    return NULL;
+}
+
+int type_equal(typeptr a, typeptr b)
+{
+    if (!a || !b)
+        return 0;
+    return a->basetype == b->basetype;
 }
