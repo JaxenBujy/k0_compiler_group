@@ -35,116 +35,54 @@ Opening file 'tests/errors/lex16.kt'...
 
 ===== Running: tests/k0/lex1.kt =====
 Opening file 'tests/k0/lex1.kt'...
+used for testing and output clarity.
 No semantic errors found in symbol tables
-
----print_symtab output---
---- Level 0, Symbol table for: global ---
-  min
-  tan
-  nextInt
-  substring
-  get
-  print
-  toString
-  readln
-  equals
-  max
-  length
-  cos
-  sin
-  abs
-  valueOf
-  println
-  pow
---- Level 1, Symbol table for: package tests/k0/lex1.kt ---
-  a, type: INT
-  b, type: INT
 yyparse returned 0
 
 ===== Running: tests/k0/lex2.kt =====
-
-parser error: tests/k0/lex2.kt:16: syntax error, unexpected NN_ASSERT
 Opening file 'tests/k0/lex2.kt'...
-exiting with status 2...
+used for testing and output clarity.
+No semantic errors found in symbol tables
+yyparse returned 0
 
 ===== Running: tests/k0/lex3.kt =====
-
-parser error: tests/k0/lex3.kt:4: syntax error, unexpected LSQUARE
 Opening file 'tests/k0/lex3.kt'...
-exiting with status 2...
+used for testing and output clarity.
+No semantic errors found in symbol tables
+yyparse returned 0
 
 ===== Running: tests/k0/lex4.kt =====
-
-parser error: tests/k0/lex4.kt:6: syntax error, unexpected IDENT
 Opening file 'tests/k0/lex4.kt'...
-exiting with status 2...
+used for testing and output clarity.
+No semantic errors found in symbol tables
+yyparse returned 0
 
 ===== Running: tests/k0/lex5.kt =====
 Opening file 'tests/k0/lex5.kt'...
+used for testing and output clarity.
 No semantic errors found in symbol tables
-
----print_symtab output---
---- Level 0, Symbol table for: global ---
-  min
-  tan
-  nextInt
-  substring
-  get
-  print
-  toString
-  readln
-  equals
-  max
-  length
-  cos
-  sin
-  abs
-  valueOf
-  println
-  pow
---- Level 1, Symbol table for: package tests/k0/lex5.kt ---
-  main
---- Level 2, Symbol table for: func main ---
 yyparse returned 0
 
 ===== Running: tests/k0/lex6.kt =====
 Opening file 'tests/k0/lex6.kt'...
+used for testing and output clarity.
 No semantic errors found in symbol tables
-
----print_symtab output---
---- Level 0, Symbol table for: global ---
-  min
-  tan
-  nextInt
-  substring
-  get
-  print
-  toString
-  readln
-  equals
-  max
-  length
-  cos
-  sin
-  abs
-  valueOf
-  println
-  pow
---- Level 1, Symbol table for: package tests/k0/lex6.kt ---
-  main
---- Level 2, Symbol table for: func main ---
 yyparse returned 0
 
 ===== Running: tests/k0/lex7.kt =====
-
-parser error: tests/k0/lex7.kt:2: syntax error, unexpected TYPE_CAST
 Opening file 'tests/k0/lex7.kt'...
-exiting with status 2...
+used for testing and output clarity.
+No semantic errors found in symbol tables
+yyparse returned 0
 
 ===== Running: tests/k0/lex8.kt =====
 
-parser error: tests/k0/lex8.kt:4: syntax error, unexpected IDENT
+parser error: tests/k0/lex8.kt:9: syntax error, unexpected PLUS, expecting RPAREN or COMMA
 Opening file 'tests/k0/lex8.kt'...
 exiting with status 2...
+
+===== Running: tests/kotlin/lex17.kt =====
+tests/kotlin/lex17.kt:3: scanner error: Kotlin reserved keyword: "!in" is not a part of k0
+Opening file 'tests/kotlin/lex17.kt'...
 
 All tests completed.

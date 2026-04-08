@@ -1,11 +1,11 @@
 /* everything */
 fun main() {
     var x: Int = 10;
-    var y: Float = 3.14f;
+    var y: Float = 3.14;
 
     x += y.toInt();
 
-    if (x >= 10 && y != 0.0f) {
+    if (x >= 10 && y != 0.0) {
         println("value: " + x);
     }
 

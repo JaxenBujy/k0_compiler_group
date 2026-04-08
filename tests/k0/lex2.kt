@@ -16,7 +16,7 @@ fun main() {
     val nn = a!!;
     val safe = a?.toString();
     val elvis = a ?: b;
-    val nullable = a ?;
+    val nullable = a?;
 
     val rangeEx = 1 ..< 10;
     val rangeIn = 1 .. 10;

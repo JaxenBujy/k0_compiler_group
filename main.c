@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     int dot_bool = 0;    // bool flag to determine if dot will be used to produce png image of AST
     int tree_bool = 0;   // bool flag to determine if tree will be printed
     int symtab_bool = 0; // bool flag to determine if symbol table will be printed
+    int none_bool = 0;
 
     // filename is required to come first
     filename = argv[1];
@@ -56,6 +57,10 @@ int main(int argc, char *argv[])
         if (strcmp(argv[i], "-symtab") == 0)
         {
             symtab_bool = 1;
+        }
+        if (strcmp(argv[i], "-none") == 0)
+        {
+            none_bool = 1;
         }
     }
 
@@ -84,6 +89,11 @@ int main(int argc, char *argv[])
         {
             print_graph(root, filename);
             printf("dot file of AST generated in %s_tree.dot. To generate png image of the tree, run \"dot -Tpng %s_tree.dot > tree_img.png\"\n", filename, filename);
+        }
+
+        if (none_bool)
+        {
+            printf("used for testing and output clarity.\n");
         }
 
         // construct the symbol table

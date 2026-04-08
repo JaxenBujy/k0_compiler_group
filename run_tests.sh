@@ -12,10 +12,10 @@ make clean
 make
 
 COMPILER="./k0"
-OPTION="-symtab"
+OPTION="-none"
 
 # Loop through desired test files
-for file in $(ls tests/k0/lex*.kt tests/k0/syn*.kt tests/k0/sem*.kt tests/errors/lex*.kt 2>/dev/null | sort -V)
+for file in $(ls tests/k0/lex*.kt tests/k0/syn*.kt tests/k0/sem*.kt tests/errors/lex*.kt tests/kotlin/lex*.kt 2>/dev/null | sort -V)
 do
     if [ -f "$file" ]; then
         echo "" | tee -a "$OUTPUT_FILE"

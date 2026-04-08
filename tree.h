@@ -156,11 +156,18 @@ enum ProductionRule
     PR_RELATIONAL_LTE,
     PR_RELATIONAL_GTE,
 
+    /* elvis_expr */
+    PR_ELVIS,
+
     /* assignment_expr */
     PR_ASSIGNMENT_SINGLE,
     PR_ASSIGNMENT_ASSIGN,
     PR_ASSIGNMENT_PLUS,
     PR_ASSIGNMENT_MINUS,
+
+    /* range_expr */
+    PR_RANGE_INCL,
+    PR_RANGE_EXCL,
 
     /* additive_expr */
     PR_ADDITIVE_SINGLE,
@@ -177,8 +184,16 @@ enum ProductionRule
     PR_UNARY_PRIMARY,
     PR_UNARY_MINUS,
     PR_UNARY_NOT,
-    PR_UNARY_INC,
-    PR_UNARY_DEC,
+    PR_UNARY_INC, // pre-fix increment
+    PR_UNARY_DEC, // post-fix increment
+    PR_UNARY_CAST,
+
+    /* postfix_expr */
+    PR_POST_FIX_INC, // post-fix decrement
+    PR_POST_FIX_NN_ASSERT,
+    PR_POST_FIX_DOT,
+    PR_POST_FIX_SAFE_CALL,
+    PR_POST_FIX_NULLABLE,
 
     /* primary_expr */
     PR_PRIMARY_FUNCTION_CALL,
