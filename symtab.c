@@ -909,7 +909,7 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
 
         return left;
     }
-        // Relational expressions: expr < expr, expr > expr, etc.
+    // Relational expressions: expr < expr, expr > expr, etc.
     case PR_RELATIONAL_LT:
     case PR_RELATIONAL_GT:
     case PR_RELATIONAL_LTE:
