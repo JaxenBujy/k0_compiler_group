@@ -1,0 +1,148 @@
+Running all tests...
+==========================
+
+===== Running: tests/errors/lex9.kt =====
+tests/errors/lex9.kt:1: scanner error: unclosed multi-line comment
+tests/errors/lex9.kt:2: parser error: syntax error, unexpected UNCLOSED_COMMENT, expecting FUN or VAL or VAR or IMPORT
+Opening file 'tests/errors/lex9.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex10.kt =====
+tests/errors/lex10.kt:2: scanner error: '~' is an illegal operator
+tests/errors/lex10.kt:2: parser error: syntax error, unexpected OP_ERROR
+Opening file 'tests/errors/lex10.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex11.kt =====
+tests/errors/lex11.kt:2: scanner error: ''' could not be matched
+tests/errors/lex11.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
+Opening file 'tests/errors/lex11.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex12.kt =====
+tests/errors/lex12.kt:2: scanner error: '"' could not be matched
+tests/errors/lex12.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
+Opening file 'tests/errors/lex12.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex13.kt =====
+tests/errors/lex13.kt:2: scanner error: '"' could not be matched
+tests/errors/lex13.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
+Opening file 'tests/errors/lex13.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex14.kt =====
+tests/errors/lex14.kt:2: scanner error: unsupported escape sequence in "\q"
+tests/errors/lex14.kt:3: parser error: syntax error, unexpected RBRACE
+Opening file 'tests/errors/lex14.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex15.kt =====
+tests/errors/lex15.kt:2: scanner error: '123abc' is an illegal identifier
+tests/errors/lex15.kt:2: parser error: syntax error, unexpected ILL_IDENT, expecting IDENT
+Opening file 'tests/errors/lex15.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex16.kt =====
+tests/errors/lex16.kt:2: scanner error: '@' could not be matched
+tests/errors/lex16.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
+Opening file 'tests/errors/lex16.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/k0/lex1.kt =====
+Opening file 'tests/k0/lex1.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
+===== Running: tests/k0/lex3.kt =====
+Opening file 'tests/k0/lex3.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
+===== Running: tests/k0/lex4.kt =====
+Opening file 'tests/k0/lex4.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
+===== Running: tests/k0/lex5.kt =====
+Opening file 'tests/k0/lex5.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
+===== Running: tests/k0/lex6.kt =====
+Opening file 'tests/k0/lex6.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
+===== Running: tests/k0/lex7.kt =====
+tests/k0/lex7.kt:2: parser error: syntax error, unexpected TYPE_CAST
+Opening file 'tests/k0/lex7.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/k0/syn2.kt =====
+tests/k0/syn2.kt:22: parser error: syntax error, unexpected REQ
+Opening file 'tests/k0/syn2.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/k0/syn3.kt =====
+
+===== Running: tests/kotlin/lex17.kt =====
+tests/kotlin/lex17.kt:3: scanner error: Kotlin reserved keyword: "!in" is not a part of k0
+tests/kotlin/lex17.kt:3: parser error: syntax error, unexpected KEYWORD_ERROR
+Opening file 'tests/kotlin/lex17.kt'...
+
+
+exiting with status 1...
+
+
+All tests completed.
