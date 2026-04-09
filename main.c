@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        printf("\nError: at least two arguments required\nUsage: ./ko <filename> <options>\n");
-        printf("OPTIONAL:\n-dot: generate a dot file of the syntax tree\n");
+        printf("\nError: at least file name required\nUsage: ./ko <filename> <options>\n");
+        printf("OPTIONAL:\n");
         printf("-dot: generate a dot file of the syntax tree\n");
         printf("-tree: print the syntax tree\n");
         printf("-symtab: print the syntax tree\n");

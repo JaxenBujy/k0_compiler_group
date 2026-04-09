@@ -250,12 +250,12 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         typeptr declared = malloc(sizeof(*declared));
         declared->basetype = node->kids[3]->leaf->category;
 
-        typeptr expr_t = typecheck_expr(node->kids[5], current,
-                                        symtab_err_flag, filename);
+        typeptr expr_t = typecheck_expr(node->kids[5], current, symtab_err_flag, filename);
+        printf("expr_t:%d\n", expr_t->basetype);
 
         if (!type_equal(declared, expr_t))
         {
-            fprintf(stderr, "%s:%d: semantic error: type mismatch of variable %s\n",
+            fprintf(stderr, "%s:%d: semantic error: type mismatch in variable declaration of %s\n",
                     filename,
                     node->kids[1]->leaf->lineno,
                     node->kids[1]->leaf->text);
@@ -318,10 +318,10 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         typeptr expr_t = typecheck_expr(node->kids[6], current,
                                         symtab_err_flag, filename);
 
-        /* allow null if you support it later */
+        // allow null if when supporting it later
         if (expr_t && !type_equal(declared, expr_t))
         {
-            fprintf(stderr, "%s:%d: semantic error: type mismatch of variable %s\n",
+            fprintf(stderr, "%s:%d: semantic error: type mismatch in nullable variable declaration of %s\n",
                     filename,
                     node->kids[1]->leaf->lineno,
                     node->kids[1]->leaf->text);
@@ -791,61 +791,60 @@ paramlist build_and_insert_params(struct tree *node, struct sym_table *st, int *
     return head;
 }
 
-paramlist build_param_list_only(struct tree *node, int *count)
-{
-    if (!node)
-        return NULL;
+// paramlist build_param_list_only(struct tree *node, int *count)
+// {
+//     if (!node)
+//         return NULL;
 
-    paramlist head = NULL;
-    paramlist tail = NULL;
+//     paramlist head = NULL;
+//     paramlist tail = NULL;
 
-    // Base case: parameter declaration
-    if (node->prodrule == PR_FUNCTION_VAR_DECL)
-    {
-        struct param *p = malloc(sizeof(struct param));
+//     // Base case: parameter declaration
+//     if (node->prodrule == PR_FUNCTION_VAR_DECL)
+//     {
+//         struct param *p = malloc(sizeof(struct param));
 
-        char *name = node->kids[0]->leaf->text;
+//         char *name = node->kids[0]->leaf->text;
 
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = node->kids[2]->leaf->category;
+//         typeptr t = malloc(sizeof(*t));
+//         t->basetype = node->kids[2]->leaf->category;
 
-        p->name = strdup(name);
-        p->type = t;
-        p->next = NULL;
+//         p->name = strdup(name);
+//         p->type = t;
+//         p->next = NULL;
 
-        (*count)++;
+//         (*count)++;
 
-        return p;
-    }
+//         return p;
+//     }
 
-    // Recursive traversal for parameter lists
-    for (int i = 0; i < node->nkids; i++)
-    {
-        paramlist sub = build_param_list_only(node->kids[i], count);
+//     // Recursive traversal for parameter lists
+//     for (int i = 0; i < node->nkids; i++)
+//     {
+//         paramlist sub = build_param_list_only(node->kids[i], count);
 
-        if (!sub)
-            continue;
+//         if (!sub)
+//             continue;
 
-        if (!head)
-        {
-            head = sub;
-            tail = sub;
-        }
-        else
-        {
-            tail->next = sub;
-        }
+//         if (!head)
+//         {
+//             head = sub;
+//             tail = sub;
+//         }
+//         else
+//         {
+//             tail->next = sub;
+//         }
 
-        // Move tail to end of list
-        while (tail->next)
-            tail = tail->next;
-    }
+//         // Move tail to end of list
+//         while (tail->next)
+//             tail = tail->next;
+//     }
 
-    return head;
-}
+//     return head;
+// }
 
-typeptr typecheck_expr(struct tree *node, struct sym_table *current,
-                       int *err, char *filename)
+typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, char *filename)
 {
     if (!node)
         return NULL;
@@ -900,15 +899,60 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current,
         if (!left || !right)
             return NULL;
 
-        if (!type_equal(left, right))
+        if (!type_equal(left, right) || !is_numeric_type(left->basetype) || !is_numeric_type(right->basetype))
         {
-            fprintf(stderr, "%s:%d: type mismatch in binary expression\n",
+            fprintf(stderr, "%s:%d: semantic error: type mismatch in binary expression\n",
                     filename, node->kids[1]->leaf->lineno);
             *err = 1;
             return NULL;
         }
 
         return left;
+    }
+        // Relational expressions: expr < expr, expr > expr, etc.
+    case PR_RELATIONAL_LT:
+    case PR_RELATIONAL_GT:
+    case PR_RELATIONAL_LTE:
+    case PR_RELATIONAL_GTE:
+    case PR_EQUALITY_EQ:
+    case PR_EQUALITY_NEQ:
+    {
+        typeptr left = typecheck_expr(node->kids[0], current, err, filename);
+        typeptr right = typecheck_expr(node->kids[2], current, err, filename);
+        if (!left || !right)
+            return NULL;
+
+        // In k0, relational operators require numeric types (Int, Double, etc.)
+        int left_bt = left->basetype;
+        int right_bt = right->basetype;
+        if (!is_numeric_type(left_bt) || !is_numeric_type(right_bt) ||
+            !type_equal(left, right))
+        {
+            fprintf(stderr, "%s:%d: relational operator requires numeric operands of the same type\n",
+                    filename, node->kids[1]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+        // Result is always Boolean
+        return get_bool_typeptr();
+    }
+
+    case PR_LOGICAL_OR_RECUR:
+    case PR_LOGICAL_AND_RECUR:
+    {
+        typeptr left = typecheck_expr(node->kids[0], current, err, filename);
+        typeptr right = typecheck_expr(node->kids[2], current, err, filename);
+        if (!left || !right)
+            return NULL;
+
+        if (left->basetype != BOOLEAN_TYPE || right->basetype != BOOLEAN_TYPE)
+        {
+            fprintf(stderr, "%s:%d: logical operator requires Boolean operands\n",
+                    filename, node->kids[1]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+        return get_bool_typeptr();
     }
 
     // unary
@@ -1042,4 +1086,20 @@ typeptr check_function_call(struct tree *node, struct sym_table *current, int *e
     }
 
     return ftype->u.f.returntype;
+}
+
+int is_numeric_type(int bt)
+{
+    return bt == INT_TYPE || bt == DOUBLE_TYPE || bt == FLOAT_TYPE || bt == LONG_TYPE || bt == SHORT_TYPE || bt == BYTE_TYPE;
+}
+
+typeptr get_bool_typeptr(void)
+{
+    typeptr bool_ptr = NULL;
+    if (!bool_ptr)
+    {
+        bool_ptr = malloc(sizeof(*bool_ptr));
+        bool_ptr->basetype = BOOLEAN_TYPE;
+    }
+    return bool_ptr;
 }

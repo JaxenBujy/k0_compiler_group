@@ -1,5 +1,5 @@
 #!/bin/bash
 make clean
 make
-./k0 foo.kt -tree -dot
-dot -Tpng foo.kt_tree.dot > tree_img.png
+./k0 hello_world.kt -tree -dot
+dot -Tpng hello_world.kt_tree.dot > tree_img.png

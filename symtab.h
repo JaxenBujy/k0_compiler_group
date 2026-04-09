@@ -17,6 +17,8 @@ paramlist build_param_list_only(struct tree *node, int *count);
 typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, char *filename);
 typeptr check_function_call(struct tree *node, struct sym_table *current, int *err, char *filename);
 int type_equal(typeptr a, typeptr b);
+int is_numeric_type(int bt);
+typeptr get_bool_typeptr(void);
 
 struct sym_entry
 {
