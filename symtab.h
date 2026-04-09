@@ -15,7 +15,7 @@ int infer_type(struct token *node);
 paramlist build_and_insert_params(struct tree *node, struct sym_table *st, int *count, int *symtab_err_flag, char *filename);
 paramlist build_param_list_only(struct tree *node, int *count);
 typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, char *filename);
-typeptr make_type(int basetype);
+typeptr check_function_call(struct tree *node, struct sym_table *current, int *err, char *filename);
 int type_equal(typeptr a, typeptr b);
 
 struct sym_entry

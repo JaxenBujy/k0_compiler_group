@@ -59,18 +59,33 @@ struct sym_table *mksymtab_global(int size)
             typeptr t = malloc(sizeof(*t));
             memset(t, 0, sizeof(*t));
 
+            // set defaults that may or may not get overwritten
             t->basetype = FUNC_TYPE;
-
             t->u.f.name = strdup(name);
             t->u.f.defined = 1;
-
-            // allocate return type
             t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
+            t->u.f.nparams = 0;
+            t->u.f.parameters = NULL;
+            t->u.f.st = NULL;
 
             // assign return types, these could change
+            // hardcoding print and println to both accept one string argument for now
             if (!strcmp(name, "print") || !strcmp(name, "println"))
             {
                 t->u.f.returntype->basetype = NONE_TYPE;
+
+                t->u.f.nparams = 1;
+
+                // build single parameter: String
+                paramlist p = malloc(sizeof(struct param));
+
+                p->name = strdup("s"); // arbitrary name
+                p->type = malloc(sizeof(*(p->type)));
+                p->type->basetype = STRING_TYPE;
+
+                p->next = NULL;
+
+                t->u.f.parameters = p;
             }
             else if (!strcmp(name, "readln"))
             {
@@ -113,10 +128,6 @@ struct sym_table *mksymtab_global(int size)
             {
                 t->u.f.returntype->basetype = NONE_TYPE; // fallback if we don't know it
             }
-
-            t->u.f.nparams = 0;
-            t->u.f.parameters = NULL;
-            t->u.f.st = NULL;
 
             insert(global, name, t, 0, 0);
         }
@@ -416,7 +427,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         t->u.f.nparams = 0;
         t->u.f.parameters = NULL; // will fill later
 
-        // insert function into current scope FIRST
+        // insert function into current scope
         insert(current, name, t, 0, 0);
 
         // Create new scope for function
@@ -589,18 +600,10 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     // Function call
     case PR_FUNCTION_CALL:
     {
-        char *name = node->kids[0]->leaf->text;
 
-        struct sym_entry *e = lookup(current, name);
-        if (!e)
-        {
-            fprintf(stderr, "%s:%d: semantic error: undeclared function %s\n", filename, node->kids[0]->leaf->lineno, name); // look up function and ensure it has been defined before
-            *symtab_err_flag = 1;
-        }
-        else
-        {
-            node->kids[0]->symbol = e; // assign symbol info to AST node
-        }
+        typeptr t = check_function_call(node, current, symtab_err_flag, filename);
+        (void)t; // all error messages and actions happen in check_function_call, so just doing something with t here to avoid unused warning
+
         break;
     }
     }
@@ -944,9 +947,8 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current,
             return NULL;
         }
 
-        // need to add a check function call function here to validate the function call
-
-        return e->type->u.f.returntype;
+        // on succes, will return return type of the function, else returns NULL
+        return check_function_call(node, current, err, filename);
     }
     }
     return NULL;
@@ -957,4 +959,87 @@ int type_equal(typeptr a, typeptr b)
     if (!a || !b)
         return 0;
     return a->basetype == b->basetype;
+}
+
+typeptr check_function_call(struct tree *node, struct sym_table *current, int *err, char *filename)
+{
+    if (!node)
+        return NULL;
+
+    char *name = node->kids[0]->leaf->text;
+
+    struct sym_entry *e = lookup(current, name);
+    if (!e || e->type->basetype != FUNC_TYPE)
+    {
+        fprintf(stderr, "%s:%d: semantic error: invalid function call %s\n",
+                filename, node->kids[0]->leaf->lineno, name);
+        *err = 1;
+        return NULL;
+    }
+
+    typeptr ftype = e->type;
+    paramlist param = ftype->u.f.parameters; // parameters noted in the declaration of the function from earlier
+    struct tree *arglist = node->kids[2];    // current arg list we are looking at in the function call
+
+    int arg_index = 1;
+
+    // Traverse param list and provided args
+    while (param || arglist)
+    {
+        // Too many arguments
+        if (!param)
+        {
+            fprintf(stderr,
+                    "%s:%d: semantic error: too many arguments in call to %s\n",
+                    filename,
+                    node->kids[0]->leaf->lineno,
+                    name);
+            *err = 1;
+            break;
+        }
+
+        // Too few arguments
+        if (!arglist)
+        {
+            fprintf(stderr,
+                    "%s:%d: semantic error: too few arguments in call to %s\n",
+                    filename,
+                    node->kids[0]->leaf->lineno,
+                    name);
+            *err = 1;
+            break;
+        }
+
+        struct tree *arg_node;
+
+        // unwrap argument list node
+        if (arglist->prodrule == PR_CALL_VALUES_RECUR)
+        {
+            arg_node = arglist->kids[2]; // rightmost argument
+            arglist = arglist->kids[0];  // continue left
+        }
+        else
+        {
+            arg_node = arglist; // single argument
+            arglist = NULL;
+        }
+
+        typeptr arg_t = typecheck_expr(arg_node, current, err, filename);
+
+        if (!arg_t || !type_equal(arg_t, param->type))
+        {
+            fprintf(stderr,
+                    "%s:%d: semantic error: argument %d of %s has wrong type\n",
+                    filename,
+                    node->kids[0]->leaf->lineno,
+                    arg_index,
+                    name);
+            *err = 1;
+        }
+
+        param = param->next;
+        arg_index++;
+    }
+
+    return ftype->u.f.returntype;
 }
