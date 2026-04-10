@@ -1,3 +1,3 @@
 fun main() {
-    val s = "hello
+    val 123abc = 5
 }

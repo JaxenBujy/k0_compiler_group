@@ -1,11 +1,12 @@
 fun main() {
-    val x: Int;
+    var x: Int;
     var y: Int = 3;
     val z = 5;
     x;
 }
 
 fun assignment() {
+    var x: Int;
     x = 5;
     x += 2;
     x -= 1;

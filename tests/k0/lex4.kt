@@ -1,10 +1,17 @@
 fun main() {
-    val a: Byte = 1;
-    val b: Short = 2;
-    val c: Int = 3;
-    val d: Long = 4;
-    val e: Float = 5.0;
-    val f: Double = 6.0;
-    val g: Boolean = true;
-    val h: String = "hello";
+    val c1 = 'a';
+    val c2 = '\n';
+
+    val i1 = 123;
+    val i2 = 0;
+
+    val r1 = 3.14;
+    val r2 = 0.001;
+
+    val s1: String = "hello";
+    val s2: String = "world";
+
+    val m: String = """multi
+line
+string""";
 }

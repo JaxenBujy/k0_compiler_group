@@ -1,5 +1,5 @@
 fun main() {
-    val s = """multi
-line
-string
+    val a = @
+    val b = $
+    val c = `
 }

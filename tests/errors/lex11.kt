@@ -1,4 +1,3 @@
 fun main() {
-    val a = '
-    val b = 'ab'
+    val s = "\q"
 }

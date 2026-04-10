@@ -1,0 +1,1 @@
+var x: Int = 3.14; // mismatch (Int vs Double)

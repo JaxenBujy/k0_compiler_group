@@ -251,7 +251,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         declared->basetype = node->kids[3]->leaf->category;
 
         typeptr expr_t = typecheck_expr(node->kids[5], current, symtab_err_flag, filename);
-        printf("expr_t:%d\n", expr_t->basetype);
 
         if (!type_equal(declared, expr_t))
         {
@@ -740,7 +739,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             break;
         }
         make_non_nullable(e);
-        printf("nullable = %d\n", e->is_nullable);
         break;
     }
     case PR_POST_FIX_NULLABLE: /* makes is_nullable = 0 */
@@ -755,7 +753,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             break;
         }
         make_nullable(e);
-        printf("nullable = %d\n", e->is_nullable);
         break;
     }
     // Function call

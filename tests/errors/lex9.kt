@@ -1,2 +1,3 @@
-/* this comment never ends
-val a = 10
+fun main() {
+    val s = "hello
+}

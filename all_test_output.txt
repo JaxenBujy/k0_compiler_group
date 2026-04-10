@@ -1,9 +1,36 @@
 Running all tests...
 ==========================
 
+===== Running: tests/errors/lex6.kt =====
+tests/errors/lex6.kt:1: scanner error: unclosed multi-line comment
+tests/errors/lex6.kt:2: parser error: syntax error, unexpected UNCLOSED_COMMENT, expecting FUN or VAL or VAR or IMPORT
+Opening file 'tests/errors/lex6.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex7.kt =====
+tests/errors/lex7.kt:2: scanner error: '~' is an illegal operator
+tests/errors/lex7.kt:2: parser error: syntax error, unexpected OP_ERROR
+Opening file 'tests/errors/lex7.kt'...
+
+
+exiting with status 1...
+
+
+===== Running: tests/errors/lex8.kt =====
+tests/errors/lex8.kt:2: scanner error: ''' could not be matched
+tests/errors/lex8.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
+Opening file 'tests/errors/lex8.kt'...
+
+
+exiting with status 1...
+
+
 ===== Running: tests/errors/lex9.kt =====
-tests/errors/lex9.kt:1: scanner error: unclosed multi-line comment
-tests/errors/lex9.kt:2: parser error: syntax error, unexpected UNCLOSED_COMMENT, expecting FUN or VAL or VAR or IMPORT
+tests/errors/lex9.kt:2: scanner error: '"' could not be matched
+tests/errors/lex9.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
 Opening file 'tests/errors/lex9.kt'...
 
 
@@ -11,8 +38,8 @@ exiting with status 1...
 
 
 ===== Running: tests/errors/lex10.kt =====
-tests/errors/lex10.kt:2: scanner error: '~' is an illegal operator
-tests/errors/lex10.kt:2: parser error: syntax error, unexpected OP_ERROR
+tests/errors/lex10.kt:2: scanner error: '"' could not be matched
+tests/errors/lex10.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
 Opening file 'tests/errors/lex10.kt'...
 
 
@@ -20,8 +47,8 @@ exiting with status 1...
 
 
 ===== Running: tests/errors/lex11.kt =====
-tests/errors/lex11.kt:2: scanner error: ''' could not be matched
-tests/errors/lex11.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
+tests/errors/lex11.kt:2: scanner error: unsupported escape sequence in "\q"
+tests/errors/lex11.kt:3: parser error: syntax error, unexpected RBRACE
 Opening file 'tests/errors/lex11.kt'...
 
 
@@ -29,8 +56,8 @@ exiting with status 1...
 
 
 ===== Running: tests/errors/lex12.kt =====
-tests/errors/lex12.kt:2: scanner error: '"' could not be matched
-tests/errors/lex12.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
+tests/errors/lex12.kt:2: scanner error: '123abc' is an illegal identifier
+tests/errors/lex12.kt:2: parser error: syntax error, unexpected ILL_IDENT, expecting IDENT
 Opening file 'tests/errors/lex12.kt'...
 
 
@@ -38,7 +65,7 @@ exiting with status 1...
 
 
 ===== Running: tests/errors/lex13.kt =====
-tests/errors/lex13.kt:2: scanner error: '"' could not be matched
+tests/errors/lex13.kt:2: scanner error: '@' could not be matched
 tests/errors/lex13.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
 Opening file 'tests/errors/lex13.kt'...
 
@@ -46,130 +73,304 @@ Opening file 'tests/errors/lex13.kt'...
 exiting with status 1...
 
 
-===== Running: tests/errors/lex14.kt =====
-tests/errors/lex14.kt:2: scanner error: unsupported escape sequence in "\q"
-tests/errors/lex14.kt:3: parser error: syntax error, unexpected RBRACE
-Opening file 'tests/errors/lex14.kt'...
+===== Running: tests/errors/sem1.kt =====
+tests/errors/sem1.kt:3: semantic error: redeclaration of variable x
+Opening file 'tests/errors/sem1.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
 
 
-exiting with status 1...
+===== Running: tests/errors/sem2.kt =====
+tests/errors/sem2.kt:1: semantic error: type mismatch in variable declaration of x
+Opening file 'tests/errors/sem2.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
 
 
-===== Running: tests/errors/lex15.kt =====
-tests/errors/lex15.kt:2: scanner error: '123abc' is an illegal identifier
-tests/errors/lex15.kt:2: parser error: syntax error, unexpected ILL_IDENT, expecting IDENT
-Opening file 'tests/errors/lex15.kt'...
+===== Running: tests/errors/sem3.kt =====
+tests/errors/sem3.kt:1: semantic error: inferred type not allowed for x
+Opening file 'tests/errors/sem3.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
 
 
-exiting with status 1...
+===== Running: tests/errors/sem4.kt =====
+tests/errors/sem4.kt:2: semantic error: redeclaration of function foo
+Opening file 'tests/errors/sem4.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
 
 
-===== Running: tests/errors/lex16.kt =====
-tests/errors/lex16.kt:2: scanner error: '@' could not be matched
-tests/errors/lex16.kt:2: parser error: syntax error, unexpected COULD_NOT_MATCH
-Opening file 'tests/errors/lex16.kt'...
+===== Running: tests/errors/sem5.kt =====
+tests/errors/sem5.kt:2: semantic error: undeclared variable x
+Opening file 'tests/errors/sem5.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
 
 
-exiting with status 1...
+===== Running: tests/errors/sem6.kt =====
+tests/errors/sem6.kt:3: semantic error: attempt to modify immutable variable x
+Opening file 'tests/errors/sem6.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem7.kt =====
+tests/errors/sem7.kt:3: semantic error: type mismatch in assignment to x
+Opening file 'tests/errors/sem7.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem8.kt =====
+tests/errors/sem8.kt:2: semantic error: undeclared variable x
+Opening file 'tests/errors/sem8.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem9.kt =====
+tests/errors/sem9.kt:3: semantic error: cannot increment immutable variable x
+Opening file 'tests/errors/sem9.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem10.kt =====
+tests/errors/sem10.kt:3: semantic error: ++ requires numeric type for x
+Opening file 'tests/errors/sem10.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem11.kt =====
+tests/errors/sem11.kt:2: semantic error: invalid function call foo
+Opening file 'tests/errors/sem11.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem12.kt =====
+tests/errors/sem12.kt:4: semantic error: too many arguments in call to foo
+Opening file 'tests/errors/sem12.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem13.kt =====
+tests/errors/sem13.kt:4: semantic error: too few arguments in call to foo
+Opening file 'tests/errors/sem13.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem14.kt =====
+tests/errors/sem14.kt:4: semantic error: argument 1 of foo has wrong type
+Opening file 'tests/errors/sem14.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem15.kt =====
+tests/errors/sem15.kt:1: semantic error: duplicate parameter x
+Opening file 'tests/errors/sem15.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem16.kt =====
+tests/errors/sem16.kt:2: semantic error: type mismatch in binary expression
+tests/errors/sem16.kt:2: semantic error: type mismatch in variable declaration of x
+Opening file 'tests/errors/sem16.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem17.kt =====
+tests/errors/sem17.kt:2: relational operator requires numeric operands of the same type
+tests/errors/sem17.kt:2: semantic error: type mismatch in variable declaration of x
+Opening file 'tests/errors/sem17.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem18.kt =====
+tests/errors/sem18.kt:2: logical operator requires Boolean operands
+tests/errors/sem18.kt:2: semantic error: type mismatch in variable declaration of x
+Opening file 'tests/errors/sem18.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem19.kt =====
+tests/errors/sem19.kt:2: undeclared variable x
+tests/errors/sem19.kt:2: semantic error: type mismatch in variable declaration of y
+Opening file 'tests/errors/sem19.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/syn4.kt =====
+tests/errors/syn4.kt:1: parser error: syntax error, unexpected end of file, expecting ASSIGN or NULLABLE or SEMICOLON
+Opening file 'tests/errors/syn4.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn5.kt =====
+tests/errors/syn5.kt:1: parser error: syntax error, unexpected INT_TYPE, expecting ASSIGN or COLON
+Opening file 'tests/errors/syn5.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn6.kt =====
+tests/errors/syn6.kt:1: parser error: syntax error, unexpected SEMICOLON
+Opening file 'tests/errors/syn6.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn7.kt =====
+tests/errors/syn7.kt:1: parser error: syntax error, unexpected LBRACE, expecting RPAREN or COMMA or IDENT
+Opening file 'tests/errors/syn7.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn8.kt =====
+tests/errors/syn8.kt:2: parser error: syntax error, unexpected RETURN, expecting LBRACE or COLON
+Opening file 'tests/errors/syn8.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn9.kt =====
+tests/errors/syn9.kt:2: parser error: syntax error, unexpected SEMICOLON
+Opening file 'tests/errors/syn9.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn10.kt =====
+tests/errors/syn10.kt:2: parser error: syntax error, unexpected RPAREN
+Opening file 'tests/errors/syn10.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn11.kt =====
+tests/errors/syn11.kt:2: parser error: syntax error, unexpected K_TRUE, expecting LPAREN
+Opening file 'tests/errors/syn11.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn12.kt =====
+tests/errors/syn12.kt:2: parser error: syntax error, unexpected RPAREN, expecting RANGE_INCL
+Opening file 'tests/errors/syn12.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn13.kt =====
+tests/errors/syn13.kt:2: parser error: syntax error, unexpected SEMICOLON
+Opening file 'tests/errors/syn13.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/syn14.kt =====
+tests/errors/syn14.kt:1: parser error: syntax error, unexpected INT_TYPE, expecting COLON
+Opening file 'tests/errors/syn14.kt'...
+
+
+exiting with status 2...
 
 
 ===== Running: tests/k0/lex1.kt =====
 Opening file 'tests/k0/lex1.kt'...
 
+used for testing and clarity of output
 No semantic errors found in symbol tables
 
----print_symtab output---
+exiting with status 0...
 
---- Level 0, Symbol table for: global ---
-  func min
-  func tan
-  func nextInt
-  func substring
-  func get
-  func print
-  func toString
-  func readln
-  func equals
-  func max
-  func length
-  func cos
-  func sin
-  func abs
-  func valueOf
-  func println
-  func pow
 
---- Level 1, Symbol table for: package tests/k0/lex1.kt ---
-  val a, type: Int
-  val b, type: Int
+===== Running: tests/k0/lex2.kt =====
+Opening file 'tests/k0/lex2.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
 
 exiting with status 0...
 
 
 ===== Running: tests/k0/lex3.kt =====
+tests/k0/lex3.kt:2: semantic error: type mismatch in variable declaration of a
+tests/k0/lex3.kt:3: semantic error: type mismatch in variable declaration of b
+tests/k0/lex3.kt:5: semantic error: type mismatch in variable declaration of d
+tests/k0/lex3.kt:6: semantic error: type mismatch in variable declaration of e
 Opening file 'tests/k0/lex3.kt'...
 
-No semantic errors found in symbol tables
+used for testing and clarity of output
 
----print_symtab output---
-
---- Level 0, Symbol table for: global ---
-  func min
-  func tan
-  func nextInt
-  func substring
-  func get
-  func print
-  func toString
-  func readln
-  func equals
-  func max
-  func length
-  func cos
-  func sin
-  func abs
-  func valueOf
-  func println
-  func pow
-
---- Level 1, Symbol table for: package tests/k0/lex3.kt ---
-  func main
-
---- Level 2, Symbol table for: func main ---
-
-exiting with status 0...
+exiting with status 3...
 
 
 ===== Running: tests/k0/lex4.kt =====
 Opening file 'tests/k0/lex4.kt'...
 
+used for testing and clarity of output
 No semantic errors found in symbol tables
-
----print_symtab output---
-
---- Level 0, Symbol table for: global ---
-  func min
-  func tan
-  func nextInt
-  func substring
-  func get
-  func print
-  func toString
-  func readln
-  func equals
-  func max
-  func length
-  func cos
-  func sin
-  func abs
-  func valueOf
-  func println
-  func pow
-
---- Level 1, Symbol table for: package tests/k0/lex4.kt ---
-  func main
-
---- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
@@ -177,101 +378,17 @@ exiting with status 0...
 ===== Running: tests/k0/lex5.kt =====
 Opening file 'tests/k0/lex5.kt'...
 
+used for testing and clarity of output
 No semantic errors found in symbol tables
-
----print_symtab output---
-
---- Level 0, Symbol table for: global ---
-  func min
-  func tan
-  func nextInt
-  func substring
-  func get
-  func print
-  func toString
-  func readln
-  func equals
-  func max
-  func length
-  func cos
-  func sin
-  func abs
-  func valueOf
-  func println
-  func pow
-
---- Level 1, Symbol table for: package tests/k0/lex5.kt ---
-  func main
-
---- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
 
-===== Running: tests/k0/lex6.kt =====
-Opening file 'tests/k0/lex6.kt'...
+===== Running: tests/k0/syn1.kt =====
+Opening file 'tests/k0/syn1.kt'...
 
+used for testing and clarity of output
 No semantic errors found in symbol tables
-
----print_symtab output---
-
---- Level 0, Symbol table for: global ---
-  func min
-  func tan
-  func nextInt
-  func substring
-  func get
-  func print
-  func toString
-  func readln
-  func equals
-  func max
-  func length
-  func cos
-  func sin
-  func abs
-  func valueOf
-  func println
-  func pow
-
---- Level 1, Symbol table for: package tests/k0/lex6.kt ---
-  func main
-
---- Level 2, Symbol table for: func main ---
-
-exiting with status 0...
-
-
-===== Running: tests/k0/lex7.kt =====
-Opening file 'tests/k0/lex7.kt'...
-
-No semantic errors found in symbol tables
-
----print_symtab output---
-
---- Level 0, Symbol table for: global ---
-  func min
-  func tan
-  func nextInt
-  func substring
-  func get
-  func print
-  func toString
-  func readln
-  func equals
-  func max
-  func length
-  func cos
-  func sin
-  func abs
-  func valueOf
-  func println
-  func pow
-
---- Level 1, Symbol table for: package tests/k0/lex7.kt ---
-  func main
-
---- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
@@ -279,58 +396,39 @@ exiting with status 0...
 ===== Running: tests/k0/syn2.kt =====
 Opening file 'tests/k0/syn2.kt'...
 
+used for testing and clarity of output
 No semantic errors found in symbol tables
-
----print_symtab output---
-
---- Level 0, Symbol table for: global ---
-  func min
-  func tan
-  func nextInt
-  func substring
-  func get
-  func print
-  func toString
-  func readln
-  func equals
-  func max
-  func length
-  func cos
-  func sin
-  func abs
-  func valueOf
-  func println
-  func pow
-
---- Level 1, Symbol table for: package tests/k0/syn2.kt ---
-  func main
-  func logic
-  func assignment
-  func relation_and_range
-  func precedence
-
---- Level 2, Symbol table for: func relation_and_range ---
-
---- Level 2, Symbol table for: func logic ---
-
---- Level 2, Symbol table for: func precedence ---
-
---- Level 2, Symbol table for: func assignment ---
-
---- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
 
 ===== Running: tests/k0/syn3.kt =====
 
-===== Running: tests/kotlin/lex17.kt =====
-tests/kotlin/lex17.kt:3: scanner error: Kotlin reserved keyword: "!in" is not a part of k0
-tests/kotlin/lex17.kt:3: parser error: syntax error, unexpected KEYWORD_ERROR
-Opening file 'tests/kotlin/lex17.kt'...
+===== Running: tests/kotlin/lex14.kt =====
+tests/kotlin/lex14.kt:3: scanner error: Kotlin reserved keyword: "!in" is not a part of k0
+tests/kotlin/lex14.kt:3: parser error: syntax error, unexpected KEYWORD_ERROR
+Opening file 'tests/kotlin/lex14.kt'...
 
 
 exiting with status 1...
+
+
+===== Running: tests/kotlin/syn15.kt =====
+Opening file 'tests/kotlin/syn15.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
+===== Running: tests/kotlin/syn16.kt =====
+Opening file 'tests/kotlin/syn16.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
 
 
 All tests completed.

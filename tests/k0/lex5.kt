@@ -1,17 +1,8 @@
 fun main() {
-    val c1 = 'a';
-    val c2 = '\n';
-
-    val i1 = 123;
-    val i2 = 0;
-
-    val r1 = 3.14;
-    val r2 = 0.001;
-
-    val s1 = "hello";
-    val s2 = "world";
-
-    val m = """multi
-line
-string""";
+    val abc = 1;
+    val _xyz = 2;
+    val var123 = 3;
+    val camelCase = 4;
+    val UPPERCASE = 5;
+    val mixed_123_name = 6;
 }
