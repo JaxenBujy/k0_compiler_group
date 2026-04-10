@@ -162,6 +162,7 @@ literal /* literals */
     | STRING
     | MULTI_STRING 
     | CHAR
+    | K_NULL
     ;
 bool_literal
     : K_TRUE

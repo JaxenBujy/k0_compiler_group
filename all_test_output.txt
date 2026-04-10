@@ -248,6 +248,78 @@ used for testing and clarity of output
 exiting with status 3...
 
 
+===== Running: tests/errors/sem20.kt =====
+tests/errors/sem20.kt:4: semantic error: assigning null to non-nullable variable x
+Opening file 'tests/errors/sem20.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem21.kt =====
+tests/errors/sem21.kt:5: semantic error: nullable operands not allowed in arithmetic expression
+tests/errors/sem21.kt:5: semantic error: type mismatch in variable declaration of c
+Opening file 'tests/errors/sem21.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem22.kt =====
+Opening file 'tests/errors/sem22.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
+===== Running: tests/errors/sem23.kt =====
+tests/errors/sem23.kt:4: parser error: syntax error, unexpected IDENT
+Opening file 'tests/errors/sem23.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/errors/sem24.kt =====
+tests/errors/sem24.kt:8: semantic error: argument 1 of greet is nullable but parameter expects non-nullable
+Opening file 'tests/errors/sem24.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem25.kt =====
+tests/errors/sem25.kt:4: semantic error: cannot increment nullable variable counter
+Opening file 'tests/errors/sem25.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem26.kt =====
+tests/errors/sem26.kt:4: semantic error: nullable operand not allowed in unary minus
+Opening file 'tests/errors/sem26.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem27.kt =====
+tests/errors/sem27.kt:4: ! requires boolean
+Opening file 'tests/errors/sem27.kt'...
+
+used for testing and clarity of output
+
+exiting with status 3...
+
+
 ===== Running: tests/errors/syn4.kt =====
 tests/errors/syn4.kt:1: parser error: syntax error, unexpected end of file, expecting ASSIGN or NULLABLE or SEMICOLON
 Opening file 'tests/errors/syn4.kt'...

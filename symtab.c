@@ -252,7 +252,14 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         typeptr expr_t = typecheck_expr(node->kids[5], current, symtab_err_flag, filename);
 
-        if (!type_equal(declared, expr_t))
+        if (expr_t && expr_t->basetype == NULL_TYPE)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot assign null to non-nullable variable %s\n",
+                    filename, node->kids[1]->leaf->lineno, node->kids[1]->leaf->text);
+            *symtab_err_flag = 1;
+        }
+
+        else if (expr_t && !is_assignable(declared, expr_t))
         {
             fprintf(stderr, "%s:%d: semantic error: type mismatch in variable declaration of %s\n",
                     filename,
@@ -262,7 +269,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
 
         typeptr t = malloc(sizeof(*t));
-
         t->basetype = declared->basetype; // passed type checks, so make the basetype the declared type
 
         char *name = node->kids[1]->leaf->text;
@@ -270,13 +276,13 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         int is_nullable = 0; // we know it's not nullable
 
         if (lookup_current(current, name))
-        { // so if the name appears twice as a declaration in current symbol table, break out for now
+        {
             fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
         {
-            insert(current, name, t, is_mutable, is_nullable); // else insert into current symbol table
+            insert(current, name, t, is_mutable, is_nullable);
         }
         break;
     }
@@ -317,8 +323,12 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         typeptr expr_t = typecheck_expr(node->kids[6], current,
                                         symtab_err_flag, filename);
 
-        // allow null if when supporting it later
-        if (expr_t && !type_equal(declared, expr_t))
+        // Allow null assignment to nullable variable
+        if (expr_t && expr_t->basetype == NULL_TYPE)
+        {
+            // null is allowed, skip type check
+        }
+        else if (expr_t && !is_assignable(declared, expr_t))
         {
             fprintf(stderr, "%s:%d: semantic error: type mismatch in nullable variable declaration of %s\n",
                     filename,
@@ -328,7 +338,6 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
 
         typeptr t = malloc(sizeof(*t));
-
         t->basetype = declared->basetype;
 
         char *name = node->kids[1]->leaf->text;
@@ -336,13 +345,13 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         int is_nullable = 1;
 
         if (lookup_current(current, name))
-        { // so if the name appears twice as a declaration in current symbol table, break out for now
+        {
             fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
         {
-            insert(current, name, t, is_mutable, is_nullable); // else insert into current symbol table
+            insert(current, name, t, is_mutable, is_nullable);
         }
         break;
     }
@@ -470,10 +479,8 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         t->u.f.name = name;
         t->u.f.defined = 1;
-
         t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
         t->u.f.returntype->basetype = node->kids[6]->leaf->category;
-
         t->u.f.nparams = 0;
         t->u.f.parameters = NULL; // will fill later
 
@@ -587,9 +594,28 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         // it is mutable and exists, so type check the right hand side
         typeptr rhs = typecheck_expr(node->kids[2], current, symtab_err_flag, filename);
 
-        if (rhs && !type_equal(e->type, rhs))
+        // Handle null assignment specially
+        if (rhs && rhs->basetype == NULL_TYPE)
+        {
+            if (!e->is_nullable)
+            {
+                fprintf(stderr, "%s:%d: semantic error: assigning null to non-nullable variable %s\n",
+                        filename, node->kids[0]->leaf->lineno, name);
+                *symtab_err_flag = 1;
+            }
+            // else assignment of null to nullable variable is OK
+        }
+        else if (rhs && !is_assignable(e->type, rhs)) // can tighten this to type_equal if it causes issues later
         {
             fprintf(stderr, "%s:%d: semantic error: type mismatch in assignment to %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+        }
+
+        // Nullability check for non-null expressions (already handled null case above)
+        if (rhs && rhs->basetype != NULL_TYPE && !e->is_nullable && is_nullable_expr(node->kids[2], current))
+        {
+            fprintf(stderr, "%s:%d: semantic error: assigning nullable value to non-nullable variable %s\n",
                     filename, node->kids[0]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
@@ -624,6 +650,13 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             *symtab_err_flag = 1;
             break;
         }
+        if (e->is_nullable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot increment nullable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
 
         node->type = e->type;
         break;
@@ -653,6 +686,13 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         if (!is_numeric_type(e->type->basetype))
         {
             fprintf(stderr, "%s:%d: semantic error: ++ requires numeric type for %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+        if (e->is_nullable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot increment nullable variable %s\n",
                     filename, node->kids[0]->leaf->lineno, name);
             *symtab_err_flag = 1;
             break;
@@ -691,6 +731,14 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             break;
         }
 
+        if (e->is_nullable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot decrement nullable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
         node->type = e->type;
         break;
     }
@@ -724,10 +772,18 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             break;
         }
 
+        if (e->is_nullable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot decrement nullable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
         node->type = e->type;
         break;
     }
-    case PR_POST_FIX_NN_ASSERT: /* makes is_nullable = 1 */
+    case PR_POST_FIX_NN_ASSERT: /* !! makes expression non-nullable */
     {
         char *name = node->kids[0]->leaf->text;
         struct sym_entry *e = lookup(current, name);
@@ -741,7 +797,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         make_non_nullable(e);
         break;
     }
-    case PR_POST_FIX_NULLABLE: /* makes is_nullable = 0 */
+    case PR_POST_FIX_NULLABLE: /* ? makes expression nullable */
     {
         char *name = node->kids[0]->leaf->text;
         struct sym_entry *e = lookup(current, name);
@@ -758,30 +814,11 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     // Function call
     case PR_FUNCTION_CALL:
     {
-
         typeptr t = check_function_call(node, current, symtab_err_flag, filename);
         (void)t; // all error messages and actions happen in check_function_call, so just doing something with t here to avoid unused warning
-
         break;
     }
     }
-
-    // Leaf Identifiers
-    /*if (node->leaf && node->leaf->category == IDENT)
-    {
-        char *name = node->leaf->text;
-
-        struct sym_entry *e = lookup(current, name);
-        if (!e)
-        {
-            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n", filename, node->leaf->lineno, name);
-            *symtab_err_flag = 1;
-        }
-        else
-        {
-            node->symbol = e;
-        }
-    }*/
 
     for (int i = 0; i < node->nkids; i++)
         build_symtab(node->kids[i], current, symtab_err_flag, filename);
@@ -830,7 +867,7 @@ void print_scope(struct sym_table *st, int level)
                     case DOUBLE_TYPE:
                         printf("  %s %s, type: Double%s\n", mut, e->name, nullable);
                         break;
-                    case BOOLEAN_TYPE:
+                    case BOOL_TYPE:
                         printf("  %s %s, type: Boolean%s\n", mut, e->name, nullable);
                         break;
                     case STRING_TYPE:
@@ -949,59 +986,6 @@ paramlist build_and_insert_params(struct tree *node, struct sym_table *st, int *
     return head;
 }
 
-// paramlist build_param_list_only(struct tree *node, int *count)
-// {
-//     if (!node)
-//         return NULL;
-
-//     paramlist head = NULL;
-//     paramlist tail = NULL;
-
-//     // Base case: parameter declaration
-//     if (node->prodrule == PR_FUNCTION_VAR_DECL)
-//     {
-//         struct param *p = malloc(sizeof(struct param));
-
-//         char *name = node->kids[0]->leaf->text;
-
-//         typeptr t = malloc(sizeof(*t));
-//         t->basetype = node->kids[2]->leaf->category;
-
-//         p->name = strdup(name);
-//         p->type = t;
-//         p->next = NULL;
-
-//         (*count)++;
-
-//         return p;
-//     }
-
-//     // Recursive traversal for parameter lists
-//     for (int i = 0; i < node->nkids; i++)
-//     {
-//         paramlist sub = build_param_list_only(node->kids[i], count);
-
-//         if (!sub)
-//             continue;
-
-//         if (!head)
-//         {
-//             head = sub;
-//             tail = sub;
-//         }
-//         else
-//         {
-//             tail->next = sub;
-//         }
-
-//         // Move tail to end of list
-//         while (tail->next)
-//             tail = tail->next;
-//     }
-
-//     return head;
-// }
-
 typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, char *filename)
 {
     if (!node)
@@ -1020,6 +1004,17 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
     case K_FALSE:
     {
         return node->leaf->type;
+    }
+
+    case K_NULL:
+    {
+        static typeptr null_typeptr = NULL;
+        if (!null_typeptr)
+        {
+            null_typeptr = malloc(sizeof(*null_typeptr));
+            null_typeptr->basetype = NULL_TYPE;
+        }
+        return null_typeptr;
     }
 
     // identifiers
@@ -1064,6 +1059,13 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
             *err = 1;
             return NULL;
         }
+        if (is_nullable_expr(node->kids[0], current) || is_nullable_expr(node->kids[2], current))
+        {
+            fprintf(stderr, "%s:%d: semantic error: nullable operands not allowed in arithmetic expression\n",
+                    filename, node->kids[1]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
 
         return left;
     }
@@ -1072,10 +1074,6 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
     case PR_RELATIONAL_GT:
     case PR_RELATIONAL_LTE:
     case PR_RELATIONAL_GTE:
-    case PR_EQUALITY_EQ:
-    case PR_EQUALITY_NEQ:
-    case PR_EQUALITY_RNEQ:
-    case PR_EQUALITY_REQ:
     {
         typeptr left = typecheck_expr(node->kids[0], current, err, filename);
         typeptr right = typecheck_expr(node->kids[2], current, err, filename);
@@ -1093,7 +1091,39 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
             *err = 1;
             return NULL;
         }
+        if (is_nullable_expr(node->kids[0], current) || is_nullable_expr(node->kids[2], current))
+        {
+            fprintf(stderr, "%s:%d: semantic error: nullable operands not allowed in relational expression\n",
+                    filename, node->kids[1]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
         // Result is always Boolean
+        return get_bool_typeptr();
+    }
+
+    // Equality operators (==, !=) – allow any types and allow null
+    case PR_EQUALITY_EQ:
+    case PR_EQUALITY_NEQ:
+    case PR_EQUALITY_RNEQ:
+    case PR_EQUALITY_REQ:
+    {
+        typeptr left = typecheck_expr(node->kids[0], current, err, filename);
+        typeptr right = typecheck_expr(node->kids[2], current, err, filename);
+        if (!left || !right)
+            return NULL;
+
+        // Allow any operand types, including null; no numeric requirement.
+        // However, if both are non‑null, they must have the same type (except null).
+        if (left->basetype != NULL_TYPE && right->basetype != NULL_TYPE &&
+            !type_equal(left, right))
+        {
+            fprintf(stderr, "%s:%d: equality operator requires operands of the same type\n",
+                    filename, node->kids[1]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+        // Result is Boolean
         return get_bool_typeptr();
     }
 
@@ -1105,9 +1135,16 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
         if (!left || !right)
             return NULL;
 
-        if (left->basetype != BOOLEAN_TYPE || right->basetype != BOOLEAN_TYPE)
+        if (left->basetype != BOOL_TYPE || right->basetype != BOOL_TYPE)
         {
             fprintf(stderr, "%s:%d: logical operator requires Boolean operands\n",
+                    filename, node->kids[1]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+        if (is_nullable_expr(node->kids[0], current) || is_nullable_expr(node->kids[2], current))
+        {
+            fprintf(stderr, "%s:%d: semantic error: nullable operands not allowed in logical expression\n",
                     filename, node->kids[1]->leaf->lineno);
             *err = 1;
             return NULL;
@@ -1117,7 +1154,26 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
 
     // unary
     case PR_UNARY_MINUS:
-        return typecheck_expr(node->kids[1], current, err, filename);
+    {
+        typeptr t = typecheck_expr(node->kids[1], current, err, filename);
+        if (!t)
+            return NULL;
+        if (!is_numeric_type(t->basetype))
+        {
+            fprintf(stderr, "%s:%d: unary minus requires numeric operand\n",
+                    filename, node->kids[0]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+        if (is_nullable_expr(node->kids[1], current))
+        {
+            fprintf(stderr, "%s:%d: semantic error: nullable operand not allowed in unary minus\n",
+                    filename, node->kids[0]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
+        return t;
+    }
 
     case PR_UNARY_NOT:
     {
@@ -1134,6 +1190,13 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
             return NULL;
         }
 
+        if (is_nullable_expr(node->kids[1], current))
+        {
+            fprintf(stderr, "%s:%d: semantic error: nullable operand not allowed in unary not\n",
+                    filename, node->kids[0]->leaf->lineno);
+            *err = 1;
+            return NULL;
+        }
         return t;
     }
 
@@ -1240,6 +1303,12 @@ typeptr check_function_call(struct tree *node, struct sym_table *current, int *e
                     name);
             *err = 1;
         }
+        if (arg_t && is_nullable_expr(arg_node, current))
+        {
+            fprintf(stderr, "%s:%d: semantic error: argument %d of %s is nullable but parameter expects non-nullable\n",
+                    filename, node->kids[0]->leaf->lineno, arg_index, name);
+            *err = 1;
+        }
 
         param = param->next;
         arg_index++;
@@ -1253,13 +1322,31 @@ int is_numeric_type(int bt)
     return bt == INT_TYPE || bt == DOUBLE_TYPE || bt == FLOAT_TYPE || bt == LONG_TYPE || bt == SHORT_TYPE || bt == BYTE_TYPE;
 }
 
+// Check if a value of type src can be assigned to a variable of type dst
+int is_assignable(typeptr dst, typeptr src)
+{
+    if (!dst || !src)
+        return 0;
+    // Exact match
+    if (type_equal(dst, src))
+        return 1;
+    // Null literal can be assigned only to nullable types (handled separately)
+    if (src->basetype == NULL_TYPE)
+        return 0;
+    // Numeric conversions: any numeric type can be assigned to any other numeric type
+    if (is_numeric_type(dst->basetype) && is_numeric_type(src->basetype))
+        return 1;
+    // No other conversions (e.g., Bool to Int) are allowed
+    return 0;
+}
+
 typeptr get_bool_typeptr(void)
 {
-    typeptr bool_ptr = NULL;
+    static typeptr bool_ptr = NULL;
     if (!bool_ptr)
     {
         bool_ptr = malloc(sizeof(*bool_ptr));
-        bool_ptr->basetype = BOOLEAN_TYPE;
+        bool_ptr->basetype = BOOL_TYPE;
     }
     return bool_ptr;
 }
@@ -1274,4 +1361,83 @@ void make_nullable(struct sym_entry *e)
 {
     e->is_nullable = 1;
     return;
+}
+
+// Returns 1 if the expression is nullable, 0 otherwise.
+int is_nullable_expr(struct tree *node, struct sym_table *st)
+{
+    if (!node)
+        return 0;
+
+    switch (node->prodrule)
+    {
+    // Literals that are never null
+    case INT:
+    case REAL:
+    case STRING:
+    case MULTI_STRING:
+    case CHAR:
+    case K_TRUE:
+    case K_FALSE:
+        return 0;
+
+    // null literal
+    case K_NULL:
+        return 1;
+
+    // Identifier: use stored nullability
+    case IDENT:
+    {
+        struct sym_entry *e = lookup(st, node->leaf->text);
+        return e ? e->is_nullable : 0;
+    }
+
+    // Parentheses: nullability of inner expression
+    case PR_PRIMARY_PAREN:
+        return is_nullable_expr(node->kids[1], st);
+
+    // Unary operators: propagate nullability of operand
+    case PR_UNARY_MINUS:
+    case PR_UNARY_NOT:
+        return is_nullable_expr(node->kids[1], st);
+
+    // Binary operators: nullable if either operand is nullable
+    case PR_ADDITIVE_PLUS:
+    case PR_ADDITIVE_MINUS:
+    case PR_MULT_MUL:
+    case PR_MULT_DIV:
+    case PR_MULT_MOD:
+    case PR_RELATIONAL_LT:
+    case PR_RELATIONAL_GT:
+    case PR_RELATIONAL_LTE:
+    case PR_RELATIONAL_GTE:
+    case PR_EQUALITY_EQ:
+    case PR_EQUALITY_NEQ:
+    case PR_EQUALITY_RNEQ:
+    case PR_EQUALITY_REQ:
+    case PR_LOGICAL_AND_RECUR:
+    case PR_LOGICAL_OR_RECUR:
+        return is_nullable_expr(node->kids[0], st) ||
+               is_nullable_expr(node->kids[2], st);
+
+    // Function call: use the function symbol's nullability flag
+    case PR_FUNCTION_CALL:
+    {
+        char *fname = node->kids[0]->leaf->text;
+        struct sym_entry *e = lookup(st, fname);
+        return e ? e->is_nullable : 0;
+    }
+
+    // !! (non‑null assertion) makes expression non‑nullable
+    case PR_POST_FIX_NN_ASSERT:
+        return 0;
+
+    // ? (nullable operator) makes it nullable
+    case PR_POST_FIX_NULLABLE:
+        return 1;
+
+    // For any other production, assume non‑nullable as a safe default
+    default:
+        return 0;
+    }
 }

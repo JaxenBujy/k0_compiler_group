@@ -18,9 +18,11 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
 typeptr check_function_call(struct tree *node, struct sym_table *current, int *err, char *filename);
 int type_equal(typeptr a, typeptr b);
 int is_numeric_type(int bt);
+int is_assignable(typeptr dst, typeptr src);
 typeptr get_bool_typeptr(void);
 void make_non_nullable(struct sym_entry *e);
 void make_nullable(struct sym_entry *e);
+int is_nullable_expr(struct tree *node, struct sym_table *st);
 
 struct sym_entry
 {
