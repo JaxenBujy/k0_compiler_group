@@ -596,7 +596,168 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         }
         break;
     }
+    case PR_UNARY_INC:
+    {
+        // must be an identifier (or l-value)
+        char *name = node->kids[1]->leaf->text;
 
+        struct sym_entry *e = lookup(current, name);
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!e->is_mutable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot increment immutable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!is_numeric_type(e->type->basetype))
+        {
+            fprintf(stderr, "%s:%d: semantic error: ++ requires numeric type for %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        node->type = e->type;
+        break;
+    }
+    case PR_POST_FIX_INC:
+    {
+        // must be an identifier (or l-value)
+        char *name = node->kids[0]->leaf->text;
+
+        struct sym_entry *e = lookup(current, name);
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!e->is_mutable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot increment immutable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!is_numeric_type(e->type->basetype))
+        {
+            fprintf(stderr, "%s:%d: semantic error: ++ requires numeric type for %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        node->type = e->type;
+        break;
+    }
+    case PR_UNARY_DEC:
+    {
+        // must be an identifier (or l-value)
+        char *name = node->kids[1]->leaf->text;
+
+        struct sym_entry *e = lookup(current, name);
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!e->is_mutable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot decrement immutable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!is_numeric_type(e->type->basetype))
+        {
+            fprintf(stderr, "%s:%d: semantic error: -- requires numeric type for %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        node->type = e->type;
+        break;
+    }
+    case PR_POST_FIX_DEC:
+    {
+        // must be an identifier (or l-value)
+        char *name = node->kids[0]->leaf->text;
+
+        struct sym_entry *e = lookup(current, name);
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!e->is_mutable)
+        {
+            fprintf(stderr, "%s:%d: semantic error: cannot decrement immutable variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        if (!is_numeric_type(e->type->basetype))
+        {
+            fprintf(stderr, "%s:%d: semantic error: -- requires numeric type for %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+
+        node->type = e->type;
+        break;
+    }
+    case PR_POST_FIX_NN_ASSERT: /* makes is_nullable = 1 */
+    {
+        char *name = node->kids[0]->leaf->text;
+        struct sym_entry *e = lookup(current, name);
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+        make_non_nullable(e);
+        printf("nullable = %d\n", e->is_nullable);
+        break;
+    }
+    case PR_POST_FIX_NULLABLE: /* makes is_nullable = 0 */
+    {
+        char *name = node->kids[0]->leaf->text;
+        struct sym_entry *e = lookup(current, name);
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: semantic error: undeclared variable %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *symtab_err_flag = 1;
+            break;
+        }
+        make_nullable(e);
+        printf("nullable = %d\n", e->is_nullable);
+        break;
+    }
     // Function call
     case PR_FUNCTION_CALL:
     {
@@ -916,6 +1077,8 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
     case PR_RELATIONAL_GTE:
     case PR_EQUALITY_EQ:
     case PR_EQUALITY_NEQ:
+    case PR_EQUALITY_RNEQ:
+    case PR_EQUALITY_REQ:
     {
         typeptr left = typecheck_expr(node->kids[0], current, err, filename);
         typeptr right = typecheck_expr(node->kids[2], current, err, filename);
@@ -1102,4 +1265,16 @@ typeptr get_bool_typeptr(void)
         bool_ptr->basetype = BOOLEAN_TYPE;
     }
     return bool_ptr;
+}
+
+void make_non_nullable(struct sym_entry *e)
+{
+    e->is_nullable = 0;
+    return;
+}
+
+void make_nullable(struct sym_entry *e)
+{
+    e->is_nullable = 1;
+    return;
 }

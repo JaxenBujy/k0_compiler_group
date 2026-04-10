@@ -127,7 +127,7 @@ multi_string_literal \"\"\"([^\\\"]|\\.)*\"\"\"
 
 
  /* Operators */
-"++"        { alctoken(INC); }
+"++"        { return alctoken(INC); }
 "--"        { return alctoken(DEC); }
 "==="       { return alctoken(REQ); }
 "!=="       { return alctoken(RNEQ); }

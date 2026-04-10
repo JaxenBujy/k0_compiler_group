@@ -1477,7 +1477,7 @@ YY_RULE_SETUP
 case 85:
 YY_RULE_SETUP
 #line 131 "k0lex.l"
-{ alctoken(INC); }
+{ return alctoken(INC); }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP

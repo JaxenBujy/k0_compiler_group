@@ -19,6 +19,8 @@ typeptr check_function_call(struct tree *node, struct sym_table *current, int *e
 int type_equal(typeptr a, typeptr b);
 int is_numeric_type(int bt);
 typeptr get_bool_typeptr(void);
+void make_non_nullable(struct sym_entry *e);
+void make_nullable(struct sym_entry *e);
 
 struct sym_entry
 {
