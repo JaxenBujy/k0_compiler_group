@@ -21,4 +21,5 @@ fun test(): Int {
     2--;
     4!!;
     word.length;
+    (Float) length;
 }

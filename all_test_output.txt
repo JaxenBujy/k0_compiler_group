@@ -76,8 +76,32 @@ exiting with status 1...
 ===== Running: tests/k0/lex1.kt =====
 Opening file 'tests/k0/lex1.kt'...
 
-used for testing and clarity of output
 No semantic errors found in symbol tables
+
+---print_symtab output---
+
+--- Level 0, Symbol table for: global ---
+  func min
+  func tan
+  func nextInt
+  func substring
+  func get
+  func print
+  func toString
+  func readln
+  func equals
+  func max
+  func length
+  func cos
+  func sin
+  func abs
+  func valueOf
+  func println
+  func pow
+
+--- Level 1, Symbol table for: package tests/k0/lex1.kt ---
+  val a, type: Int
+  val b, type: Int
 
 exiting with status 0...
 
@@ -85,8 +109,33 @@ exiting with status 0...
 ===== Running: tests/k0/lex3.kt =====
 Opening file 'tests/k0/lex3.kt'...
 
-used for testing and clarity of output
 No semantic errors found in symbol tables
+
+---print_symtab output---
+
+--- Level 0, Symbol table for: global ---
+  func min
+  func tan
+  func nextInt
+  func substring
+  func get
+  func print
+  func toString
+  func readln
+  func equals
+  func max
+  func length
+  func cos
+  func sin
+  func abs
+  func valueOf
+  func println
+  func pow
+
+--- Level 1, Symbol table for: package tests/k0/lex3.kt ---
+  func main
+
+--- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
@@ -94,8 +143,33 @@ exiting with status 0...
 ===== Running: tests/k0/lex4.kt =====
 Opening file 'tests/k0/lex4.kt'...
 
-used for testing and clarity of output
 No semantic errors found in symbol tables
+
+---print_symtab output---
+
+--- Level 0, Symbol table for: global ---
+  func min
+  func tan
+  func nextInt
+  func substring
+  func get
+  func print
+  func toString
+  func readln
+  func equals
+  func max
+  func length
+  func cos
+  func sin
+  func abs
+  func valueOf
+  func println
+  func pow
+
+--- Level 1, Symbol table for: package tests/k0/lex4.kt ---
+  func main
+
+--- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
@@ -103,8 +177,33 @@ exiting with status 0...
 ===== Running: tests/k0/lex5.kt =====
 Opening file 'tests/k0/lex5.kt'...
 
-used for testing and clarity of output
 No semantic errors found in symbol tables
+
+---print_symtab output---
+
+--- Level 0, Symbol table for: global ---
+  func min
+  func tan
+  func nextInt
+  func substring
+  func get
+  func print
+  func toString
+  func readln
+  func equals
+  func max
+  func length
+  func cos
+  func sin
+  func abs
+  func valueOf
+  func println
+  func pow
+
+--- Level 1, Symbol table for: package tests/k0/lex5.kt ---
+  func main
+
+--- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
@@ -112,8 +211,33 @@ exiting with status 0...
 ===== Running: tests/k0/lex6.kt =====
 Opening file 'tests/k0/lex6.kt'...
 
-used for testing and clarity of output
 No semantic errors found in symbol tables
+
+---print_symtab output---
+
+--- Level 0, Symbol table for: global ---
+  func min
+  func tan
+  func nextInt
+  func substring
+  func get
+  func print
+  func toString
+  func readln
+  func equals
+  func max
+  func length
+  func cos
+  func sin
+  func abs
+  func valueOf
+  func println
+  func pow
+
+--- Level 1, Symbol table for: package tests/k0/lex6.kt ---
+  func main
+
+--- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
@@ -121,8 +245,33 @@ exiting with status 0...
 ===== Running: tests/k0/lex7.kt =====
 Opening file 'tests/k0/lex7.kt'...
 
-used for testing and clarity of output
 No semantic errors found in symbol tables
+
+---print_symtab output---
+
+--- Level 0, Symbol table for: global ---
+  func min
+  func tan
+  func nextInt
+  func substring
+  func get
+  func print
+  func toString
+  func readln
+  func equals
+  func max
+  func length
+  func cos
+  func sin
+  func abs
+  func valueOf
+  func println
+  func pow
+
+--- Level 1, Symbol table for: package tests/k0/lex7.kt ---
+  func main
+
+--- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 
@@ -130,8 +279,45 @@ exiting with status 0...
 ===== Running: tests/k0/syn2.kt =====
 Opening file 'tests/k0/syn2.kt'...
 
-used for testing and clarity of output
 No semantic errors found in symbol tables
+
+---print_symtab output---
+
+--- Level 0, Symbol table for: global ---
+  func min
+  func tan
+  func nextInt
+  func substring
+  func get
+  func print
+  func toString
+  func readln
+  func equals
+  func max
+  func length
+  func cos
+  func sin
+  func abs
+  func valueOf
+  func println
+  func pow
+
+--- Level 1, Symbol table for: package tests/k0/syn2.kt ---
+  func main
+  func logic
+  func assignment
+  func relation_and_range
+  func precedence
+
+--- Level 2, Symbol table for: func relation_and_range ---
+
+--- Level 2, Symbol table for: func logic ---
+
+--- Level 2, Symbol table for: func precedence ---
+
+--- Level 2, Symbol table for: func assignment ---
+
+--- Level 2, Symbol table for: func main ---
 
 exiting with status 0...
 

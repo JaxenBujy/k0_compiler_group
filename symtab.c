@@ -554,7 +554,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
         // Traverse function body
-        build_symtab(node->kids[7], new_scope, symtab_err_flag, filename);
+        build_symtab(node->kids[5], new_scope, symtab_err_flag, filename);
 
         return;
     }

@@ -7,5 +7,4 @@ fun main() {
     val f: Double = 6.0;
     val g: Boolean = true;
     val h: String = "hello";
-    val i: Array<Int> = arrayOf(1,2,3);
 }

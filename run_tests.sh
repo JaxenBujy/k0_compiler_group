@@ -9,7 +9,7 @@ make clean
 make
 
 COMPILER="./k0"
-OPTION="-none"
+OPTION="-symtab"
 
 echo "Running all tests..." | tee -a "$OUTPUT_FILE"
 echo "==========================" | tee -a "$OUTPUT_FILE"
