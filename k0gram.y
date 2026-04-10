@@ -86,14 +86,17 @@
 %type <treeptr> statement
 %type <treeptr> non_control_statement
 %type <treeptr> expr
+%type <treeptr> assignment_expr
+%type <treeptr> elvis_expr
 %type <treeptr> logical_or_expr
 %type <treeptr> logical_and_expr
 %type <treeptr> equality_expr
 %type <treeptr> relational_expr
-%type <treeptr> assignment_expr
+%type <treeptr> range_expr
 %type <treeptr> additive_expr
 %type <treeptr> multiplicative_expr
 %type <treeptr> unary_expr
+%type <treeptr> postfix_expr
 %type <treeptr> primary_expr
 %type <treeptr> function_call
 %type <treeptr> function_call_values_list
@@ -235,6 +238,16 @@ non_control_statement
 expr /* for now, an expression is just an assignment with allowable arithmetic and logical algebra. NOTE this gets called before a primary expression in order to keep previous code working */
     : assignment_expr
     ;
+assignment_expr /* assignment expression allows for one additive expression or assignment */
+    : elvis_expr
+    | IDENT ASSIGN assignment_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_ASSIGNMENT_ASSIGN, "assignment_expr", 3, kids, NULL); }
+    | IDENT PLUS_ASSIGN assignment_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_ASSIGNMENT_PLUS, "assignment_expr", 3, kids, NULL); }
+    | IDENT MINUS_ASSIGN assignment_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_ASSIGNMENT_MINUS, "assignment_expr", 3, kids, NULL); }
+    ;
+elvis_expr
+    : logical_or_expr
+    | logical_or_expr ELVIS elvis_expr {struct tree *kids[10] = {$1, $2, $3}; $$ = alctree(PR_ELVIS, "elvis_expr", 3, kids, NULL);}
+    ;
 logical_or_expr
     : logical_and_expr
     | logical_or_expr OR logical_and_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_LOGICAL_OR_RECUR, "logical_or_expr", 3, kids, NULL); }
@@ -247,19 +260,20 @@ equality_expr
     : relational_expr
     | equality_expr EQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_EQ, "equality_expr", 3, kids, NULL); }
     | equality_expr NEQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_NEQ, "equality_expr", 3, kids, NULL); }
+    | equality_expr REQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_REQ, "equality_expr", 3, kids, NULL); }
+    | equality_expr RNEQ relational_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_EQUALITY_RNEQ, "equality_expr", 3, kids, NULL); }
     ;
 relational_expr
-    : additive_expr
-    | relational_expr LT additive_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_LT, "relational_expr", 3, kids, NULL); }
-    | relational_expr GT additive_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_GT, "relational_expr", 3, kids, NULL); }
-    | relational_expr LTE additive_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_LTE, "relational_expr", 3, kids, NULL); }
-    | relational_expr GTE additive_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_GTE, "relational_expr", 3, kids, NULL); }
+    : range_expr
+    | relational_expr LT range_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_LT, "relational_expr", 3, kids, NULL); }
+    | relational_expr GT range_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_GT, "relational_expr", 3, kids, NULL); }
+    | relational_expr LTE range_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_LTE, "relational_expr", 3, kids, NULL); }
+    | relational_expr GTE range_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_RELATIONAL_GTE, "relational_expr", 3, kids, NULL); }
     ;
-assignment_expr /* assignment expression allows for one additive expression or assignment */
-    : logical_or_expr
-    | IDENT ASSIGN assignment_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_ASSIGNMENT_ASSIGN, "assignment_expr", 3, kids, NULL); }
-    | IDENT PLUS_ASSIGN assignment_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_ASSIGNMENT_PLUS, "assignment_expr", 3, kids, NULL); }
-    | IDENT MINUS_ASSIGN assignment_expr {struct tree *kids[10] = {$1,$2, $3}; $$ = alctree(PR_ASSIGNMENT_MINUS, "assignment_expr", 3, kids, NULL); }
+range_expr
+    : additive_expr
+    | range_expr RANGE_INCL additive_expr {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_RANGE_INCL, "range_expr", 3, kids, NULL);}
+    | range_expr RANGE_EXCL additive_expr {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_RANGE_EXCL, "range_expr", 3, kids, NULL);}
     ;
 additive_expr /* left recursion to create correct order of operations */
     : multiplicative_expr
@@ -273,11 +287,21 @@ multiplicative_expr /* left recursion into a unary expression */
     | multiplicative_expr MOD unary_expr {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_MULT_MOD, "multiplicative_expr", 3, kids, NULL); }
     ;
 unary_expr /* all unary expressions as well as a primary expression, which will allow for function calls as well as expressions again*/
-    : primary_expr
+    : postfix_expr
     | MINUS unary_expr {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_UNARY_MINUS, "unary_expr", 2, kids, NULL); }
     | NOT unary_expr {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_UNARY_NOT, "unary_expr", 2, kids, NULL); }
     | INC unary_expr {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_UNARY_INC, "unary_expr", 2, kids, NULL); }
     | DEC unary_expr {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_UNARY_DEC, "unary_expr", 2, kids, NULL); }
+    | TYPE_CAST unary_expr {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_UNARY_CAST, "unary_expr", 2, kids, NULL);} /* !!!!!!! */
+    ;
+postfix_expr
+    : primary_expr
+    | postfix_expr INC {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_POST_FIX_INC, "postfix_expr", 2, kids, NULL);}
+    | postfix_expr DEC {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_POST_FIX_DEC, "postfix_expr", 2, kids, NULL);}
+    | postfix_expr NN_ASSERT {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_POST_FIX_NN_ASSERT, "postfix_expr", 2, kids, NULL);}
+    | postfix_expr NULLABLE {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_POST_FIX_NULLABLE, "postfix_expr", 2, kids, NULL);} /* !!!!!!!!!!!!! */
+    | postfix_expr DOT IDENT {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_POST_FIX_DOT, "postfix_expr", 3, kids, NULL);}
+    | postfix_expr SAFE_CALL IDENT {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_POST_FIX_SAFE_CALL, "postfix_expr", 3, kids, NULL);}
     ;
 primary_expr /* refactored expr into primary_expr, that includes everything from before as well as new logic to expressions */
     : function_call

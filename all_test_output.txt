@@ -119,19 +119,21 @@ exiting with status 0...
 
 
 ===== Running: tests/k0/lex7.kt =====
-tests/k0/lex7.kt:2: parser error: syntax error, unexpected TYPE_CAST
 Opening file 'tests/k0/lex7.kt'...
 
+used for testing and clarity of output
+No semantic errors found in symbol tables
 
-exiting with status 2...
+exiting with status 0...
 
 
 ===== Running: tests/k0/syn2.kt =====
-tests/k0/syn2.kt:22: parser error: syntax error, unexpected REQ
 Opening file 'tests/k0/syn2.kt'...
 
+used for testing and clarity of output
+No semantic errors found in symbol tables
 
-exiting with status 2...
+exiting with status 0...
 
 
 ===== Running: tests/k0/syn3.kt =====
