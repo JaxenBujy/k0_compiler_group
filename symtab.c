@@ -363,7 +363,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         // only INT, CHAR, DOUBLE/REAL allowed
         int bt = expr_t->basetype;
-        if (bt != INT_TYPE && bt != CHAR_TYPE && bt != DOUBLE_TYPE)
+        if (bt != INT_TYPE && bt != CHAR_TYPE && bt != DOUBLE_TYPE && bt != ARRAY_TYPE)
         {
             fprintf(stderr,
                     "%s:%d: semantic error: inferred type not allowed for %s\n",
@@ -778,6 +778,12 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         make_nullable(e);
         break;
     }
+    case PR_POST_FIX_INDEX:
+    {
+        typeptr t = typecheck_expr(node, current, symtab_err_flag, filename);
+        (void)t;
+        break;
+    }
     // Function call
     case PR_FUNCTION_CALL:
     {
@@ -832,6 +838,9 @@ void print_scope(struct sym_table *st, int level)
 
                     switch (e->type->basetype)
                     {
+                    case ARRAY_TYPE:
+                        printf("  %s %s, type: Array%s\n", mut, e->name, nullable);
+                        break;
                     case BYTE_TYPE:
                         printf("  %s %s, type: Byte%s\n", mut, e->name, nullable);
                         break;
@@ -1194,12 +1203,32 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
         return t;
     }
 
+    case PR_POST_FIX_INDEX:
+    {
+        char *name = node->kids[0]->leaf->text;
+        struct sym_entry *e = lookup(current, name);
+        if (!e)
+        {
+            fprintf(stderr, "%s:%d: semantic error: array %s is undeclared\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *err = 1;
+            return NULL;
+        }
+        if (node->kids[2]->leaf->type->basetype != INT_TYPE)
+        {
+            fprintf(stderr, "%s:%d: semantic error: subscript needs integer %s\n",
+                    filename, node->kids[0]->leaf->lineno, name);
+            *err = 1;
+            return NULL;
+        } 
+        return e->type->u.a.elemtype;
+    }
+
     // function call
     case PR_FUNCTION_CALL:
     {
         char *name = node->kids[0]->leaf->text;
         struct sym_entry *e = lookup(current, name);
-
         if (!e || e->type->basetype != FUNC_TYPE)
         {
             fprintf(stderr, "%s:%d: invalid function call %s\n",
@@ -1207,9 +1236,8 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
             *err = 1;
             return NULL;
         }
-
         // on succes, will return return type of the function, else returns NULL
-        return check_function_call(node, current, err, filename);
+        return e->type;
     }
     }
     return NULL;
@@ -1384,7 +1412,6 @@ int is_numeric_type(int bt)
 // Check if a value of type src can be assigned to a variable of type dst
 int is_assignable(typeptr dst, typeptr src)
 {
-    
     if (!dst || !src)
         return 0;
     // Exact match

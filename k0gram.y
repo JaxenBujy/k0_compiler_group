@@ -300,6 +300,7 @@ postfix_expr
     | postfix_expr NULLABLE {struct tree *kids[10] = {$1,$2}; $$ = alctree(PR_POST_FIX_NULLABLE, "postfix_expr", 2, kids, NULL);} /* !!!!!!!!!!!!! */
     | postfix_expr DOT IDENT {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_POST_FIX_DOT, "postfix_expr", 3, kids, NULL);}
     | postfix_expr SAFE_CALL IDENT {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_POST_FIX_SAFE_CALL, "postfix_expr", 3, kids, NULL);}
+    | postfix_expr LSQUARE expr RSQUARE {struct tree *kids[10] = {$1,$2,$3,$4}; $$ = alctree(PR_POST_FIX_INDEX, "postfix_expr", 4, kids, NULL);}
     ;
 primary_expr /* refactored expr into primary_expr, that includes everything from before as well as new logic to expressions */
     : function_call

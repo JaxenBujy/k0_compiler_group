@@ -200,6 +200,7 @@ enum ProductionRule
     PR_POST_FIX_DOT,
     PR_POST_FIX_SAFE_CALL,
     PR_POST_FIX_NULLABLE,
+    PR_POST_FIX_INDEX,
 
     /* primary_expr */
     PR_PRIMARY_FUNCTION_CALL,
