@@ -23,8 +23,8 @@ char *predefined_functions[] = {
     "pow",       // Math.pow
     "cos",       // Math.cos
     "sin",       // Math.sin
-    "tan"        // Math.tan
-};
+    "tan",       // Math.tan
+    "arrayOf"};
 
 struct sym_table *mksymtab(int size)
 {
@@ -97,7 +97,7 @@ struct sym_table *mksymtab_global(int size)
             }
             else if (!strcmp(name, "equals"))
             {
-                t->u.f.returntype->basetype = BOOL_TYPE;
+                t->u.f.returntype->basetype = BOOLEAN_TYPE;
             }
             else if (!strcmp(name, "length"))
             {
@@ -123,6 +123,12 @@ struct sym_table *mksymtab_global(int size)
                      !strcmp(name, "sin") || !strcmp(name, "tan"))
             {
                 t->u.f.returntype->basetype = FLOAT_TYPE;
+            }
+            else if (!strcmp(name, "arrayOf"))
+            {
+                t->u.f.returntype->basetype = NONE_TYPE; // placeholder since the return type gets assigned later
+                // arrayOf accepts any number of arguments of the same type.
+                // We leave nparams = 0 and parameters = NULL
             }
             else
             {
@@ -221,13 +227,12 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     case PR_GLOBAL_VAR_DECL:
     case PR_FUN_BODY_VAR_DECL:
     {
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = node->kids[3]->leaf->category;
+        struct tree *type_node = node->kids[3];
+        typeptr t = type_from_ast_node(type_node);
 
         char *name = node->kids[1]->leaf->text;
-
         int is_mutable = (node->kids[0]->leaf->category == VAR);
-        int is_nullable = 0; // we know it's not nullable
+        int is_nullable = 0;
 
         if (lookup_current(current, name))
         {
@@ -246,9 +251,8 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     case PR_GLOBAL_VAR_DECL_ASSIGN:
     case PR_FUN_BODY_VAR_DECL_ASSIGN:
     {
-        // immediately handle type checking
-        typeptr declared = malloc(sizeof(*declared));
-        declared->basetype = node->kids[3]->leaf->category;
+        struct tree *type_node = node->kids[3];
+        typeptr declared = type_from_ast_node(type_node);
 
         typeptr expr_t = typecheck_expr(node->kids[5], current, symtab_err_flag, filename);
 
@@ -258,31 +262,27 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
                     filename, node->kids[1]->leaf->lineno, node->kids[1]->leaf->text);
             *symtab_err_flag = 1;
         }
-
         else if (expr_t && !is_assignable(declared, expr_t))
         {
             fprintf(stderr, "%s:%d: semantic error: type mismatch in variable declaration of %s\n",
-                    filename,
-                    node->kids[1]->leaf->lineno,
-                    node->kids[1]->leaf->text);
+                    filename, node->kids[1]->leaf->lineno, node->kids[1]->leaf->text);
             *symtab_err_flag = 1;
         }
 
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = declared->basetype; // passed type checks, so make the basetype the declared type
-
+        // Use the declared type for insertion (already built)
         char *name = node->kids[1]->leaf->text;
         int is_mutable = (node->kids[0]->leaf->category == VAR);
-        int is_nullable = 0; // we know it's not nullable
+        int is_nullable = 0;
 
         if (lookup_current(current, name))
         {
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
         {
-            insert(current, name, t, is_mutable, is_nullable);
+            insert(current, name, declared, is_mutable, is_nullable);
         }
         break;
     }
@@ -291,12 +291,10 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     case PR_GLOBAL_VAR_DECL_NULLABLE:
     case PR_FUN_BODY_VAR_DECL_NULLABLE:
     {
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = node->kids[3]->leaf->category;
+        struct tree *type_node = node->kids[3];
+        typeptr t = type_from_ast_node(type_node);
 
         char *name = node->kids[1]->leaf->text;
-
-        // assign mutability and nullability
         int is_mutable = (node->kids[0]->leaf->category == VAR);
         int is_nullable = 1;
 
@@ -317,28 +315,21 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     case PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE:
     case PR_FUN_BODY_VAR_DECL_ASSIGN_NULLABLE:
     {
-        typeptr declared = malloc(sizeof(*declared));
-        declared->basetype = node->kids[3]->leaf->category;
+        struct tree *type_node = node->kids[3];
+        typeptr declared = type_from_ast_node(type_node);
 
-        typeptr expr_t = typecheck_expr(node->kids[6], current,
-                                        symtab_err_flag, filename);
+        typeptr expr_t = typecheck_expr(node->kids[6], current, symtab_err_flag, filename);
 
-        // Allow null assignment to nullable variable
         if (expr_t && expr_t->basetype == NULL_TYPE)
         {
-            // null is allowed, skip type check
+            // null allowed
         }
         else if (expr_t && !is_assignable(declared, expr_t))
         {
             fprintf(stderr, "%s:%d: semantic error: type mismatch in nullable variable declaration of %s\n",
-                    filename,
-                    node->kids[1]->leaf->lineno,
-                    node->kids[1]->leaf->text);
+                    filename, node->kids[1]->leaf->lineno, node->kids[1]->leaf->text);
             *symtab_err_flag = 1;
         }
-
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = declared->basetype;
 
         char *name = node->kids[1]->leaf->text;
         int is_mutable = (node->kids[0]->leaf->category == VAR);
@@ -346,12 +337,13 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         if (lookup_current(current, name))
         {
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n", filename, node->kids[1]->leaf->lineno, name);
+            fprintf(stderr, "%s:%d: semantic error: redeclaration of variable %s\n",
+                    filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
         }
         else
         {
-            insert(current, name, t, is_mutable, is_nullable);
+            insert(current, name, declared, is_mutable, is_nullable);
         }
         break;
     }
@@ -424,41 +416,35 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
 
         // Build function type
         typeptr t = malloc(sizeof(*t));
+        memset(t, 0, sizeof(*t));
         t->basetype = FUNC_TYPE;
-
         t->u.f.name = name;
         t->u.f.defined = 1;
 
-        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
-        t->u.f.returntype->basetype = node->kids[6]->leaf->category;
+        // Return type (may be array)
+        struct tree *ret_type_node = node->kids[6];
+        t->u.f.returntype = type_from_ast_node(ret_type_node);
 
         t->u.f.nparams = 0;
-        t->u.f.parameters = NULL; // will fill later
+        t->u.f.parameters = NULL;
 
-        // insert function into current scope
         insert(current, name, t, 0, 0);
 
-        // Create new scope for function
+        // Create function scope
         struct sym_table *new_scope = mksymtab(16);
         new_scope->parent = current;
         new_scope->sibling = current->child;
         current->child = new_scope;
 
-        // scope name
         char *buf = malloc(strlen("func ") + strlen(name) + 1);
         strcpy(buf, "func ");
         strcat(buf, name);
         new_scope->scope_name = buf;
-
-        // link scope to function type
         t->u.f.st = new_scope;
 
-        // Build params and insert into function scope
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
-        // Traverse function body
         build_symtab(node->kids[7], new_scope, symtab_err_flag, filename);
-
         return;
     }
     case PR_FUNCTION_DECL_TYPED_NULLABLE:
@@ -473,42 +459,34 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             return;
         }
 
-        // Build function type
         typeptr t = malloc(sizeof(*t));
+        memset(t, 0, sizeof(*t));
         t->basetype = FUNC_TYPE;
-
         t->u.f.name = name;
         t->u.f.defined = 1;
-        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
-        t->u.f.returntype->basetype = node->kids[6]->leaf->category;
-        t->u.f.nparams = 0;
-        t->u.f.parameters = NULL; // will fill later
 
-        // insert function into current scope FIRST
-        // return type is nullable, so send 1 for nullable
+        struct tree *ret_type_node = node->kids[6];
+        t->u.f.returntype = type_from_ast_node(ret_type_node);
+        t->u.f.nparams = 0;
+        t->u.f.parameters = NULL;
+
+        // Return type is nullable, so pass is_nullable = 1
         insert(current, name, t, 0, 1);
 
-        // Create new scope for function
         struct sym_table *new_scope = mksymtab(16);
         new_scope->parent = current;
         new_scope->sibling = current->child;
         current->child = new_scope;
 
-        // scope name
         char *buf = malloc(strlen("func ") + strlen(name) + 1);
         strcpy(buf, "func ");
         strcat(buf, name);
         new_scope->scope_name = buf;
-
-        // link scope to function type
         t->u.f.st = new_scope;
 
-        // Build params and insert into function scope
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
-        // Traverse function body
         build_symtab(node->kids[8], new_scope, symtab_err_flag, filename);
-
         return;
     }
     // Untyped Function Declarations
@@ -525,43 +503,32 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
             return;
         }
 
-        // Build type
         typeptr t = malloc(sizeof(*t));
+        memset(t, 0, sizeof(*t));
         t->basetype = FUNC_TYPE;
-
         t->u.f.name = name;
         t->u.f.defined = 1;
 
-        // no return type -> NONE_TYPE
         t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
         t->u.f.returntype->basetype = NONE_TYPE;
-
         t->u.f.nparams = 0;
 
-        // insert function into current scope
         insert(current, name, t, 0, 0);
 
-        // Create new scope for function
         struct sym_table *new_scope = mksymtab(16);
         new_scope->parent = current;
         new_scope->sibling = current->child;
         current->child = new_scope;
 
-        // scope name
         char *buf = malloc(strlen("func ") + strlen(name) + 1);
         strcpy(buf, "func ");
         strcat(buf, name);
         new_scope->scope_name = buf;
-
-        // link scope to function type
         t->u.f.st = new_scope;
 
-        // Build params and insert into function scope
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
-        // Traverse function body
         build_symtab(node->kids[5], new_scope, symtab_err_flag, filename);
-
         return;
     }
 
@@ -818,6 +785,22 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         (void)t; // all error messages and actions happen in check_function_call, so just doing something with t here to avoid unused warning
         break;
     }
+    case PR_IF_SIMPLE:
+    case PR_IF_ELSE:
+    {
+        // The condition is the third child (index 2): IF LPAREN expr RPAREN ...
+        struct tree *cond = node->kids[2];
+        typeptr cond_type = typecheck_expr(cond, current, symtab_err_flag, filename);
+        if (cond_type && cond_type->basetype != BOOLEAN_TYPE)
+        {
+            fprintf(stderr, "%s:%d: semantic error: if condition must be Boolean\n",
+                    filename, cond->leaf ? cond->leaf->lineno : node->kids[0]->leaf->lineno);
+            *symtab_err_flag = 1;
+        }
+        // Nullability check for operands inside the condition is already performed
+        // by typecheck_expr when it processes relational/equality operators.
+        break;
+    }
     }
 
     for (int i = 0; i < node->nkids; i++)
@@ -867,7 +850,7 @@ void print_scope(struct sym_table *st, int level)
                     case DOUBLE_TYPE:
                         printf("  %s %s, type: Double%s\n", mut, e->name, nullable);
                         break;
-                    case BOOL_TYPE:
+                    case BOOLEAN_TYPE:
                         printf("  %s %s, type: Boolean%s\n", mut, e->name, nullable);
                         break;
                     case STRING_TYPE:
@@ -938,8 +921,7 @@ paramlist build_and_insert_params(struct tree *node, struct sym_table *st, int *
         }
 
         // Build type
-        typeptr t = malloc(sizeof(*t));
-        t->basetype = node->kids[2]->leaf->category;
+        typeptr t = type_from_ast_node(node->kids[2]);
 
         // Insert into symbol table
         insert(st, name, t, 0, 0);
@@ -993,6 +975,8 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
 
     switch (node->prodrule)
     {
+    case PR_EXPR:
+        return typecheck_expr(node->kids[0], current, err, filename);
 
     // literals
     case INT:
@@ -1008,13 +992,23 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
 
     case K_NULL:
     {
-        static typeptr null_typeptr = NULL;
+        typeptr null_typeptr = NULL;
         if (!null_typeptr)
         {
             null_typeptr = malloc(sizeof(*null_typeptr));
             null_typeptr->basetype = NULL_TYPE;
         }
         return null_typeptr;
+    }
+    case PR_TYPE_ARRAY:
+    {
+        typeptr array_typeptr = NULL;
+        if (!array_typeptr)
+        {
+            array_typeptr = malloc(sizeof(*array_typeptr));
+            array_typeptr->basetype = ARRAY_TYPE;
+        }
+        return array_typeptr;
     }
 
     // identifiers
@@ -1135,7 +1129,7 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
         if (!left || !right)
             return NULL;
 
-        if (left->basetype != BOOL_TYPE || right->basetype != BOOL_TYPE)
+        if (left->basetype != BOOLEAN_TYPE || right->basetype != BOOLEAN_TYPE)
         {
             fprintf(stderr, "%s:%d: logical operator requires Boolean operands\n",
                     filename, node->kids[1]->leaf->lineno);
@@ -1182,7 +1176,7 @@ typeptr typecheck_expr(struct tree *node, struct sym_table *current, int *err, c
         if (!t)
             return NULL;
 
-        if (t->basetype != BOOL_TYPE)
+        if (t->basetype != BOOLEAN_TYPE)
         {
             fprintf(stderr, "%s:%d: ! requires boolean\n",
                     filename, node->kids[0]->leaf->lineno);
@@ -1225,7 +1219,14 @@ int type_equal(typeptr a, typeptr b)
 {
     if (!a || !b)
         return 0;
-    return a->basetype == b->basetype;
+    if (a->basetype != b->basetype)
+        return 0;
+
+    if (a->basetype == ARRAY_TYPE)
+    {
+        return type_equal(a->u.a.elemtype, b->u.a.elemtype);
+    }
+    return 1;
 }
 
 typeptr check_function_call(struct tree *node, struct sym_table *current, int *err, char *filename)
@@ -1242,6 +1243,64 @@ typeptr check_function_call(struct tree *node, struct sym_table *current, int *e
                 filename, node->kids[0]->leaf->lineno, name);
         *err = 1;
         return NULL;
+    }
+    if (strcmp(name, "arrayOf") == 0)
+    {
+        typeptr elem_type = NULL;
+        struct tree *arglist = node->kids[2];
+        int arg_index = 0;
+
+        while (arglist)
+        {
+            struct tree *arg_node;
+            if (arglist->prodrule == PR_CALL_VALUES_RECUR)
+            {
+                arg_node = arglist->kids[2];
+                arglist = arglist->kids[0];
+            }
+            else
+            {
+                arg_node = arglist;
+                arglist = NULL;
+            }
+
+            typeptr arg_t = typecheck_expr(arg_node, current, err, filename);
+            if (!arg_t)
+            {
+                *err = 1;
+                return NULL;
+            }
+
+            // Disallow null literals as array elements (unless you want Array<Null>)
+            if (arg_t->basetype == K0_NULL_TYPE)
+            {
+                fprintf(stderr, "%s:%d: semantic error: arrayOf cannot contain null literal\n",
+                        filename, node->kids[0]->leaf->lineno);
+                *err = 1;
+                return NULL;
+            }
+
+            if (elem_type == NULL)
+            {
+                elem_type = arg_t; // first argument sets expected element type
+            }
+            else if (!type_equal(elem_type, arg_t))
+            {
+                fprintf(stderr, "%s:%d: semantic error: all arguments to arrayOf must have the same type\n",
+                        filename, node->kids[0]->leaf->lineno);
+                *err = 1;
+                return NULL;
+            }
+            arg_index++;
+        }
+
+        // Build the array type: Array<elem_type>
+        typeptr array_type = malloc(sizeof(*array_type));
+        memset(array_type, 0, sizeof(*array_type));
+        array_type->basetype = ARRAY_TYPE;
+        array_type->u.a.elemtype = elem_type; // note: your type.h uses 'a' for arrayinfo
+
+        return array_type;
     }
 
     typeptr ftype = e->type;
@@ -1346,7 +1405,7 @@ typeptr get_bool_typeptr(void)
     if (!bool_ptr)
     {
         bool_ptr = malloc(sizeof(*bool_ptr));
-        bool_ptr->basetype = BOOL_TYPE;
+        bool_ptr->basetype = BOOLEAN_TYPE;
     }
     return bool_ptr;
 }
@@ -1439,5 +1498,289 @@ int is_nullable_expr(struct tree *node, struct sym_table *st)
     // For any other production, assume non‑nullable as a safe default
     default:
         return 0;
+    }
+}
+
+// mainly for differentiating between array and normal types since array requires one more depth of recursion
+typeptr type_from_ast_node(struct tree *type_node)
+{
+    if (type_node->leaf)
+    {
+        typeptr t = malloc(sizeof(*t));
+        memset(t, 0, sizeof(*t));
+        t->basetype = type_node->leaf->category;
+        return t;
+    }
+    if (type_node->prodrule == PR_TYPE_ARRAY)
+    {
+        typeptr t = malloc(sizeof(*t));
+        memset(t, 0, sizeof(*t));
+        t->basetype = ARRAY_TYPE;
+        t->u.a.elemtype = type_from_ast_node(type_node->kids[2]);
+        return t;
+    }
+    return NULL;
+}
+
+void typecheck_ast(struct tree *node, struct sym_table *current, int *err, char *filename,
+                   typeptr expected_return_type, int func_returns_nullable)
+{
+    if (!node)
+        return;
+
+    switch (node->prodrule)
+    {
+
+    // --------------------------------------------------------------------
+    // Expression nodes: compute type and store in node->type
+    // --------------------------------------------------------------------
+    case PR_PRIMARY_PAREN:
+    case PR_ADDITIVE_PLUS:
+    case PR_ADDITIVE_MINUS:
+    case PR_MULT_MUL:
+    case PR_MULT_DIV:
+    case PR_MULT_MOD:
+    case PR_RELATIONAL_LT:
+    case PR_RELATIONAL_GT:
+    case PR_RELATIONAL_LTE:
+    case PR_RELATIONAL_GTE:
+    case PR_EQUALITY_EQ:
+    case PR_EQUALITY_NEQ:
+    case PR_EQUALITY_REQ:
+    case PR_EQUALITY_RNEQ:
+    case PR_LOGICAL_AND_RECUR:
+    case PR_LOGICAL_OR_RECUR:
+    case PR_UNARY_MINUS:
+    case PR_UNARY_NOT:
+    case PR_UNARY_INC:
+    case PR_UNARY_DEC:
+    case PR_POST_FIX_INC:
+    case PR_POST_FIX_DEC:
+    case PR_POST_FIX_NN_ASSERT:
+    case PR_POST_FIX_NULLABLE:
+    case PR_POST_FIX_DOT:
+    case PR_POST_FIX_SAFE_CALL:
+    case PR_ELVIS:
+    case PR_RANGE_INCL:
+    case PR_RANGE_EXCL:
+    case PR_FUNCTION_CALL:
+        node->type = typecheck_expr(node, current, err, filename);
+        break;
+
+    // Primary expressions
+    case PR_PRIMARY_IDENT:
+    case PR_PRIMARY_LITERAL:
+    case PR_PRIMARY_BOOL:
+        node->type = typecheck_expr(node, current, err, filename);
+        break;
+
+    // Literal leaves
+    case INT:
+    case REAL:
+    case STRING:
+    case MULTI_STRING:
+    case CHAR:
+    case K_TRUE:
+    case K_FALSE:
+    case K_NULL:
+        node->type = typecheck_expr(node, current, err, filename);
+        break;
+
+    // --------------------------------------------------------------------
+    // Return statement
+    // --------------------------------------------------------------------
+    case PR_STATEMENT_RETURN:
+    {
+        struct tree *ret_expr = node->kids[1];
+        typeptr ret_type = typecheck_expr(ret_expr, current, err, filename);
+
+        if (expected_return_type && ret_type)
+        {
+            if (ret_type->basetype == NULL_TYPE)
+            {
+                if (!func_returns_nullable)
+                {
+                    fprintf(stderr, "%s:%d: semantic error: cannot return null from non-nullable function\n",
+                            filename, node->kids[0]->leaf->lineno);
+                    *err = 1;
+                }
+            }
+            else if (!is_assignable(expected_return_type, ret_type))
+            {
+                fprintf(stderr, "%s:%d: semantic error: return type mismatch\n",
+                        filename, node->kids[0]->leaf->lineno);
+                *err = 1;
+            }
+            else if (!func_returns_nullable && is_nullable_expr(ret_expr, current))
+            {
+                fprintf(stderr, "%s:%d: semantic error: returning nullable expression from non-nullable function\n",
+                        filename, node->kids[0]->leaf->lineno);
+                *err = 1;
+            }
+        }
+        break;
+    }
+
+    // --------------------------------------------------------------------
+    // If / While conditions
+    // --------------------------------------------------------------------
+    case PR_IF_SIMPLE:
+    case PR_IF_ELSE:
+    {
+        struct tree *cond = node->kids[2];
+        typeptr cond_type = typecheck_expr(cond, current, err, filename);
+        if (cond_type && cond_type->basetype != BOOLEAN_TYPE)
+        {
+            fprintf(stderr, "%s:%d: semantic error: if condition must be Boolean\n",
+                    filename, cond->leaf ? cond->leaf->lineno : 0);
+            *err = 1;
+        }
+        break;
+    }
+
+    case PR_WHILE:
+    {
+        struct tree *cond = node->kids[2];
+        typeptr cond_type = typecheck_expr(cond, current, err, filename);
+        if (cond_type && cond_type->basetype != BOOLEAN_TYPE)
+        {
+            fprintf(stderr, "%s:%d: semantic error: while condition must be Boolean\n",
+                    filename, cond->leaf ? cond->leaf->lineno : 0);
+            *err = 1;
+        }
+        break;
+    }
+
+    // --------------------------------------------------------------------
+    // For loops (range bounds)
+    // --------------------------------------------------------------------
+    case PR_FOR_IDENT_IDENT:
+    case PR_FOR_LITERAL_IDENT:
+    case PR_FOR_IDENT_LITERAL:
+    case PR_FOR_LITERAL_LITERAL:
+    {
+        struct tree *start = node->kids[4];
+        struct tree *end = node->kids[6];
+
+        typeptr t1 = typecheck_expr(start, current, err, filename);
+        typeptr t2 = typecheck_expr(end, current, err, filename);
+        if (t1 && t2)
+        {
+            if (!is_numeric_type(t1->basetype) || !is_numeric_type(t2->basetype))
+            {
+                fprintf(stderr, "%s:%d: semantic error: for-loop range must be numeric\n",
+                        filename, node->kids[0]->leaf->lineno);
+                *err = 1;
+            }
+            else if (!type_equal(t1, t2))
+            {
+                fprintf(stderr, "%s:%d: semantic error: for-loop range bounds must have same type\n",
+                        filename, node->kids[0]->leaf->lineno);
+                *err = 1;
+            }
+        }
+        break;
+    }
+
+    // --------------------------------------------------------------------
+    // Function declarations: retrieve the stored scope and expected return
+    // --------------------------------------------------------------------
+    case PR_FUNCTION_DECL_TYPED:
+    {
+        char *func_name = node->kids[1]->leaf->text;
+        struct sym_entry *e = lookup(current, func_name);
+        if (!e || e->type->basetype != FUNC_TYPE)
+            return;
+
+        int nullable = e->is_nullable;
+        typeptr ret = e->type->u.f.returntype;
+        struct sym_table *func_scope = e->type->u.f.st;
+
+        // Traverse the function body with its own scope
+        typecheck_ast(node->kids[7], func_scope, err, filename, ret, nullable);
+        return; // skip default recursion
+    }
+
+    case PR_FUNCTION_DECL_TYPED_NULLABLE:
+    {
+        char *func_name = node->kids[1]->leaf->text;
+        struct sym_entry *e = lookup(current, func_name);
+        if (!e || e->type->basetype != FUNC_TYPE)
+            return;
+
+        int nullable = e->is_nullable;
+        typeptr ret = e->type->u.f.returntype;
+        struct sym_table *func_scope = e->type->u.f.st;
+
+        typecheck_ast(node->kids[8], func_scope, err, filename, ret, nullable);
+        return;
+    }
+
+    case PR_FUNCTION_DECL_UNTYPED:
+    {
+        char *func_name = node->kids[1]->leaf->text;
+        struct sym_entry *e = lookup(current, func_name);
+        if (!e || e->type->basetype != FUNC_TYPE)
+            return;
+
+        typeptr none = malloc(sizeof(*none));
+        none->basetype = NONE_TYPE;
+        struct sym_table *func_scope = e->type->u.f.st;
+
+        typecheck_ast(node->kids[5], func_scope, err, filename, none, 0);
+        return;
+    }
+
+    // --------------------------------------------------------------------
+    // Variable declarations: skip identifiers, only check initializers
+    // --------------------------------------------------------------------
+    case PR_GLOBAL_VAR_DECL:
+    case PR_FUN_BODY_VAR_DECL:
+    case PR_GLOBAL_VAR_DECL_NULLABLE:
+    case PR_FUN_BODY_VAR_DECL_NULLABLE:
+        // No expression to check
+        break;
+
+    case PR_GLOBAL_VAR_DECL_ASSIGN:
+    case PR_FUN_BODY_VAR_DECL_ASSIGN:
+    case PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE:
+    case PR_FUN_BODY_VAR_DECL_ASSIGN_NULLABLE:
+    {
+        int expr_idx = (node->prodrule == PR_GLOBAL_VAR_DECL_ASSIGN ||
+                        node->prodrule == PR_FUN_BODY_VAR_DECL_ASSIGN)
+                           ? 5
+                           : 6;
+        typecheck_expr(node->kids[expr_idx], current, err, filename);
+        break;
+    }
+
+    case PR_GLOBAL_VAR_INIT:
+    case PR_FUN_BODY_VAR_INIT:
+        typecheck_expr(node->kids[3], current, err, filename);
+        break;
+
+    case PR_FUNCTION_VAR_DECL:
+    case PR_FUNCTION_VAR_DECL_NULLABLE:
+        // Parameter declarations – nothing to type‑check
+        break;
+
+    // --------------------------------------------------------------------
+    // Block / body nodes
+    // --------------------------------------------------------------------
+    case PR_BLOCK:
+    case PR_FUNCTION_BODY:
+    case PR_CONTROL_BODY_BLOCK:
+    case PR_CONTROL_BODY_STATEMENT:
+        break;
+
+    default:
+        break;
+    }
+
+    // Recurse into children (unless we explicitly returned early)
+    for (int i = 0; i < node->nkids; i++)
+    {
+        typecheck_ast(node->kids[i], current, err, filename,
+                      expected_return_type, func_returns_nullable);
     }
 }

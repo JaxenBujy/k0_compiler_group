@@ -72,7 +72,6 @@
 %type <treeptr> type
 %type <treeptr> val_var
 %type <treeptr> literal
-%type <treeptr> bool_literal
 %type <treeptr> global_var_decl
 %type <treeptr> global_var_init
 %type <treeptr> fun_body_var_decl
@@ -163,9 +162,7 @@ literal /* literals */
     | MULTI_STRING 
     | CHAR
     | K_NULL
-    ;
-bool_literal
-    : K_TRUE
+    | K_TRUE
     | K_FALSE
     ;
 /* Variable declaration/initialization
@@ -309,7 +306,6 @@ primary_expr /* refactored expr into primary_expr, that includes everything from
     | IDENT
     | literal
     | LPAREN expr RPAREN {struct tree *kids[10] = {$1,$2,$3}; $$ = alctree(PR_PRIMARY_PAREN, "primary_expr", 3, kids, NULL); }
-    | bool_literal
     ;
 function_call /* a function call is a form of expression that calls functions */
     : IDENT LPAREN function_call_values_list RPAREN {struct tree *kids[10] = {$1,$2,$3,$4}; $$ = alctree(PR_FUNCTION_CALL, "function_call", 4, kids, NULL); }

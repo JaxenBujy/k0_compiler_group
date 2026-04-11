@@ -83,12 +83,12 @@ exiting with status 3...
 
 
 ===== Running: tests/errors/sem2.kt =====
-tests/errors/sem2.kt:1: semantic error: type mismatch in variable declaration of x
 Opening file 'tests/errors/sem2.kt'...
 
 used for testing and clarity of output
+No semantic errors found in symbol tables
 
-exiting with status 3...
+exiting with status 0...
 
 
 ===== Running: tests/errors/sem3.kt =====
@@ -128,12 +128,12 @@ exiting with status 3...
 
 
 ===== Running: tests/errors/sem7.kt =====
-tests/errors/sem7.kt:3: semantic error: type mismatch in assignment to x
 Opening file 'tests/errors/sem7.kt'...
 
 used for testing and clarity of output
+No semantic errors found in symbol tables
 
-exiting with status 3...
+exiting with status 0...
 
 
 ===== Running: tests/errors/sem8.kt =====
@@ -210,7 +210,6 @@ exiting with status 3...
 
 ===== Running: tests/errors/sem16.kt =====
 tests/errors/sem16.kt:2: semantic error: type mismatch in binary expression
-tests/errors/sem16.kt:2: semantic error: type mismatch in variable declaration of x
 Opening file 'tests/errors/sem16.kt'...
 
 used for testing and clarity of output
@@ -220,7 +219,6 @@ exiting with status 3...
 
 ===== Running: tests/errors/sem17.kt =====
 tests/errors/sem17.kt:2: relational operator requires numeric operands of the same type
-tests/errors/sem17.kt:2: semantic error: type mismatch in variable declaration of x
 Opening file 'tests/errors/sem17.kt'...
 
 used for testing and clarity of output
@@ -230,7 +228,6 @@ exiting with status 3...
 
 ===== Running: tests/errors/sem18.kt =====
 tests/errors/sem18.kt:2: logical operator requires Boolean operands
-tests/errors/sem18.kt:2: semantic error: type mismatch in variable declaration of x
 Opening file 'tests/errors/sem18.kt'...
 
 used for testing and clarity of output
@@ -240,7 +237,6 @@ exiting with status 3...
 
 ===== Running: tests/errors/sem19.kt =====
 tests/errors/sem19.kt:2: undeclared variable x
-tests/errors/sem19.kt:2: semantic error: type mismatch in variable declaration of y
 Opening file 'tests/errors/sem19.kt'...
 
 used for testing and clarity of output
@@ -259,7 +255,6 @@ exiting with status 3...
 
 ===== Running: tests/errors/sem21.kt =====
 tests/errors/sem21.kt:5: semantic error: nullable operands not allowed in arithmetic expression
-tests/errors/sem21.kt:5: semantic error: type mismatch in variable declaration of c
 Opening file 'tests/errors/sem21.kt'...
 
 used for testing and clarity of output
@@ -268,20 +263,21 @@ exiting with status 3...
 
 
 ===== Running: tests/errors/sem22.kt =====
+tests/errors/sem22.kt:5: semantic error: nullable operands not allowed in relational expression
 Opening file 'tests/errors/sem22.kt'...
 
 used for testing and clarity of output
-No semantic errors found in symbol tables
 
-exiting with status 0...
+exiting with status 3...
 
 
 ===== Running: tests/errors/sem23.kt =====
-tests/errors/sem23.kt:4: parser error: syntax error, unexpected IDENT
+tests/errors/sem23.kt:4: semantic error: nullable operands not allowed in logical expression
 Opening file 'tests/errors/sem23.kt'...
 
+used for testing and clarity of output
 
-exiting with status 2...
+exiting with status 3...
 
 
 ===== Running: tests/errors/sem24.kt =====
@@ -312,7 +308,7 @@ exiting with status 3...
 
 
 ===== Running: tests/errors/sem27.kt =====
-tests/errors/sem27.kt:4: ! requires boolean
+tests/errors/sem27.kt:4: semantic error: nullable operand not allowed in unary not
 Opening file 'tests/errors/sem27.kt'...
 
 used for testing and clarity of output
@@ -427,15 +423,12 @@ exiting with status 0...
 
 
 ===== Running: tests/k0/lex3.kt =====
-tests/k0/lex3.kt:2: semantic error: type mismatch in variable declaration of a
-tests/k0/lex3.kt:3: semantic error: type mismatch in variable declaration of b
-tests/k0/lex3.kt:5: semantic error: type mismatch in variable declaration of d
-tests/k0/lex3.kt:6: semantic error: type mismatch in variable declaration of e
 Opening file 'tests/k0/lex3.kt'...
 
 used for testing and clarity of output
+No semantic errors found in symbol tables
 
-exiting with status 3...
+exiting with status 0...
 
 
 ===== Running: tests/k0/lex4.kt =====
@@ -475,6 +468,13 @@ exiting with status 0...
 
 
 ===== Running: tests/k0/syn3.kt =====
+Opening file 'tests/k0/syn3.kt'...
+
+used for testing and clarity of output
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
 
 ===== Running: tests/kotlin/lex14.kt =====
 tests/kotlin/lex14.kt:3: scanner error: Kotlin reserved keyword: "!in" is not a part of k0

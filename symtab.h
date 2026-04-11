@@ -23,6 +23,8 @@ typeptr get_bool_typeptr(void);
 void make_non_nullable(struct sym_entry *e);
 void make_nullable(struct sym_entry *e);
 int is_nullable_expr(struct tree *node, struct sym_table *st);
+typeptr type_from_ast_node(struct tree *type_node);
+void typecheck_ast(struct tree *node, struct sym_table *current, int *err, char *filename, typeptr expected_return_type, int func_returns_nullable);
 
 struct sym_entry
 {

@@ -101,6 +101,10 @@ int main(int argc, char *argv[])
 
         // build symbol table starting at package scope
         build_symtab(root, current_package, &symtab_err_flag, filename);
+        if (!symtab_err_flag)
+        {
+            // typecheck_ast(root, global, &symtab_err_flag, filename, NULL, 0); // run through a second time, type checking expressions
+        }
 
         // print the tree if specified
         if (tree_bool)
@@ -114,7 +118,7 @@ int main(int argc, char *argv[])
             print_graph(root, filename);
             printf("dot file of AST generated in %s_tree.dot. To generate png image of the tree, run \"dot -Tpng %s_tree.dot > tree_img.png\"\n", filename, filename);
         }
-        if(none_bool)
+        if (none_bool)
         {
             printf("used for testing and clarity of output\n");
         }
