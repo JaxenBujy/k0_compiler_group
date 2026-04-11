@@ -1384,6 +1384,7 @@ int is_numeric_type(int bt)
 // Check if a value of type src can be assigned to a variable of type dst
 int is_assignable(typeptr dst, typeptr src)
 {
+    
     if (!dst || !src)
         return 0;
     // Exact match
@@ -1391,6 +1392,8 @@ int is_assignable(typeptr dst, typeptr src)
         return 1;
     // Null literal can be assigned only to nullable types (handled separately)
     if (src->basetype == NULL_TYPE)
+        return 0;
+    if ((dst->basetype == INT_TYPE && src->basetype == DOUBLE_TYPE) || (dst->basetype == INT_TYPE && src->basetype == FLOAT_TYPE))
         return 0;
     // Numeric conversions: any numeric type can be assigned to any other numeric type
     if (is_numeric_type(dst->basetype) && is_numeric_type(src->basetype))

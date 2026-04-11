@@ -83,12 +83,13 @@ exiting with status 3...
 
 
 ===== Running: tests/errors/sem2.kt =====
+tests/errors/sem2.kt:1: semantic error: type mismatch in variable declaration of x
+tests/errors/sem2.kt:2: semantic error: type mismatch in variable declaration of y
 Opening file 'tests/errors/sem2.kt'...
 
 used for testing and clarity of output
-No semantic errors found in symbol tables
 
-exiting with status 0...
+exiting with status 3...
 
 
 ===== Running: tests/errors/sem3.kt =====
@@ -128,12 +129,12 @@ exiting with status 3...
 
 
 ===== Running: tests/errors/sem7.kt =====
+tests/errors/sem7.kt:3: semantic error: type mismatch in assignment to x
 Opening file 'tests/errors/sem7.kt'...
 
 used for testing and clarity of output
-No semantic errors found in symbol tables
 
-exiting with status 0...
+exiting with status 3...
 
 
 ===== Running: tests/errors/sem8.kt =====
