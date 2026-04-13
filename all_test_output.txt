@@ -123,7 +123,7 @@ exiting with status 3...
 
 
 ===== Running: tests/errors/sem7.kt =====
-tests/errors/sem7.kt:3: semantic error: type mismatch in assignment to x. LHS type: 327, RHS type: 330
+tests/errors/sem7.kt:3: semantic error: type mismatch in assignment to x
 Opening file 'tests/errors/sem7.kt'...
 
 
@@ -290,6 +290,41 @@ Opening file 'tests/errors/sem27.kt'...
 exiting with status 3...
 
 
+===== Running: tests/errors/sem28.kt =====
+tests/errors/sem28.kt:4: semantic error: if condition must be Boolean
+Opening file 'tests/errors/sem28.kt'...
+
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem29.kt =====
+tests/errors/sem29.kt:4: semantic error: if condition must be Boolean
+Opening file 'tests/errors/sem29.kt'...
+
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem30.kt =====
+tests/errors/sem30.kt:3: semantic error: for-loop range must be whole number numeric types
+tests/errors/sem30.kt:4: undeclared variable i
+tests/errors/sem30.kt:4: semantic error: argument 1 of println has wrong type
+Opening file 'tests/errors/sem30.kt'...
+
+
+exiting with status 3...
+
+
+===== Running: tests/errors/sem31.kt =====
+tests/errors/sem31.kt:6: semantic error: redeclaration of loop variable j
+tests/errors/sem31.kt:6: semantic error: for-loop range bounds must have the same type
+Opening file 'tests/errors/sem31.kt'...
+
+
+exiting with status 3...
+
+
 ===== Running: tests/errors/syn4.kt =====
 tests/errors/syn4.kt:1: parser error: syntax error, unexpected end of file, expecting ASSIGN or NULLABLE or SEMICOLON
 Opening file 'tests/errors/syn4.kt'...
@@ -418,6 +453,14 @@ No semantic errors found in symbol tables
 exiting with status 0...
 
 
+===== Running: tests/k0/lex6.kt =====
+Opening file 'tests/k0/lex6.kt'...
+
+No semantic errors found in symbol tables
+
+exiting with status 0...
+
+
 ===== Running: tests/k0/syn1.kt =====
 Opening file 'tests/k0/syn1.kt'...
 
@@ -451,20 +494,45 @@ Opening file 'tests/kotlin/lex14.kt'...
 exiting with status 1...
 
 
+===== Running: tests/kotlin/lex15.kt =====
+tests/kotlin/lex15.kt:2: scanner error: Kotlin reserved keyword: "class" is not a part of k0
+tests/kotlin/lex15.kt:2: parser error: syntax error, unexpected KEYWORD_ERROR, expecting FUN or VAL or VAR or IMPORT
+Opening file 'tests/kotlin/lex15.kt'...
+
+
+exiting with status 1...
+
+
 ===== Running: tests/kotlin/syn15.kt =====
+tests/kotlin/syn15.kt:4: parser error: syntax error, unexpected VAL
 Opening file 'tests/kotlin/syn15.kt'...
 
-No semantic errors found in symbol tables
 
-exiting with status 0...
+exiting with status 2...
 
 
 ===== Running: tests/kotlin/syn16.kt =====
+tests/kotlin/syn16.kt:4: parser error: syntax error, unexpected IDENT, expecting RPAREN
 Opening file 'tests/kotlin/syn16.kt'...
 
-No semantic errors found in symbol tables
 
-exiting with status 0...
+exiting with status 2...
+
+
+===== Running: tests/kotlin/syn17.kt =====
+tests/kotlin/syn17.kt:4: parser error: syntax error, unexpected WHEN
+Opening file 'tests/kotlin/syn17.kt'...
+
+
+exiting with status 2...
+
+
+===== Running: tests/kotlin/syn19.kt =====
+tests/kotlin/syn19.kt:4: parser error: syntax error, unexpected SAFE_CALL, expecting RPAREN or COMMA
+Opening file 'tests/kotlin/syn19.kt'...
+
+
+exiting with status 2...
 
 
 All tests completed.
