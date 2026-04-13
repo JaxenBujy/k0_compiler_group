@@ -9,7 +9,7 @@ make clean
 make
 
 COMPILER="./k0"
-OPTION="-none"
+OPTION="" # -tree to print syntax tree, -dot to generate image of syntax tree, or -symtab to print symbol table
 
 echo "Running all tests..." | tee -a "$OUTPUT_FILE"
 echo "==========================" | tee -a "$OUTPUT_FILE"
