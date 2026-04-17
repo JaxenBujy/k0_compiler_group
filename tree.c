@@ -33,7 +33,8 @@ void print_tree_with_depth(struct tree *root, int depth)
                 if (root->leaf->type)
                         printf("Type: %d\t", root->leaf->type->basetype);
 
-                printf("Serial #: %d\n", root->id);
+                printf("Serial #: %d\t", root->id);
+                printf("Category: %d, Prodrule: %d\n", root->leaf->category, root->prodrule);
         }
         else
         {

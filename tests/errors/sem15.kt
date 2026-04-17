@@ -1,0 +1,1 @@
+fun foo(x: Int, x: Int) {} // duplicate param

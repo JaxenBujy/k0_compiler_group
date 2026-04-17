@@ -29,11 +29,12 @@ int main(int argc, char *argv[])
 
     if (argc < 2)
     {
-        printf("\nError: at least two arguments required\nUsage: ./ko <filename> <options>\n");
-        printf("OPTIONAL:\n-dot: generate a dot file of the syntax tree\n");
+        printf("\nError: at least file name required\nUsage: ./ko <filename> <options>\n");
+        printf("OPTIONAL:\n");
         printf("-dot: generate a dot file of the syntax tree\n");
         printf("-tree: print the syntax tree\n");
         printf("-symtab: print the syntax tree\n");
+        printf("-none: prints nothing\n");
         exit(1);
     }
     int dot_bool = 0;    // bool flag to determine if dot will be used to produce png image of AST
@@ -125,6 +126,7 @@ int main(int argc, char *argv[])
 
             exit_status = 3; // exit status 3 for semantic errors
         }
+        free_symtab(global); // free symbol table
     }
     else
     {
