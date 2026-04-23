@@ -318,7 +318,7 @@ void tacprint(struct instr *code)
         }
 }
 
-int main(void)
+/*int main(void)
 {
         // Register string literals before building the instruction list
         // returns the index used in addr_string()
@@ -365,4 +365,4 @@ int main(void)
 
         tacprint(code);
         return 0;
-}
+}*/

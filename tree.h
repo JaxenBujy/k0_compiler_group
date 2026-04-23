@@ -1,4 +1,5 @@
 #include "type.h"
+#include "tac.h"
 
 extern int serial;
 
@@ -12,6 +13,15 @@ struct tree
     struct token *leaf;    /* if nkids == 0; NULL for ε productions */
     struct sym_entry *symbol;
     typeptr type; // full type information
+    /* labeling fields */
+    struct addr first;
+    struct addr follow;
+    struct addr onTrue;
+    struct addr onFalse;
+    int has_first;
+    int has_follow;
+    int has_true;
+    int has_false;
 };
 
 struct token
@@ -31,6 +41,9 @@ void print_tree(struct tree *root);
 void free_tree_with_depth(struct tree *root, int depth);
 void print_tree_with_depth(struct tree *root, int depth);
 void printsymbol(char *s);
+void assign_first(struct tree *t);
+void assign_follow(struct tree *t);
+void assign_on_true_false(struct tree *t);
 
 enum ProductionRule
 {
