@@ -5,6 +5,7 @@ yyparse is called once to see its return value, so the loop of tokens being retu
 #include <string.h>
 #include "k0gram.tab.h"
 #include "symtab.h"
+#include "tac.h"
 
 extern FILE *yyin;
 extern char *yytext;
@@ -34,7 +35,6 @@ int main(int argc, char *argv[])
         printf("-dot: generate a dot file of the syntax tree\n");
         printf("-tree: print the syntax tree\n");
         printf("-symtab: print the syntax tree\n");
-        printf("-none: prints nothing\n");
         exit(1);
     }
     int dot_bool = 0;    // bool flag to determine if dot will be used to produce png image of AST
@@ -96,6 +96,20 @@ int main(int argc, char *argv[])
 
         // build symbol table starting at package scope
         build_symtab(root, current_package, &symtab_err_flag, filename);
+
+        // assign all first labels to tree nodes
+        assign_first(root);
+
+        // assign root a follow
+        struct addr *end = genlabel();
+        root->follow = *end;
+        root->has_follow = 1;
+
+        // assign rest of nodes a follow
+        assign_follow(root);
+
+        /*struct instr *tac = codegen(root);
+        tacprint(tac);*/
 
         // print the tree if specified
         if (tree_bool)
