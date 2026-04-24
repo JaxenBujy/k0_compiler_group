@@ -37,6 +37,7 @@ struct sym_table *mksymtab(int size)
     t->child = NULL;
     t->sibling = NULL;
     t->scope_name = NULL;
+    t->next_offset = 0;
 
     t->tbl = calloc(size, sizeof(struct sym_entry *));
 
@@ -171,8 +172,16 @@ void insert(struct sym_table *st, char *name, typeptr t, int is_mutable, int is_
     e->is_declared = is_declared;
     e->next = st->tbl[i];
     st->tbl[i] = e;
-
     st->nEntries++;
+
+    // determine region based on scope depth
+    if (st->parent == NULL || st->parent->parent == NULL)
+        e->region = R_GLOBAL; // top-level scope
+    else
+        e->region = R_LOCAL; // inside a function
+
+    e->offset = st->next_offset;
+    st->next_offset += 8; // advance by 8 bytes per variable
 }
 
 // lookup a symbol in any scope

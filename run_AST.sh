@@ -3,4 +3,4 @@
 make clean
 make
 ./k0 foo2.kt -tree -dot
-dot -Tpng hello_world.kt_tree.dot > tree_img.png
+dot -Tpng foo2.kt_tree.dot > tree_img.png

@@ -1,8 +1,12 @@
-// tac.c - TAC linked list builder and printer for lab 9
+// tac.c - TAC builder
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "tac.h"
+#include "tree.h"
+#include "symtab.h"
+
+extern int tempoffset;
 
 // region / opcode name tables
 char *regionnames[] = {
@@ -316,6 +320,40 @@ void tacprint(struct instr *code)
                 }
                 printf("\n");
         }
+}
+
+struct addr new_temp(void)
+{
+        printf("tempoffset: %d\n", tempoffset);
+        struct addr a;
+        a.region = R_LOCAL;
+        a.u.offset = tempoffset;
+        tempoffset += 8; // advance by one 8-byte slot
+        return a;
+}
+
+struct addr lookup_place(struct tree *t, struct sym_table *scope)
+{
+        // t should be a leaf node holding an identifier
+        if (t->leaf == NULL)
+        {
+                fprintf(stderr, "lookup_place: expected a leaf node\n");
+                struct addr a = {R_NONE, {0}};
+                return a;
+        }
+
+        struct sym_entry *e = lookup(scope, t->leaf->text);
+        if (e == NULL)
+        {
+                fprintf(stderr, "lookup_place: '%s' not found\n", t->leaf->text);
+                struct addr a = {R_NONE, {0}};
+                return a;
+        }
+
+        struct addr a;
+        a.region = e->region;
+        a.u.offset = e->offset;
+        return a;
 }
 
 /*int main(void)

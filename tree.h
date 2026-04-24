@@ -22,6 +22,8 @@ struct tree
     int has_follow;
     int has_true;
     int has_false;
+    struct addr place;
+    int has_place;
 };
 
 struct token
@@ -44,6 +46,12 @@ void printsymbol(char *s);
 void assign_first(struct tree *t);
 void assign_follow(struct tree *t);
 void assign_on_true_false(struct tree *t);
+struct instr *codegen(struct tree *t, struct sym_table *scope);
+struct instr *codegen_assign(struct tree *t, struct sym_table *scope);
+struct instr *codegen_binop(struct tree *t, int opcode, struct sym_table *scope);
+struct instr *codegen_relop(struct tree *t, int branch_op, struct sym_table *scope);
+struct instr *codegen_while(struct tree *t, struct sym_table *scope);
+struct instr *codegen_if(struct tree *t, struct sym_table *scope);
 
 enum ProductionRule
 {

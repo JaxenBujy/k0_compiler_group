@@ -15,7 +15,8 @@ extern int multi_line_start;
 extern int yyparse();
 extern int yydebug;
 extern struct tree *root;
-int exit_status = 0; // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
+int exit_status = 0;  // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
+int tempoffset = 100; // for tac genration, start above local variable space
 
 char *filename; // defined globally to share with k0lex.l
 void print_graph(struct tree *t, char *filename);
@@ -108,8 +109,8 @@ int main(int argc, char *argv[])
         // assign rest of nodes a follow
         assign_follow(root);
 
-        /*struct instr *tac = codegen(root);
-        tacprint(tac);*/
+        struct instr *tac = codegen(root, current_package);
+        tacprint(tac);
 
         // print the tree if specified
         if (tree_bool)

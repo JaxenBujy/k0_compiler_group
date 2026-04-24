@@ -36,6 +36,8 @@ struct sym_entry
     int is_nullable;        // 0 = no ? (not nullable), 1 = ? (nullable)
     int is_declared;        // variable is strictly just declared
     struct sym_entry *next; // next entry in same bucket
+    int region;             // R_LOCAL, R_GLOBAL, etc. from tac.h
+    int offset;             // byte offset within its region
 };
 
 struct sym_table
@@ -50,4 +52,5 @@ struct sym_table
     struct sym_table *sibling; // next scope at same level
 
     struct sym_entry **tbl;
+    int next_offset; // next available byte offset for locals
 };

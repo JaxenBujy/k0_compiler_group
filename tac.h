@@ -78,5 +78,11 @@ char *regionname(int i);
 char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
+struct addr new_temp(void);
+struct addr addr_loc(int offset);
+struct addr addr_const(int val);
+struct addr addr_name(char *name);
+struct addr addr_none(void);
+struct addr lookup_place(struct tree *t, struct sym_table *scope);
 
 #endif
