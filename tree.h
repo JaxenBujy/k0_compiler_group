@@ -1,3 +1,6 @@
+#ifndef TREE_H
+#define TREE_H
+
 #include "type.h"
 #include "tac.h"
 
@@ -52,6 +55,7 @@ struct instr *codegen_binop(struct tree *t, int opcode, struct sym_table *scope)
 struct instr *codegen_relop(struct tree *t, int branch_op, struct sym_table *scope);
 struct instr *codegen_while(struct tree *t, struct sym_table *scope);
 struct instr *codegen_if(struct tree *t, struct sym_table *scope);
+struct instr *codegen_if_else(struct tree *t, struct sym_table *scope);
 
 enum ProductionRule
 {
@@ -267,3 +271,5 @@ enum ProductionRule
     PR_IF_SIMPLE,
     PR_IF_ELSE
 };
+
+#endif

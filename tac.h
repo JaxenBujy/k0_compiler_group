@@ -4,6 +4,9 @@
 #ifndef TAC_H
 #define TAC_H
 
+struct tree;
+struct sym_table;
+
 struct addr
 {
         int region;
@@ -84,5 +87,6 @@ struct addr addr_const(int val);
 struct addr addr_name(char *name);
 struct addr addr_none(void);
 struct addr lookup_place(struct tree *t, struct sym_table *scope);
+void tacprint(struct instr *code);
 
 #endif

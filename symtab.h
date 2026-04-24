@@ -1,3 +1,6 @@
+#ifndef SYMTAB_H
+#define SYMTAB_H
+
 #include "tree.h"
 #include "type.h"
 
@@ -54,3 +57,5 @@ struct sym_table
     struct sym_entry **tbl;
     int next_offset; // next available byte offset for locals
 };
+
+#endif

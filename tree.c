@@ -467,7 +467,7 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
     case PR_IF_SIMPLE:
         return codegen_if(t, scope);
     case PR_IF_ELSE:
-        return codegen_if_else(t);
+        return codegen_if_else(t, scope);
     case PR_ASSIGNMENT_ASSIGN:
         return codegen_assign(t, scope);
     case PR_ADDITIVE_PLUS:
@@ -564,5 +564,36 @@ struct instr *codegen_if(struct tree *t, struct sym_table *scope)
     code = append(code, gen(D_LABEL, body->first, addr_none(), addr_none()));
     code = append(code, codegen(body, scope));
     code = append(code, gen(D_LABEL, t->follow, addr_none(), addr_none()));
+    return code;
+}
+
+struct instr *codegen_if_else(struct tree *t, struct sym_table *scope)
+{
+    struct tree *cond = t->kids[2];
+    struct tree *then_part = t->kids[4];
+    struct tree *else_part = t->kids[6];
+
+    struct instr *code = NULL;
+
+    // entry label
+    code = gen(D_LABEL, t->first, addr_none(), addr_none());
+
+    // generate condition (uses cond->onTrue / cond->onFalse)
+    code = append(code, codegen(cond, scope));
+
+    // THEN branch
+    code = append(code, gen(D_LABEL, then_part->first, addr_none(), addr_none()));
+    code = append(code, codegen(then_part, scope));
+
+    // jump to follow after THEN (skip ELSE)
+    code = append(code, gen(O_GOTO, t->follow, addr_none(), addr_none()));
+
+    // ELSE branch
+    code = append(code, gen(D_LABEL, else_part->first, addr_none(), addr_none()));
+    code = append(code, codegen(else_part, scope));
+
+    // exit label
+    code = append(code, gen(D_LABEL, t->follow, addr_none(), addr_none()));
+
     return code;
 }
