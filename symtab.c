@@ -189,15 +189,18 @@ struct sym_entry *lookup(struct sym_table *st, char *name)
 {
     for (; st != NULL; st = st->parent)
     {
+        fprintf(stderr, "lookup: searching scope '%s' for '%s'\n", st->scope_name, name);
         int i = hash(st, name);
+        fprintf(stderr, "lookup: hash bucket %d\n", i);
         struct sym_entry *e = st->tbl[i];
-
         while (e)
         {
+            fprintf(stderr, "lookup: found entry '%s' in bucket\n", e->name);
             if (strcmp(e->name, name) == 0)
                 return e;
             e = e->next;
         }
+        fprintf(stderr, "lookup: not found in this scope, going to parent\n");
     }
     return NULL;
 }
@@ -450,6 +453,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         strcat(buf, name);
         new_scope->scope_name = buf;
         t->u.f.st = new_scope;
+        node->type = t;
 
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
@@ -492,6 +496,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         strcat(buf, name);
         new_scope->scope_name = buf;
         t->u.f.st = new_scope;
+        node->type = t;
 
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 
@@ -534,6 +539,7 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         strcat(buf, name);
         new_scope->scope_name = buf;
         t->u.f.st = new_scope;
+        node->type = t;
 
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
 

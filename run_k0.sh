@@ -2,4 +2,4 @@
 # just run the compiler with no output specified
 make clean
 make
-./k0 hello_world.kt
+./k0 foo2.kt

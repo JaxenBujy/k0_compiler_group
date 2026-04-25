@@ -332,75 +332,47 @@ struct addr new_temp(void)
         return a;
 }
 
-struct addr lookup_place(struct tree *t, struct sym_table *scope)
+void dump_scope(struct sym_table *st)
 {
-        // t should be a leaf node holding an identifier
-        if (t->leaf == NULL)
-        {
-                fprintf(stderr, "lookup_place: expected a leaf node\n");
-                struct addr a = {R_NONE, {0}};
-                return a;
+    fprintf(stderr, "=== scope: %s ===\n", st->scope_name);
+    for (int i = 0; i < st->nBuckets; i++) {
+        struct sym_entry *e = st->tbl[i];
+        while (e) {
+            fprintf(stderr, "  entry: '%s'\n", e->name);
+            e = e->next;
         }
-
-        struct sym_entry *e = lookup(scope, t->leaf->text);
-        if (e == NULL)
-        {
-                fprintf(stderr, "lookup_place: '%s' not found\n", t->leaf->text);
-                struct addr a = {R_NONE, {0}};
-                return a;
-        }
-
-        struct addr a;
-        a.region = e->region;
-        a.u.offset = e->offset;
-        return a;
+    }
 }
 
-/*int main(void)
+struct addr lookup_place(struct tree *t, struct sym_table *scope)
 {
-        // Register string literals before building the instruction list
-        // returns the index used in addr_string()
-        int stridx = addstring("Variable i is %d.\\000");
+    //fprintf(stderr, "lookup_place: scope is '%s'\n", scope ? scope->scope_name : "NULL");
+    //fprintf(stderr, "lookup_place: leaf is %s\n", t->leaf ? t->leaf->text : "NULL");
+    if (t->leaf == NULL) {
+        fprintf(stderr, "lookup_place: expected a leaf node\n");
+        return addr_none();
+    }
 
-        // Build the .string section pseudo-instructions + .code marker
-        struct instr *code = gen_stringsection();
+    //printf("current leaf %s is category %d\n", t->leaf->text, t->leaf->category);
 
-        // proc main,0,32
-        code = append(code,
-                      gen(D_PROC, addr_name("main"), addr_const(0), addr_const(32)));
+    // use the symbol entry already attached during the semantic pass
+    struct sym_entry *e = t->symbol;
+    //printf("current token %s has prodrule %d\n", t->symbolname, t->prodrule);
 
-        // i = 5
-        code = append(code,
-                      gen(O_ASN, addr_loc(0), addr_const(5), addr_none()));
+    // fallback to lookup if symbol wasn't attached
+    if (e == NULL)
+    {
+        fprintf(stderr, "lookup_place: calling lookup with scope '%s'\n", scope ? scope->scope_name : "NULL");
+        e = lookup(scope, t->leaf->text);
+    }
 
-        // t1 = i * i
-        code = append(code,
-                      gen(O_MUL, addr_loc(8), addr_loc(0), addr_loc(0)));
+    if (e == NULL) {
+        fprintf(stderr, "lookup_place: '%s' not found\n", t->leaf->text);
+        return addr_none();
+    }
 
-        // t2 = t1 + 1
-        code = append(code,
-                      gen(O_ADD, addr_loc(16), addr_loc(8), addr_const(1)));
-
-        // i = t2
-        code = append(code,
-                      gen(O_ASN, addr_loc(0), addr_loc(16), addr_none()));
-
-        // PARAM i (param 2)
-        code = append(code,
-                      gen(O_PARM, addr_loc(0), addr_none(), addr_none()));
-
-        // PARAM str:0  (param 1, the format string)
-        code = append(code,
-                      gen(O_PARM, addr_string(stridx), addr_none(), addr_none()));
-
-        // CALL printf,2,loc:24
-        code = append(code,
-                      gen(O_CALL, addr_loc(24), addr_name("printf"), addr_const(2)));
-
-        // RETURN
-        code = append(code,
-                      gen(O_RET, addr_none(), addr_none(), addr_none()));
-
-        tacprint(code);
-        return 0;
-}*/
+    struct addr a;
+    a.region = e->region;
+    a.u.offset = e->offset;
+    return a;
+}

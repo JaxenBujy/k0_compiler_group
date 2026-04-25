@@ -16,7 +16,6 @@ extern int yyparse();
 extern int yydebug;
 extern struct tree *root;
 int exit_status = 0;  // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
-int tempoffset = 100; // for tac genration, start above local variable space
 
 char *filename; // defined globally to share with k0lex.l
 void print_graph(struct tree *t, char *filename);

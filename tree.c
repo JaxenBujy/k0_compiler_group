@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int tempoffset;
+
 void printsymbol(char *s)
 {
     printf("Identifier: %s\n", s);
@@ -32,18 +34,18 @@ void print_tree_with_depth(struct tree *root, int depth)
 
     // Print labels if they exist
     printf("[");
-    if (root->has_first)
+    if (root->has_first && root->has_follow)
+        printf("first=%d follow=%d ", root->first.u.offset, root->follow.u.offset);
+    if (root->has_first && !root->has_follow)
         printf("first=%d ", root->first.u.offset);
-    if (root->has_follow)
-        printf("follow=%d ", root->follow.u.offset);
     if (root->has_true)
         printf("true=%d ", root->onTrue.u.offset);
     if (root->has_false)
         printf("false=%d ", root->onFalse.u.offset);
-    if (!root->has_first && !root->has_follow && !root->has_true && !root->has_false)
-        printf("no label");
+    if ((!root->has_first && !root->has_follow && !root->has_true && !root->has_false) || (root->has_follow && !root->has_first))
+        printf("no label ");
     // Remove trailing space if needed
-    printf("]");
+    printf("\b]");
 
     // Print production rule and serial
     printf(" (prod=%d, id=%d)", root->prodrule, root->id);
@@ -460,6 +462,25 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         return NULL;
     struct instr *code = NULL;
 
+    // handle leaf nodes
+    if (t->nkids == 0) {
+        if (t->leaf == NULL) return NULL; // epsilon production
+
+        // integer literal
+        if (t->leaf->category == INT) {
+            t->place = addr_const(t->leaf->ival);
+            return NULL;
+        }
+
+        // identifier — look up its address
+        if (t->leaf->category == IDENT) {
+            t->place = lookup_place(t, scope);
+            return NULL;
+        }
+
+        return NULL;
+    }
+
     switch (t->prodrule)
     {
     case PR_WHILE:
@@ -491,6 +512,34 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         return codegen_relop(t, O_BEQ, scope);
     case PR_EQUALITY_NEQ:
         return codegen_relop(t, O_BNE, scope);
+    // function calls
+    case PR_FUNCTION_DECL_TYPED:
+    case PR_FUNCTION_DECL_TYPED_NULLABLE:
+    {
+        char *fname = t->kids[1]->leaf->text;
+        struct sym_table *inner = t->type->u.f.st; // set by semantic pass
+
+        tempoffset = inner->next_offset;
+        
+        struct instr *code = gen(D_PROC, addr_name(fname),
+                                addr_const(0), addr_const(inner->next_offset));
+        code = append(code, codegen(t->kids[7], inner)); // adjust body index
+        code = append(code, gen(D_END, addr_name(fname), addr_none(), addr_none()));
+        return code;
+    }
+    case PR_FUNCTION_DECL_UNTYPED:
+    {
+        char *fname = t->kids[1]->leaf->text;
+        struct sym_table *inner = t->type->u.f.st; // set by semantic pass
+
+        tempoffset = inner->next_offset;
+        
+        struct instr *code = gen(D_PROC, addr_name(fname),
+                                addr_const(0), addr_const(inner->next_offset));
+        code = append(code, codegen(t->kids[5], inner)); // adjust body index
+        code = append(code, gen(D_END, addr_name(fname), addr_none(), addr_none()));
+        return code;
+    }
     // default: recurse into children
     default:
         for (int i = 0; i < t->nkids; i++)

@@ -88,5 +88,6 @@ struct addr addr_name(char *name);
 struct addr addr_none(void);
 struct addr lookup_place(struct tree *t, struct sym_table *scope);
 void tacprint(struct instr *code);
+void dump_scope(struct sym_table *st);
 
 #endif
