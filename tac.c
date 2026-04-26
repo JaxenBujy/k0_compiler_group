@@ -68,7 +68,7 @@ struct instr *gen_stringsection(void)
                 lit.u.name = stringliterals[i];
                 head = append(head, gen(D_STRINGLIT, lit, none, none));
         }
-        
+
         return head;
 }
 
@@ -248,7 +248,7 @@ void tacprint(FILE *out, struct instr *code)
                 fprintf(out, "\n");
                 break;
             case D_GLOB:
-                fprintf(out, ".glob\t");
+                fprintf(out, "\t.glob\t");
                 print_addr(out, p->dest);
                 fprintf(out, "\n");
                 break;

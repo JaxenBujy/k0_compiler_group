@@ -1,7 +1,7 @@
 .string 8
 	$i
 .data 
-.glob	glob:0
+	.glob	glob:0
 .code
 proc __init,0,0
 	ASN   	glob:0,const:10
