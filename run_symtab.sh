@@ -2,4 +2,4 @@
 # runs with the -symtab option, printing the symbol table
 make clean
 make
-./k0 foo2.kt -symtab
+./k0 foo.kt -symtab

@@ -181,7 +181,8 @@ void insert(struct sym_table *st, char *name, typeptr t, int is_mutable, int is_
         e->region = R_LOCAL; // inside a function
 
     e->offset = st->next_offset;
-    st->next_offset += 8; // advance by 8 bytes per variable
+    if (t->basetype != FUNC_TYPE)
+        st->next_offset += 8; // advance by 8 bytes per variable
 }
 
 // lookup a symbol in any scope
@@ -189,18 +190,18 @@ struct sym_entry *lookup(struct sym_table *st, char *name)
 {
     for (; st != NULL; st = st->parent)
     {
-        fprintf(stderr, "lookup: searching scope '%s' for '%s'\n", st->scope_name, name);
+        //fprintf(stderr, "lookup: searching scope '%s' for '%s'\n", st->scope_name, name);
         int i = hash(st, name);
-        fprintf(stderr, "lookup: hash bucket %d\n", i);
+        //fprintf(stderr, "lookup: hash bucket %d\n", i);
         struct sym_entry *e = st->tbl[i];
         while (e)
         {
-            fprintf(stderr, "lookup: found entry '%s' in bucket\n", e->name);
+            //fprintf(stderr, "lookup: found entry '%s' in bucket\n", e->name);
             if (strcmp(e->name, name) == 0)
                 return e;
             e = e->next;
         }
-        fprintf(stderr, "lookup: not found in this scope, going to parent\n");
+        //fprintf(stderr, "lookup: not found in this scope, going to parent\n");
     }
     return NULL;
 }
@@ -218,6 +219,131 @@ struct sym_entry *lookup_current(struct sym_table *st, char *name)
         e = e->next;
     }
     return NULL;
+}
+
+// pass 1: hoist all function declarations into package scope
+void hoist_functions(struct tree *node, struct sym_table *pkg, int *err, char *filename)
+{
+    if (!node) return;
+
+    if (node->prodrule == PR_FUNCTION_DECL_TYPED ||
+        node->prodrule == PR_FUNCTION_DECL_TYPED_NULLABLE ||
+        node->prodrule == PR_FUNCTION_DECL_UNTYPED)
+    {
+        char *name = node->kids[1]->leaf->text;
+        if (!lookup_current(pkg, name))
+        {
+            typeptr t = malloc(sizeof(*t));
+            memset(t, 0, sizeof(*t));
+            t->basetype = FUNC_TYPE;
+            t->u.f.name = strdup(name);
+            t->u.f.defined = 1;
+            t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
+            t->u.f.returntype->basetype = NONE_TYPE; // placeholder
+            t->u.f.nparams = 0;
+            t->u.f.parameters = NULL;
+            t->u.f.st = NULL;
+            insert(pkg, name, t, 0, 0, 1);
+        }
+        return; // don't recurse into function bodies in pass 1
+    }
+
+    for (int i = 0; i < node->nkids; i++)
+        hoist_functions(node->kids[i], pkg, err, filename);
+}
+
+// pass 2: fill in parameter lists and return types for all functions
+void build_function_signatures(struct tree *node, struct sym_table *current, int *symtab_err_flag, char *filename)
+{
+    if (!node) return;
+
+    switch (node->prodrule)
+    {
+    case PR_FUNCTION_DECL_UNTYPED:
+    {
+        char *name = node->kids[1]->leaf->text;
+        struct sym_entry *e = lookup_current(current, name);
+        if (!e) return;
+
+        typeptr t = e->type;
+        t->u.f.nparams = 0;
+        t->u.f.parameters = NULL;
+
+        // create function scope just for params
+        struct sym_table *new_scope = mksymtab(16);
+        new_scope->parent = current;
+        new_scope->sibling = current->child;
+        current->child = new_scope;
+
+        char *buf = malloc(strlen("func ") + strlen(name) + 1);
+        strcpy(buf, "func ");
+        strcat(buf, name);
+        new_scope->scope_name = buf;
+        t->u.f.st = new_scope;
+        node->type = t;
+
+        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope,
+                                                      &t->u.f.nparams, symtab_err_flag, filename);
+        return;
+    }
+    case PR_FUNCTION_DECL_TYPED:
+    {
+        char *name = node->kids[1]->leaf->text;
+        struct sym_entry *e = lookup_current(current, name);
+        if (!e) return;
+
+        typeptr t = e->type;
+        t->u.f.returntype = type_from_ast_node(node->kids[6]);
+        t->u.f.nparams = 0;
+        t->u.f.parameters = NULL;
+
+        struct sym_table *new_scope = mksymtab(16);
+        new_scope->parent = current;
+        new_scope->sibling = current->child;
+        current->child = new_scope;
+
+        char *buf = malloc(strlen("func ") + strlen(name) + 1);
+        strcpy(buf, "func ");
+        strcat(buf, name);
+        new_scope->scope_name = buf;
+        t->u.f.st = new_scope;
+        node->type = t;
+
+        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope,
+                                                      &t->u.f.nparams, symtab_err_flag, filename);
+        return;
+    }
+    case PR_FUNCTION_DECL_TYPED_NULLABLE:
+    {
+        char *name = node->kids[1]->leaf->text;
+        struct sym_entry *e = lookup_current(current, name);
+        if (!e) return;
+
+        typeptr t = e->type;
+        t->u.f.returntype = type_from_ast_node(node->kids[6]);
+        t->u.f.nparams = 0;
+        t->u.f.parameters = NULL;
+
+        struct sym_table *new_scope = mksymtab(16);
+        new_scope->parent = current;
+        new_scope->sibling = current->child;
+        current->child = new_scope;
+
+        char *buf = malloc(strlen("func ") + strlen(name) + 1);
+        strcpy(buf, "func ");
+        strcat(buf, name);
+        new_scope->scope_name = buf;
+        t->u.f.st = new_scope;
+        node->type = t;
+
+        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope,
+                                                      &t->u.f.nparams, symtab_err_flag, filename);
+        return;
+    }
+    default:
+        for (int i = 0; i < node->nkids; i++)
+            build_function_signatures(node->kids[i], current, symtab_err_flag, filename);
+    }
 }
 
 // recursively traverses through the AST, generating the symbol table.
@@ -416,137 +542,44 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
     // Typed Function Declarations
     // fun foo(<parameter list>): Int {}
     case PR_FUNCTION_DECL_TYPED:
-    {
-        char *name = node->kids[1]->leaf->text;
-
-        if (lookup_current(current, name))
-        {
-            fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
-                    filename, node->kids[1]->leaf->lineno, name);
-            *symtab_err_flag = 1;
-            return;
-        }
-
-        // Build function type
-        typeptr t = malloc(sizeof(*t));
-        memset(t, 0, sizeof(*t));
-        t->basetype = FUNC_TYPE;
-        t->u.f.name = name;
-        t->u.f.defined = 1;
-
-        // Return type (may be array)
-        struct tree *ret_type_node = node->kids[6];
-        t->u.f.returntype = type_from_ast_node(ret_type_node);
-        t->u.f.nparams = 0;
-        t->u.f.parameters = NULL;
-
-        insert(current, name, t, 0, 0, 0);
-
-        // Create function scope
-        struct sym_table *new_scope = mksymtab(16);
-        new_scope->parent = current;
-        new_scope->sibling = current->child;
-        current->child = new_scope;
-
-        char *buf = malloc(strlen("func ") + strlen(name) + 1);
-        strcpy(buf, "func ");
-        strcat(buf, name);
-        new_scope->scope_name = buf;
-        t->u.f.st = new_scope;
-        node->type = t;
-
-        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
-
-        build_symtab(node->kids[7], new_scope, symtab_err_flag, filename);
-        return;
-    }
     case PR_FUNCTION_DECL_TYPED_NULLABLE:
     {
         char *name = node->kids[1]->leaf->text;
+        struct sym_entry *existing = lookup_current(current, name);
 
-        if (lookup_current(current, name))
-        {
+        if (existing && existing->is_declared == 0) {
             fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
                     filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
             return;
         }
+        if (existing) existing->is_declared = 0;
+        node->type = existing ? existing->type : NULL;
 
-        typeptr t = malloc(sizeof(*t));
-        memset(t, 0, sizeof(*t));
-        t->basetype = FUNC_TYPE;
-        t->u.f.name = name;
-        t->u.f.defined = 1;
-
-        struct tree *ret_type_node = node->kids[6];
-        t->u.f.returntype = type_from_ast_node(ret_type_node);
-        t->u.f.nparams = 0;
-        t->u.f.parameters = NULL;
-
-        // Return type is nullable, so pass is_nullable = 1
-        insert(current, name, t, 0, 1, 0);
-
-        struct sym_table *new_scope = mksymtab(16);
-        new_scope->parent = current;
-        new_scope->sibling = current->child;
-        current->child = new_scope;
-
-        char *buf = malloc(strlen("func ") + strlen(name) + 1);
-        strcpy(buf, "func ");
-        strcat(buf, name);
-        new_scope->scope_name = buf;
-        t->u.f.st = new_scope;
-        node->type = t;
-
-        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
-
-        build_symtab(node->kids[8], new_scope, symtab_err_flag, filename);
+        // scope and params already built in build_function_signatures
+        // just recurse into the body
+        struct sym_table *inner = node->type ? node->type->u.f.st : current;
+        build_symtab(node->kids[7], inner, symtab_err_flag, filename);
         return;
     }
-    // Untyped Function Declarations
-    // fun foo(<parameter list>) {}
     case PR_FUNCTION_DECL_UNTYPED:
     {
         char *name = node->kids[1]->leaf->text;
+        struct sym_entry *existing = lookup_current(current, name);
 
-        if (lookup_current(current, name))
-        {
+        if (existing && existing->is_declared == 0) {
             fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
                     filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
             return;
         }
+        if (existing) existing->is_declared = 0;
+        node->type = existing ? existing->type : NULL;
 
-        typeptr t = malloc(sizeof(*t));
-        memset(t, 0, sizeof(*t));
-        t->basetype = FUNC_TYPE;
-        t->u.f.name = name;
-        t->u.f.defined = 1;
-
-        t->u.f.returntype = malloc(sizeof(*(t->u.f.returntype)));
-        t->u.f.returntype->basetype = NONE_TYPE;
-        t->u.f.nparams = 0;
-
-        insert(current, name, t, 0, 0, 0);
-
-        struct sym_table *new_scope = mksymtab(16);
-        new_scope->parent = current;
-        new_scope->sibling = current->child;
-        current->child = new_scope;
-
-        char *buf = malloc(strlen("func ") + strlen(name) + 1);
-        strcpy(buf, "func ");
-        strcat(buf, name);
-        new_scope->scope_name = buf;
-        t->u.f.st = new_scope;
-        node->type = t;
-
-        t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope, &t->u.f.nparams, symtab_err_flag, filename);
-
-        build_symtab(node->kids[5], new_scope, symtab_err_flag, filename);
+        struct sym_table *inner = node->type ? node->type->u.f.st : current;
+        build_symtab(node->kids[5], inner, symtab_err_flag, filename);
         return;
     }
-
     // Assignment and arithmetic assignment
     case PR_ASSIGNMENT_ASSIGN:
     case PR_ASSIGNMENT_PLUS:

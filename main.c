@@ -3,6 +3,7 @@ yyparse is called once to see its return value, so the loop of tokens being retu
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 #include "k0gram.tab.h"
 #include "symtab.h"
 #include "tac.h"
@@ -15,6 +16,7 @@ extern int multi_line_start;
 extern int yyparse();
 extern int yydebug;
 extern struct tree *root;
+extern int tempoffset;
 int exit_status = 0;  // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
 
 char *filename; // defined globally to share with k0lex.l
@@ -94,6 +96,13 @@ int main(int argc, char *argv[])
         current_package->scope_name = malloc(len);
         snprintf(current_package->scope_name, len, "package %s", filename);
 
+        // Pass 1: needed so that functions declared after functions have their symbol visible to that function
+        // so if main is declared and then foo is declared after main, foo isn't visible until all functions are loaded into the symtab
+        hoist_functions(root, current_package, &symtab_err_flag, filename);
+
+        // Pass 2: another check for function declarations so that their parameters are set up before they are called in another function
+        build_function_signatures(root, current_package, &symtab_err_flag, filename);
+
         // build symbol table starting at package scope
         build_symtab(root, current_package, &symtab_err_flag, filename);
 
@@ -108,8 +117,50 @@ int main(int argc, char *argv[])
         // assign rest of nodes a follow
         assign_follow(root);
 
-        struct instr *tac = codegen(root, current_package);
-        tacprint(tac);
+        // derive .ic filename from input path
+        char *base = basename(strdup(filename));
+        char *dot = strrchr(base, '.');
+        size_t file_len = dot ? (size_t)(dot - base) : strlen(base);
+        char *outfile = malloc(file_len + 4);
+        strncpy(outfile, base, file_len);
+        outfile[file_len] = '\0';
+        strcat(outfile, ".ic");
+
+        printf("writing TAC to output file %s\n", outfile); // spec says print filename to stdout
+
+        FILE *ic = fopen(outfile, "w");
+        if (!ic) {
+            fprintf(stderr, "error: could not open output file %s\n", outfile);
+            exit(1);
+        }
+
+        struct instr *body = codegen(root, current_package); // creates the rest of the TAC
+        struct instr *code = gen_stringsection(); // makes the .string section
+
+        int saved_tempoffset = tempoffset; // save offset before global init codegen
+        tempoffset = 0;
+        struct instr * global_inits = codegen_globals(root, current_package); // make a global function wrapper so globals dont just sit in the .code section
+        int init_frame_size = tempoffset; // store correct __init frame size
+        tempoffset = saved_tempoffset; // restore tempoffset
+
+        code = append(code, gen_datasection(current_package));
+        code = append(code, gen(D_CODE, addr_none(), addr_none(),addr_none()));
+        if (global_inits) {
+            // compute frame size needed for global init temps
+            code = append(code, gen(D_PROC, addr_name("__init"),
+                                    addr_const(0), addr_const(init_frame_size)));
+            code = append(code, global_inits);
+            code = append(code, gen(D_END, addr_name("__init"),
+                                    addr_none(), addr_none()));
+        }
+        code = append(code, body);
+        tacprint(ic, code);
+        fclose(ic);
+        free(outfile);
+
+
+        //struct instr *tac = codegen(root, current_package);
+        //tacprint(tac);
 
         // print the tree if specified
         if (tree_bool)

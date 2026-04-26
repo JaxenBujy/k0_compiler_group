@@ -4,6 +4,8 @@
 #ifndef TAC_H
 #define TAC_H
 
+#include <stdio.h>
+
 struct tree;
 struct sym_table;
 
@@ -31,6 +33,7 @@ struct addr
 #define D_STRINGSEC 3057 // .string N  – string-region header
 #define D_STRINGLIT 3058 // one string literal entry
 #define D_CODE 3059      // .code      – start of code section
+#define D_DATA 3060
 
 // string-table helpers
 int addstring(const char *s);          // intern a literal, return its index
@@ -75,6 +78,7 @@ struct instr
 
 struct instr *gen(int, struct addr, struct addr, struct addr);
 struct instr *gen_stringsection(void);
+struct instr *gen_datasection(struct sym_table *pkg_scope);
 struct instr *concat(struct instr *, struct instr *);
 struct instr *append(struct instr *l1, struct instr *l2);
 char *regionname(int i);
@@ -87,7 +91,8 @@ struct addr addr_const(int val);
 struct addr addr_name(char *name);
 struct addr addr_none(void);
 struct addr lookup_place(struct tree *t, struct sym_table *scope);
-void tacprint(struct instr *code);
+struct addr addr_string(int idx);
+void tacprint(FILE *out, struct instr *code);
 void dump_scope(struct sym_table *st);
 
 #endif

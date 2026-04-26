@@ -56,6 +56,8 @@ struct instr *codegen_relop(struct tree *t, int branch_op, struct sym_table *sco
 struct instr *codegen_while(struct tree *t, struct sym_table *scope);
 struct instr *codegen_if(struct tree *t, struct sym_table *scope);
 struct instr *codegen_if_else(struct tree *t, struct sym_table *scope);
+struct instr *codegen_args(struct tree *t, struct sym_table *scope, int *nargs);
+struct instr *codegen_globals(struct tree *t, struct sym_table *scope);
 
 enum ProductionRule
 {

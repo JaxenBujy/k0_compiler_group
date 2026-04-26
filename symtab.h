@@ -30,6 +30,8 @@ void free_type(typeptr t);
 void free_paramlist(paramlist p);
 void free_sym_entry(struct sym_entry *e);
 void free_symtab(struct sym_table *st);
+void hoist_functions(struct tree *node, struct sym_table *pkg, int *err, char *filename);
+void build_function_signatures(struct tree *node, struct sym_table *current, int *symtab_err_flag, char *filename);
 
 struct sym_entry
 {

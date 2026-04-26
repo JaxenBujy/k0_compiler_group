@@ -462,23 +462,57 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         return NULL;
     struct instr *code = NULL;
 
-    // handle leaf nodes
     if (t->nkids == 0) {
         if (t->leaf == NULL) return NULL; // epsilon production
 
-        // integer literal
-        if (t->leaf->category == INT) {
-            t->place = addr_const(t->leaf->ival);
-            return NULL;
-        }
+        switch (t->leaf->category) {
+            case INT:
+                t->place = addr_const(t->leaf->ival);
+                return NULL;
 
-        // identifier — look up its address
-        if (t->leaf->category == IDENT) {
-            t->place = lookup_place(t, scope);
-            return NULL;
-        }
+            case REAL:
+            {
+                // store as a local temp — doubles need their own slot
+                struct addr tmp = new_temp();
+                t->place = tmp;
+                return NULL;
+            }
 
-        return NULL;
+            case STRING:
+            case MULTI_STRING:
+            {
+                char *s = t->leaf->sval ? t->leaf->sval : "";
+                int idx = addstring(s);
+                t->place = addr_string(idx);
+                return NULL;
+            }
+
+            case CHAR:
+            {
+                // chars are just integer values
+                t->place = addr_const((int)t->leaf->sval[0]);
+                return NULL;
+            }
+
+            case K_TRUE:
+                t->place = addr_const(1);
+                return NULL;
+
+            case K_FALSE:
+                t->place = addr_const(0);
+                return NULL;
+
+            case K_NULL:
+                t->place = addr_const(0);
+                return NULL;
+
+            case IDENT:
+                t->place = lookup_place(t, scope);
+                return NULL;
+
+            default:
+                return NULL;
+        }
     }
 
     switch (t->prodrule)
@@ -540,12 +574,119 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         code = append(code, gen(D_END, addr_name(fname), addr_none(), addr_none()));
         return code;
     }
+    case PR_STATEMENT_RETURN:
+    {
+        // kids[1] is the return expression
+        struct instr *code = codegen(t->kids[1], scope);
+        code = append(code, gen(O_RET, t->kids[1]->place, addr_none(), addr_none()));
+        return code;
+    }
+
+    case PR_FUNCTION_CALL:
+    {
+        // kids[0] = function name IDENT, kids[2] = argument list
+        char *fname = t->kids[0]->leaf->text;
+        
+        // first count the arguments
+        int nargs = 0;
+        struct instr *code = codegen_args(t->kids[2], scope, &nargs);
+        
+        // allocate a temp for the return value
+        struct addr retval = new_temp();
+        code = append(code, gen(O_CALL, retval, addr_name(fname), addr_const(nargs)));
+        t->place = retval;
+        return code;
+    }
+    case PR_FUN_BODY_VAR_INIT:
+    {
+        // VAR IDENT ASSIGN expr SEMICOLON
+        // kids[0]=VAR, kids[1]=IDENT, kids[2]=ASSIGN, kids[3]=expr
+        struct instr *code = codegen(t->kids[3], scope); // eval RHS
+        struct addr dst = lookup_place(t->kids[1], scope);
+        code = append(code, gen(O_ASN, dst, t->kids[3]->place, addr_none()));
+        return code;
+    }
+    case PR_GLOBAL_VAR_INIT:
+    case PR_GLOBAL_VAR_DECL:
+    case PR_GLOBAL_VAR_DECL_ASSIGN:
+    case PR_GLOBAL_VAR_DECL_NULLABLE:
+    case PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE:
+        return NULL;
     // default: recurse into children
     default:
         for (int i = 0; i < t->nkids; i++)
             code = append(code, codegen(t->kids[i], scope));
         return code;
     }
+}
+
+struct instr *codegen_globals(struct tree *t, struct sym_table *scope)
+{
+    if (t == NULL) return NULL;
+    struct instr *code = NULL;
+
+    switch (t->prodrule)
+    {
+    case PR_GLOBAL_VAR_INIT:
+    {
+        // VAR IDENT ASSIGN expr SEMICOLON
+        // kids[0]=VAR, kids[1]=IDENT, kids[2]=ASSIGN, kids[3]=expr
+        struct instr *code = codegen(t->kids[3], scope);
+        struct addr dst = lookup_place(t->kids[1], scope);
+        code = append(code, gen(O_ASN, dst, t->kids[3]->place, addr_none()));
+        return code;
+    }
+    case PR_GLOBAL_VAR_DECL_ASSIGN:
+    {
+        // VAR IDENT COLON TYPE ASSIGN expr SEMICOLON
+        // kids[0]=VAR, kids[1]=IDENT, kids[2]=COLON, kids[3]=TYPE, kids[4]=ASSIGN, kids[5]=expr
+        struct instr *code = codegen(t->kids[5], scope);
+        struct addr dst = lookup_place(t->kids[1], scope);
+        code = append(code, gen(O_ASN, dst, t->kids[5]->place, addr_none()));
+        return code;
+    }
+    case PR_GLOBAL_VAR_DECL_ASSIGN_NULLABLE:
+    {
+        // kids[6] is the expr
+        struct instr *code = codegen(t->kids[6], scope);
+        struct addr dst = lookup_place(t->kids[1], scope);
+        code = append(code, gen(O_ASN, dst, t->kids[6]->place, addr_none()));
+        return code;
+    }
+    // skip function declarations - don't recurse into bodies
+    case PR_FUNCTION_DECL_TYPED:
+    case PR_FUNCTION_DECL_TYPED_NULLABLE:
+    case PR_FUNCTION_DECL_UNTYPED:
+        return NULL;
+    // for everything else recurse
+    default:
+        for (int i = 0; i < t->nkids; i++)
+            code = append(code, codegen_globals(t->kids[i], scope));
+        return code;
+    }
+}
+
+struct instr *codegen_args(struct tree *t, struct sym_table *scope, int *nargs)
+{
+    if (t == NULL) return NULL;
+    struct instr *code = NULL;
+
+    if (t->prodrule == PR_CALL_VALUES_RECUR)
+    {
+        // kids[0] = list so far, kids[2] = next arg
+        code = codegen_args(t->kids[0], scope, nargs);
+        code = append(code, codegen(t->kids[2], scope));
+        code = append(code, gen(O_PARM, t->kids[2]->place, addr_none(), addr_none()));
+        (*nargs)++;
+    }
+    else
+    {
+        // single argument (functionCallVal — leaf IDENT or literal)
+        code = codegen(t, scope);
+        code = append(code, gen(O_PARM, t->place, addr_none(), addr_none()));
+        (*nargs)++;
+    }
+    return code;
 }
 
 struct instr *codegen_assign(struct tree *t, struct sym_table *scope)

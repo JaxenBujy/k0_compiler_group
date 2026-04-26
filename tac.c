@@ -22,7 +22,7 @@ char *opcodename(int i) { return opcodenames[i - O_ADD]; }
 // D_GLOB=3051 … D_CODE=3059
 char *pseudonames[] = {
     "glob", "proc", "loc", "lab", "end", "prot",
-    "string", "stringlit", "code"};
+    "string", "stringlit", "code", "data"};
 char *pseudoname(int i) { return pseudonames[i - D_GLOB]; }
 
 // string literal table
@@ -68,9 +68,7 @@ struct instr *gen_stringsection(void)
                 lit.u.name = stringliterals[i];
                 head = append(head, gen(D_STRINGLIT, lit, none, none));
         }
-
-        // .code
-        head = append(head, gen(D_CODE, none, none, none));
+        
         return head;
 }
 
@@ -84,6 +82,27 @@ struct addr *genlabel(void)
         a->u.offset = labelcounter++;
         printf("generated a label %d\n", a->u.offset);
         return a;
+}
+
+struct instr *gen_datasection(struct sym_table *pkg_scope)
+{
+    struct addr none = addr_none();
+    struct instr *head = gen(D_DATA, none, none, none); // .data marker
+
+    for (int i = 0; i < pkg_scope->nBuckets; i++) {
+        struct sym_entry *e = pkg_scope->tbl[i];
+        while (e) {
+            // only emit non-function globals
+            if (e->type && e->type->basetype != FUNC_TYPE) {
+                struct addr a;
+                a.region = R_GLOBAL;
+                a.u.offset = e->offset;
+                head = append(head, gen(D_GLOB, a, none, none));
+            }
+            e = e->next;
+        }
+    }
+    return head;
 }
 
 // instruction constructors
@@ -151,7 +170,7 @@ struct addr addr_none(void)
         struct addr a = {R_NONE, {.offset = 0}};
         return a;
 }
-// New: reference a string literal by its table index
+// reference a string literal by its table index
 struct addr addr_string(int idx)
 {
         struct addr a = {R_STRING, {.offset = idx}};
@@ -159,167 +178,141 @@ struct addr addr_string(int idx)
 }
 
 // address printer
-void print_addr(struct addr a)
+void print_addr(FILE *out, struct addr a)
 {
-        switch (a.region)
-        {
-        case R_LOCAL:
-                printf("loc:%d", a.u.offset);
-                break;
-        case R_GLOBAL:
-                printf("glob:%d", a.u.offset);
-                break;
-        case R_CONST:
-                printf("const:%d", a.u.offset);
-                break;
-        case R_LABEL:
-                printf("lab:%d", a.u.offset);
-                break;
-        case R_STRING:
-                printf("str:%d", a.u.offset);
-                break; // ← new
-        case R_NAME:
-                printf("%s", a.u.name);
-                break;
-        case R_NONE:
-                break;
-        default:
-                printf("?:%d", a.u.offset);
-                break;
-        }
+    switch (a.region)
+    {
+    case R_LOCAL:
+        fprintf(out, "loc:%d", a.u.offset);
+        break;
+    case R_GLOBAL:
+        fprintf(out, "glob:%d", a.u.offset);
+        break;
+    case R_CONST:
+        fprintf(out, "const:%d", a.u.offset);
+        break;
+    case R_LABEL:
+        fprintf(out, "lab:%d", a.u.offset);
+        break;
+    case R_STRING:
+        fprintf(out, "str:%d", a.u.offset);
+        break;
+    case R_NAME:
+        fprintf(out, "%s", a.u.name);
+        break;
+    case R_NONE:
+        break;
+    default:
+        fprintf(out, "?:%d", a.u.offset);
+        break;
+    }
 }
 
 // TAC printer
-void tacprint(struct instr *code)
+void tacprint(FILE *out, struct instr *code)
 {
-        for (struct instr *p = code; p != NULL; p = p->next)
+    for (struct instr *p = code; p != NULL; p = p->next)
+    {
+        if (p->opcode >= D_GLOB && p->opcode <= D_DATA)
         {
-
-                // pseudo/declaration instructions
-                if (p->opcode >= D_GLOB && p->opcode <= D_CODE)
-                {
-                        switch (p->opcode)
-                        {
-
-                        case D_STRINGSEC:
-                                printf(".string %d\n", p->dest.u.offset);
-                                break;
-
-                        case D_STRINGLIT:
-                                printf("\t%s\n", p->dest.u.name);
-                                break;
-
-                        case D_CODE:
-                                printf(".code\n");
-                                break;
-
-                        case D_PROC:
-                                printf("proc ");
-                                print_addr(p->dest);
-                                printf(",%d,%d\n", p->src1.u.offset, p->src2.u.offset);
-                                break;
-
-                        case D_LOCAL:
-                                printf("\t.local\t");
-                                print_addr(p->dest);
-                                printf("\n");
-                                break;
-
-                        case D_LABEL:
-                                printf("lab%d:\n", p->dest.u.offset);
-                                break;
-
-                        case D_END:
-                                printf("end\t");
-                                print_addr(p->dest);
-                                printf("\n");
-                                break;
-
-                        case D_GLOB:
-                                printf(".glob\t");
-                                print_addr(p->dest);
-                                printf("\n");
-                                break;
-
-                        default:
-                                printf("%s\t", pseudoname(p->opcode));
-                                print_addr(p->dest);
-                                printf("\n");
-                        }
-                        continue;
-                }
-
-                // real instructions
-                printf("\t%-6s\t", opcodename(p->opcode));
-
-                switch (p->opcode)
-                {
-                case O_ADD:
-                case O_SUB:
-                case O_MUL:
-                case O_DIV:
-                        print_addr(p->dest);
-                        printf(",");
-                        print_addr(p->src1);
-                        printf(",");
-                        print_addr(p->src2);
-                        break;
-
-                case O_NEG:
-                case O_ASN:
-                        print_addr(p->dest);
-                        printf(",");
-                        print_addr(p->src1);
-                        break;
-
-                case O_GOTO:
-                        print_addr(p->dest);
-                        break;
-
-                case O_BLT:
-                case O_BLE:
-                case O_BGT:
-                case O_BGE:
-                case O_BEQ:
-                case O_BNE:
-                        print_addr(p->dest);
-                        printf(",");
-                        print_addr(p->src1);
-                        printf(",");
-                        print_addr(p->src2);
-                        break;
-
-                case O_BIF:
-                case O_BNIF:
-                        print_addr(p->dest);
-                        printf(",");
-                        print_addr(p->src1);
-                        break;
-
-                case O_PARM:
-                        print_addr(p->dest);
-                        break;
-
-                case O_CALL:
-                        print_addr(p->src1);              // function name
-                        printf(",%d,", p->src2.u.offset); // #params
-                        print_addr(p->dest);              // return loc
-                        break;
-
-                case O_RET:
-                        if (p->dest.region != R_NONE)
-                                print_addr(p->dest);
-                        break;
-
-                default:
-                        print_addr(p->dest);
-                        printf(",");
-                        print_addr(p->src1);
-                        printf(",");
-                        print_addr(p->src2);
-                }
-                printf("\n");
+            switch (p->opcode)
+            {
+            case D_DATA:
+                fprintf(out, ".data \n");
+                break;
+            case D_STRINGSEC:
+                fprintf(out, ".string %d\n", p->dest.u.offset);
+                break;
+            case D_STRINGLIT:
+                fprintf(out, "\t%s\n", p->dest.u.name);
+                break;
+            case D_CODE:
+                fprintf(out, ".code\n");
+                break;
+            case D_PROC:
+                fprintf(out, "proc ");
+                print_addr(out, p->dest);
+                fprintf(out, ",%d,%d\n", p->src1.u.offset, p->src2.u.offset);
+                break;
+            case D_LOCAL:
+                fprintf(out, "\t.local\t");
+                print_addr(out, p->dest);
+                fprintf(out, "\n");
+                break;
+            case D_LABEL:
+                fprintf(out, "lab%d:\n", p->dest.u.offset);
+                break;
+            case D_END:
+                fprintf(out, "end\t");
+                print_addr(out, p->dest);
+                fprintf(out, "\n");
+                break;
+            case D_GLOB:
+                fprintf(out, ".glob\t");
+                print_addr(out, p->dest);
+                fprintf(out, "\n");
+                break;
+            default:
+                fprintf(out, "%s\t", pseudoname(p->opcode));
+                print_addr(out, p->dest);
+                fprintf(out, "\n");
+            }
+            continue;
         }
+
+        fprintf(out, "\t%-6s\t", opcodename(p->opcode));
+
+        switch (p->opcode)
+        {
+                case O_ADD: case O_SUB: case O_MUL: case O_DIV:
+                print_addr(out, p->dest);
+                fprintf(out, ",");
+                print_addr(out, p->src1);
+                fprintf(out, ",");
+                print_addr(out, p->src2);
+                break;
+                case O_NEG: case O_ASN:
+                print_addr(out, p->dest);
+                fprintf(out, ",");
+                print_addr(out, p->src1);
+                break;
+                case O_GOTO:
+                print_addr(out, p->dest);
+                break;
+                case O_BLT: case O_BLE: case O_BGT: case O_BGE:
+                case O_BEQ: case O_BNE:
+                print_addr(out, p->dest);
+                fprintf(out, ",");
+                print_addr(out, p->src1);
+                fprintf(out, ",");
+                print_addr(out, p->src2);
+                break;
+                case O_BIF: case O_BNIF:
+                print_addr(out, p->dest);
+                fprintf(out, ",");
+                print_addr(out, p->src1);
+                break;
+                case O_PARM:
+                print_addr(out, p->dest);
+                break;
+                case O_CALL:
+                print_addr(out, p->src1);
+                fprintf(out, ",%d,", p->src2.u.offset);
+                print_addr(out, p->dest);
+                break;
+                case O_RET:
+                if (p->dest.region != R_NONE)
+                        print_addr(out, p->dest);
+                break;
+                default:
+                print_addr(out, p->dest);
+                fprintf(out, ",");
+                print_addr(out, p->src1);
+                fprintf(out, ",");
+                print_addr(out, p->src2);
+                }
+                fprintf(out, "\n");
+    }
 }
 
 struct addr new_temp(void)
@@ -362,7 +355,7 @@ struct addr lookup_place(struct tree *t, struct sym_table *scope)
     // fallback to lookup if symbol wasn't attached
     if (e == NULL)
     {
-        fprintf(stderr, "lookup_place: calling lookup with scope '%s'\n", scope ? scope->scope_name : "NULL");
+        //fprintf(stderr, "lookup_place: calling lookup with scope '%s'\n", scope ? scope->scope_name : "NULL");
         e = lookup(scope, t->leaf->text);
     }
 

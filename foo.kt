@@ -1,3 +1,5 @@
+var g = 10;
+
 fun main() {
    var i : Int = 0;
 
