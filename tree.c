@@ -462,56 +462,59 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         return NULL;
     struct instr *code = NULL;
 
-    if (t->nkids == 0) {
-        if (t->leaf == NULL) return NULL; // epsilon production
+    if (t->nkids == 0)
+    {
+        if (t->leaf == NULL)
+            return NULL; // epsilon production
 
-        switch (t->leaf->category) {
-            case INT:
-                t->place = addr_const(t->leaf->ival);
-                return NULL;
+        switch (t->leaf->category)
+        {
+        case INT:
+            t->place = addr_const(t->leaf->ival);
+            return NULL;
 
-            case REAL:
-            {
-                // store as a local temp — doubles need their own slot
-                struct addr tmp = new_temp();
-                t->place = tmp;
-                return NULL;
-            }
+        case REAL:
+        {
+            // store as a local temp — doubles need their own slot
+            struct addr tmp = new_temp();
+            t->place = tmp;
+            return NULL;
+        }
 
-            case STRING:
-            case MULTI_STRING:
-            {
-                char *s = t->leaf->sval ? t->leaf->sval : "";
-                int idx = addstring(s);
-                t->place = addr_string(idx);
-                return NULL;
-            }
+        case STRING:
+        case MULTI_STRING:
+        {
+            char *s = t->leaf->sval ? t->leaf->sval : "";
+            int idx = addstring(s);
+            t->place = addr_string(idx);
+            return NULL;
+        }
 
-            case CHAR:
-            {
-                // chars are just integer values
-                t->place = addr_const((int)t->leaf->sval[0]);
-                return NULL;
-            }
+        case CHAR:
+        {
+            // chars are just integer values
+            t->place = addr_const((int)t->leaf->sval[0]);
+            return NULL;
+        }
 
-            case K_TRUE:
-                t->place = addr_const(1);
-                return NULL;
+        case K_TRUE:
+            t->place = addr_const(1);
+            return NULL;
 
-            case K_FALSE:
-                t->place = addr_const(0);
-                return NULL;
+        case K_FALSE:
+            t->place = addr_const(0);
+            return NULL;
 
-            case K_NULL:
-                t->place = addr_const(0);
-                return NULL;
+        case K_NULL:
+            t->place = addr_const(0);
+            return NULL;
 
-            case IDENT:
-                t->place = lookup_place(t, scope);
-                return NULL;
+        case IDENT:
+            t->place = lookup_place(t, scope);
+            return NULL;
 
-            default:
-                return NULL;
+        default:
+            return NULL;
         }
     }
 
@@ -554,9 +557,9 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         struct sym_table *inner = t->type->u.f.st; // set by semantic pass
 
         tempoffset = inner->next_offset;
-        
+
         struct instr *code = gen(D_PROC, addr_name(fname),
-                                addr_const(0), addr_const(inner->next_offset));
+                                 addr_const(0), addr_const(inner->next_offset));
         code = append(code, codegen(t->kids[7], inner)); // adjust body index
         code = append(code, gen(D_END, addr_name(fname), addr_none(), addr_none()));
         return code;
@@ -564,13 +567,17 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
     case PR_FUNCTION_DECL_UNTYPED:
     {
         char *fname = t->kids[1]->leaf->text;
-        struct sym_table *inner = t->type->u.f.st; // set by semantic pass
+        struct sym_table *inner = t->type->u.f.st;
 
-        tempoffset = inner->next_offset;
-        
+        tempoffset = inner->next_offset; // temps start after locals
+
+        // generate body first so tempoffset reflects all allocations
+        struct instr *body = codegen(t->kids[5], inner);
+
+        // now emit proc with the final tempoffset as frame size
         struct instr *code = gen(D_PROC, addr_name(fname),
-                                addr_const(0), addr_const(inner->next_offset));
-        code = append(code, codegen(t->kids[5], inner)); // adjust body index
+                                 addr_const(0), addr_const(tempoffset));
+        code = append(code, body);
         code = append(code, gen(D_END, addr_name(fname), addr_none(), addr_none()));
         return code;
     }
@@ -586,11 +593,11 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
     {
         // kids[0] = function name IDENT, kids[2] = argument list
         char *fname = t->kids[0]->leaf->text;
-        
+
         // first count the arguments
         int nargs = 0;
         struct instr *code = codegen_args(t->kids[2], scope, &nargs);
-        
+
         // allocate a temp for the return value
         struct addr retval = new_temp();
         code = append(code, gen(O_CALL, retval, addr_name(fname), addr_const(nargs)));
@@ -598,6 +605,7 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         return code;
     }
     case PR_FUN_BODY_VAR_INIT:
+    case PR_FUN_BODY_VAR_DECL_ASSIGN:
     {
         // VAR IDENT ASSIGN expr SEMICOLON
         // kids[0]=VAR, kids[1]=IDENT, kids[2]=ASSIGN, kids[3]=expr
@@ -622,7 +630,8 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
 
 struct instr *codegen_globals(struct tree *t, struct sym_table *scope)
 {
-    if (t == NULL) return NULL;
+    if (t == NULL)
+        return NULL;
     struct instr *code = NULL;
 
     switch (t->prodrule)
@@ -668,7 +677,8 @@ struct instr *codegen_globals(struct tree *t, struct sym_table *scope)
 
 struct instr *codegen_args(struct tree *t, struct sym_table *scope, int *nargs)
 {
-    if (t == NULL) return NULL;
+    if (t == NULL)
+        return NULL;
     struct instr *code = NULL;
 
     if (t->prodrule == PR_CALL_VALUES_RECUR)

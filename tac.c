@@ -33,19 +33,19 @@ int stringcount = 0;
 // Intern a string literal.  Returns its 0-based index
 int addstring(const char *s)
 {
-        if (stringcount >= MAX_STRINGS)
-        {
-                fprintf(stderr, "string table overflow\n");
-                exit(1);
-        }
-        stringliterals[stringcount] = strdup(s);
-        return stringcount++;
+    if (stringcount >= MAX_STRINGS)
+    {
+        fprintf(stderr, "string table overflow\n");
+        exit(1);
+    }
+    stringliterals[stringcount] = strdup(s);
+    return stringcount++;
 }
 
 // Total byte size of all interned strings, rounded up to a multiple of 8.
 int stringsectionsize(void)
 {
-        return stringcount * 8; // one 8-byte slot per string entry
+    return stringcount * 8; // one 8-byte slot per string entry
 }
 
 //  Build the pseudo-instruction sequence for the .string section:
@@ -54,22 +54,22 @@ int stringsectionsize(void)
 // D_CODE marks start of code
 struct instr *gen_stringsection(void)
 {
-        struct addr none = {R_NONE, {0}};
+    struct addr none = {R_NONE, {0}};
 
-        // .string <size>
-        struct addr szaddr = {R_CONST, {.offset = stringsectionsize()}};
-        struct instr *head = gen(D_STRINGSEC, szaddr, none, none);
+    // .string <size>
+    struct addr szaddr = {R_CONST, {.offset = stringsectionsize()}};
+    struct instr *head = gen(D_STRINGSEC, szaddr, none, none);
 
-        // one D_STRINGLIT per entry
-        for (int i = 0; i < stringcount; i++)
-        {
-                struct addr lit;
-                lit.region = R_NAME;
-                lit.u.name = stringliterals[i];
-                head = append(head, gen(D_STRINGLIT, lit, none, none));
-        }
+    // one D_STRINGLIT per entry
+    for (int i = 0; i < stringcount; i++)
+    {
+        struct addr lit;
+        lit.region = R_NAME;
+        lit.u.name = stringliterals[i];
+        head = append(head, gen(D_STRINGLIT, lit, none, none));
+    }
 
-        return head;
+    return head;
 }
 
 // label counter
@@ -77,11 +77,11 @@ int labelcounter;
 
 struct addr *genlabel(void)
 {
-        struct addr *a = malloc(sizeof(struct addr));
-        a->region = R_LABEL;
-        a->u.offset = labelcounter++;
-        printf("generated a label %d\n", a->u.offset);
-        return a;
+    struct addr *a = malloc(sizeof(struct addr));
+    a->region = R_LABEL;
+    a->u.offset = labelcounter++;
+    // printf("generated a label %d\n", a->u.offset); // debugging
+    return a;
 }
 
 struct instr *gen_datasection(struct sym_table *pkg_scope)
@@ -89,11 +89,14 @@ struct instr *gen_datasection(struct sym_table *pkg_scope)
     struct addr none = addr_none();
     struct instr *head = gen(D_DATA, none, none, none); // .data marker
 
-    for (int i = 0; i < pkg_scope->nBuckets; i++) {
+    for (int i = 0; i < pkg_scope->nBuckets; i++)
+    {
         struct sym_entry *e = pkg_scope->tbl[i];
-        while (e) {
+        while (e)
+        {
             // only emit non-function globals
-            if (e->type && e->type->basetype != FUNC_TYPE) {
+            if (e->type && e->type->basetype != FUNC_TYPE)
+            {
                 struct addr a;
                 a.region = R_GLOBAL;
                 a.u.offset = e->offset;
@@ -108,73 +111,73 @@ struct instr *gen_datasection(struct sym_table *pkg_scope)
 // instruction constructors
 struct instr *gen(int op, struct addr a1, struct addr a2, struct addr a3)
 {
-        struct instr *rv = malloc(sizeof(struct instr));
-        if (!rv)
-        {
-                fprintf(stderr, "out of memory\n");
-                exit(4);
-        }
-        rv->opcode = op;
-        rv->dest = a1;
-        rv->src1 = a2;
-        rv->src2 = a3;
-        rv->next = NULL;
-        return rv;
+    struct instr *rv = malloc(sizeof(struct instr));
+    if (!rv)
+    {
+        fprintf(stderr, "out of memory\n");
+        exit(4);
+    }
+    rv->opcode = op;
+    rv->dest = a1;
+    rv->src1 = a2;
+    rv->src2 = a3;
+    rv->next = NULL;
+    return rv;
 }
 
 struct instr *copylist(struct instr *l)
 {
-        if (!l)
-                return NULL;
-        struct instr *c = gen(l->opcode, l->dest, l->src1, l->src2);
-        c->next = copylist(l->next);
-        return c;
+    if (!l)
+        return NULL;
+    struct instr *c = gen(l->opcode, l->dest, l->src1, l->src2);
+    c->next = copylist(l->next);
+    return c;
 }
 
 struct instr *append(struct instr *l1, struct instr *l2)
 {
-        if (!l1)
-                return l2;
-        struct instr *p = l1;
-        while (p->next)
-                p = p->next;
-        p->next = l2;
-        return l1;
+    if (!l1)
+        return l2;
+    struct instr *p = l1;
+    while (p->next)
+        p = p->next;
+    p->next = l2;
+    return l1;
 }
 
 struct instr *concat(struct instr *l1, struct instr *l2)
 {
-        return append(copylist(l1), l2);
+    return append(copylist(l1), l2);
 }
 
 // address helpers
 struct addr addr_loc(int offset)
 {
-        struct addr a = {R_LOCAL, {.offset = offset}};
-        return a;
+    struct addr a = {R_LOCAL, {.offset = offset}};
+    return a;
 }
 struct addr addr_const(int val)
 {
-        struct addr a = {R_CONST, {.offset = val}};
-        return a;
+    struct addr a = {R_CONST, {.offset = val}};
+    return a;
 }
 struct addr addr_name(char *name)
 {
-        struct addr a;
-        a.region = R_NAME;
-        a.u.name = name;
-        return a;
+    struct addr a;
+    a.region = R_NAME;
+    a.u.name = name;
+    return a;
 }
 struct addr addr_none(void)
 {
-        struct addr a = {R_NONE, {.offset = 0}};
-        return a;
+    struct addr a = {R_NONE, {.offset = 0}};
+    return a;
 }
 // reference a string literal by its table index
 struct addr addr_string(int idx)
 {
-        struct addr a = {R_STRING, {.offset = idx}};
-        return a;
+    struct addr a = {R_STRING, {.offset = idx}};
+    return a;
 }
 
 // address printer
@@ -264,73 +267,84 @@ void tacprint(FILE *out, struct instr *code)
 
         switch (p->opcode)
         {
-                case O_ADD: case O_SUB: case O_MUL: case O_DIV:
+        case O_ADD:
+        case O_SUB:
+        case O_MUL:
+        case O_DIV:
+            print_addr(out, p->dest);
+            fprintf(out, ",");
+            print_addr(out, p->src1);
+            fprintf(out, ",");
+            print_addr(out, p->src2);
+            break;
+        case O_NEG:
+        case O_ASN:
+            print_addr(out, p->dest);
+            fprintf(out, ",");
+            print_addr(out, p->src1);
+            break;
+        case O_GOTO:
+            print_addr(out, p->dest);
+            break;
+        case O_BLT:
+        case O_BLE:
+        case O_BGT:
+        case O_BGE:
+        case O_BEQ:
+        case O_BNE:
+            print_addr(out, p->dest);
+            fprintf(out, ",");
+            print_addr(out, p->src1);
+            fprintf(out, ",");
+            print_addr(out, p->src2);
+            break;
+        case O_BIF:
+        case O_BNIF:
+            print_addr(out, p->dest);
+            fprintf(out, ",");
+            print_addr(out, p->src1);
+            break;
+        case O_PARM:
+            print_addr(out, p->dest);
+            break;
+        case O_CALL:
+            print_addr(out, p->src1);
+            fprintf(out, ",%d,", p->src2.u.offset);
+            print_addr(out, p->dest);
+            break;
+        case O_RET:
+            if (p->dest.region != R_NONE)
                 print_addr(out, p->dest);
-                fprintf(out, ",");
-                print_addr(out, p->src1);
-                fprintf(out, ",");
-                print_addr(out, p->src2);
-                break;
-                case O_NEG: case O_ASN:
-                print_addr(out, p->dest);
-                fprintf(out, ",");
-                print_addr(out, p->src1);
-                break;
-                case O_GOTO:
-                print_addr(out, p->dest);
-                break;
-                case O_BLT: case O_BLE: case O_BGT: case O_BGE:
-                case O_BEQ: case O_BNE:
-                print_addr(out, p->dest);
-                fprintf(out, ",");
-                print_addr(out, p->src1);
-                fprintf(out, ",");
-                print_addr(out, p->src2);
-                break;
-                case O_BIF: case O_BNIF:
-                print_addr(out, p->dest);
-                fprintf(out, ",");
-                print_addr(out, p->src1);
-                break;
-                case O_PARM:
-                print_addr(out, p->dest);
-                break;
-                case O_CALL:
-                print_addr(out, p->src1);
-                fprintf(out, ",%d,", p->src2.u.offset);
-                print_addr(out, p->dest);
-                break;
-                case O_RET:
-                if (p->dest.region != R_NONE)
-                        print_addr(out, p->dest);
-                break;
-                default:
-                print_addr(out, p->dest);
-                fprintf(out, ",");
-                print_addr(out, p->src1);
-                fprintf(out, ",");
-                print_addr(out, p->src2);
-                }
-                fprintf(out, "\n");
+            break;
+        default:
+            print_addr(out, p->dest);
+            fprintf(out, ",");
+            print_addr(out, p->src1);
+            fprintf(out, ",");
+            print_addr(out, p->src2);
+        }
+        fprintf(out, "\n");
     }
 }
 
 struct addr new_temp(void)
 {
-        printf("tempoffset: %d\n", tempoffset);
-        struct addr a;
-        a.region = R_LOCAL;
-        a.u.offset = tempoffset;
-        tempoffset += 8; // advance by one 8-byte slot
-        return a;
+    // printf("tempoffset: %d\n", tempoffset); // debugging
+    struct addr a;
+    a.region = R_LOCAL;
+    a.u.offset = tempoffset;
+    tempoffset += 8; // advance by one 8-byte slot
+    return a;
 }
 
 void dump_scope(struct sym_table *st)
 {
     fprintf(stderr, "=== scope: %s ===\n", st->scope_name);
-    for (int i = 0; i < st->nBuckets; i++) {
+    for (int i = 0; i < st->nBuckets; i++)
+    {
         struct sym_entry *e = st->tbl[i];
-        while (e) {
+        while (e)
+        {
             fprintf(stderr, "  entry: '%s'\n", e->name);
             e = e->next;
         }
@@ -339,27 +353,29 @@ void dump_scope(struct sym_table *st)
 
 struct addr lookup_place(struct tree *t, struct sym_table *scope)
 {
-    //fprintf(stderr, "lookup_place: scope is '%s'\n", scope ? scope->scope_name : "NULL");
-    //fprintf(stderr, "lookup_place: leaf is %s\n", t->leaf ? t->leaf->text : "NULL");
-    if (t->leaf == NULL) {
+    // fprintf(stderr, "lookup_place: scope is '%s'\n", scope ? scope->scope_name : "NULL");
+    // fprintf(stderr, "lookup_place: leaf is %s\n", t->leaf ? t->leaf->text : "NULL");
+    if (t->leaf == NULL)
+    {
         fprintf(stderr, "lookup_place: expected a leaf node\n");
         return addr_none();
     }
 
-    //printf("current leaf %s is category %d\n", t->leaf->text, t->leaf->category);
+    // printf("current leaf %s is category %d\n", t->leaf->text, t->leaf->category);
 
     // use the symbol entry already attached during the semantic pass
     struct sym_entry *e = t->symbol;
-    //printf("current token %s has prodrule %d\n", t->symbolname, t->prodrule);
+    // printf("current token %s has prodrule %d\n", t->symbolname, t->prodrule);
 
     // fallback to lookup if symbol wasn't attached
     if (e == NULL)
     {
-        //fprintf(stderr, "lookup_place: calling lookup with scope '%s'\n", scope ? scope->scope_name : "NULL");
+        // fprintf(stderr, "lookup_place: calling lookup with scope '%s'\n", scope ? scope->scope_name : "NULL");
         e = lookup(scope, t->leaf->text);
     }
 
-    if (e == NULL) {
+    if (e == NULL)
+    {
         fprintf(stderr, "lookup_place: '%s' not found\n", t->leaf->text);
         return addr_none();
     }

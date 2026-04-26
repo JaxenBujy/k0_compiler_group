@@ -17,7 +17,7 @@ extern int yyparse();
 extern int yydebug;
 extern struct tree *root;
 extern int tempoffset;
-int exit_status = 0;  // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
+int exit_status = 0; // status that main will return. 0 = no errors, 1 = lexical error, 2 = syntax error, 3 = semantic error
 
 char *filename; // defined globally to share with k0lex.l
 void print_graph(struct tree *t, char *filename);
@@ -37,11 +37,13 @@ int main(int argc, char *argv[])
         printf("-dot: generate a dot file of the syntax tree\n");
         printf("-tree: print the syntax tree\n");
         printf("-symtab: print the syntax tree\n");
+        printf("-tac: print the three address intermediate code\n");
         exit(1);
     }
     int dot_bool = 0;    // bool flag to determine if dot will be used to produce png image of AST
     int tree_bool = 0;   // bool flag to determine if tree will be printed
     int symtab_bool = 0; // bool flag to determine if symbol table will be printed
+    int tac_bool = 0;
 
     // filename is required to come first
     filename = argv[1];
@@ -60,6 +62,10 @@ int main(int argc, char *argv[])
         if (strcmp(argv[i], "-symtab") == 0)
         {
             symtab_bool = 1;
+        }
+        if (strcmp(argv[i], "-tac") == 0)
+        {
+            tac_bool = 1;
         }
     }
 
@@ -106,62 +112,6 @@ int main(int argc, char *argv[])
         // build symbol table starting at package scope
         build_symtab(root, current_package, &symtab_err_flag, filename);
 
-        // assign all first labels to tree nodes
-        assign_first(root);
-
-        // assign root a follow
-        struct addr *end = genlabel();
-        root->follow = *end;
-        root->has_follow = 1;
-
-        // assign rest of nodes a follow
-        assign_follow(root);
-
-        // derive .ic filename from input path
-        char *base = basename(strdup(filename));
-        char *dot = strrchr(base, '.');
-        size_t file_len = dot ? (size_t)(dot - base) : strlen(base);
-        char *outfile = malloc(file_len + 4);
-        strncpy(outfile, base, file_len);
-        outfile[file_len] = '\0';
-        strcat(outfile, ".ic");
-
-        printf("writing TAC to output file %s\n", outfile); // spec says print filename to stdout
-
-        FILE *ic = fopen(outfile, "w");
-        if (!ic) {
-            fprintf(stderr, "error: could not open output file %s\n", outfile);
-            exit(1);
-        }
-
-        struct instr *body = codegen(root, current_package); // creates the rest of the TAC
-        struct instr *code = gen_stringsection(); // makes the .string section
-
-        int saved_tempoffset = tempoffset; // save offset before global init codegen
-        tempoffset = 0;
-        struct instr * global_inits = codegen_globals(root, current_package); // make a global function wrapper so globals dont just sit in the .code section
-        int init_frame_size = tempoffset; // store correct __init frame size
-        tempoffset = saved_tempoffset; // restore tempoffset
-
-        code = append(code, gen_datasection(current_package));
-        code = append(code, gen(D_CODE, addr_none(), addr_none(),addr_none()));
-        if (global_inits) {
-            // compute frame size needed for global init temps
-            code = append(code, gen(D_PROC, addr_name("__init"),
-                                    addr_const(0), addr_const(init_frame_size)));
-            code = append(code, global_inits);
-            code = append(code, gen(D_END, addr_name("__init"),
-                                    addr_none(), addr_none()));
-        }
-        code = append(code, body);
-        tacprint(ic, code);
-        fclose(ic);
-        free(outfile);
-
-
-        //struct instr *tac = codegen(root, current_package);
-        //tacprint(tac);
-
         // print the tree if specified
         if (tree_bool)
         {
@@ -185,10 +135,69 @@ int main(int argc, char *argv[])
                 printf("\n---print_symtab output---\n");
                 print_symtab(global, 0);
             }
+
+            // proceed to intermediate code generation
+            // assign all first labels to tree nodes
+            assign_first(root);
+
+            // assign root a follow
+            struct addr *end = genlabel();
+            root->follow = *end;
+            root->has_follow = 1;
+
+            // assign rest of nodes a follow
+            assign_follow(root);
+
+            // derive .ic filename from input path
+            char *base = basename(strdup(filename));
+            char *dot = strrchr(base, '.');
+            size_t file_len = dot ? (size_t)(dot - base) : strlen(base);
+            char *outfile = malloc(file_len + 4);
+            strncpy(outfile, base, file_len);
+            outfile[file_len] = '\0';
+            strcat(outfile, ".ic");
+
+            printf("writing TAC to output file %s\n", outfile); // spec says print filename to stdout
+
+            FILE *ic = fopen(outfile, "w");
+            if (!ic)
+            {
+                fprintf(stderr, "error: could not open output file %s\n", outfile);
+                exit(1);
+            }
+
+            struct instr *body = codegen(root, current_package); // creates the rest of the TAC
+            struct instr *code = gen_stringsection();            // makes the .string section
+
+            int saved_tempoffset = tempoffset; // save offset before global init codegen
+            tempoffset = 0;
+            struct instr *global_inits = codegen_globals(root, current_package); // make a global function wrapper so globals dont just sit in the .code section
+            int init_frame_size = tempoffset;                                    // store correct __init frame size
+            tempoffset = saved_tempoffset;                                       // restore tempoffset
+
+            code = append(code, gen_datasection(current_package));
+            code = append(code, gen(D_CODE, addr_none(), addr_none(), addr_none()));
+            if (global_inits)
+            {
+                // compute frame size needed for global init temps
+                code = append(code, gen(D_PROC, addr_name("__init"),
+                                        addr_const(0), addr_const(init_frame_size)));
+                code = append(code, global_inits);
+                code = append(code, gen(D_END, addr_name("__init"),
+                                        addr_none(), addr_none()));
+            }
+            code = append(code, body);
+            tacprint(ic, code);
+
+            if (tac_bool) // print the intermediate code if specified
+            {
+                tacprint(stdout, code);
+            }
+            fclose(ic);
+            free(outfile);
         }
         else
         {
-
             exit_status = 3; // exit status 3 for semantic errors
         }
         free_symtab(global); // free symbol table

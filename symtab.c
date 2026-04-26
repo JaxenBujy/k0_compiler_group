@@ -190,18 +190,18 @@ struct sym_entry *lookup(struct sym_table *st, char *name)
 {
     for (; st != NULL; st = st->parent)
     {
-        //fprintf(stderr, "lookup: searching scope '%s' for '%s'\n", st->scope_name, name);
+        // fprintf(stderr, "lookup: searching scope '%s' for '%s'\n", st->scope_name, name);
         int i = hash(st, name);
-        //fprintf(stderr, "lookup: hash bucket %d\n", i);
+        // fprintf(stderr, "lookup: hash bucket %d\n", i);
         struct sym_entry *e = st->tbl[i];
         while (e)
         {
-            //fprintf(stderr, "lookup: found entry '%s' in bucket\n", e->name);
+            // fprintf(stderr, "lookup: found entry '%s' in bucket\n", e->name);
             if (strcmp(e->name, name) == 0)
                 return e;
             e = e->next;
         }
-        //fprintf(stderr, "lookup: not found in this scope, going to parent\n");
+        // fprintf(stderr, "lookup: not found in this scope, going to parent\n");
     }
     return NULL;
 }
@@ -224,7 +224,8 @@ struct sym_entry *lookup_current(struct sym_table *st, char *name)
 // pass 1: hoist all function declarations into package scope
 void hoist_functions(struct tree *node, struct sym_table *pkg, int *err, char *filename)
 {
-    if (!node) return;
+    if (!node)
+        return;
 
     if (node->prodrule == PR_FUNCTION_DECL_TYPED ||
         node->prodrule == PR_FUNCTION_DECL_TYPED_NULLABLE ||
@@ -255,7 +256,8 @@ void hoist_functions(struct tree *node, struct sym_table *pkg, int *err, char *f
 // pass 2: fill in parameter lists and return types for all functions
 void build_function_signatures(struct tree *node, struct sym_table *current, int *symtab_err_flag, char *filename)
 {
-    if (!node) return;
+    if (!node)
+        return;
 
     switch (node->prodrule)
     {
@@ -263,7 +265,8 @@ void build_function_signatures(struct tree *node, struct sym_table *current, int
     {
         char *name = node->kids[1]->leaf->text;
         struct sym_entry *e = lookup_current(current, name);
-        if (!e) return;
+        if (!e)
+            return;
 
         typeptr t = e->type;
         t->u.f.nparams = 0;
@@ -283,14 +286,15 @@ void build_function_signatures(struct tree *node, struct sym_table *current, int
         node->type = t;
 
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope,
-                                                      &t->u.f.nparams, symtab_err_flag, filename);
+                                                    &t->u.f.nparams, symtab_err_flag, filename);
         return;
     }
     case PR_FUNCTION_DECL_TYPED:
     {
         char *name = node->kids[1]->leaf->text;
         struct sym_entry *e = lookup_current(current, name);
-        if (!e) return;
+        if (!e)
+            return;
 
         typeptr t = e->type;
         t->u.f.returntype = type_from_ast_node(node->kids[6]);
@@ -310,14 +314,15 @@ void build_function_signatures(struct tree *node, struct sym_table *current, int
         node->type = t;
 
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope,
-                                                      &t->u.f.nparams, symtab_err_flag, filename);
+                                                    &t->u.f.nparams, symtab_err_flag, filename);
         return;
     }
     case PR_FUNCTION_DECL_TYPED_NULLABLE:
     {
         char *name = node->kids[1]->leaf->text;
         struct sym_entry *e = lookup_current(current, name);
-        if (!e) return;
+        if (!e)
+            return;
 
         typeptr t = e->type;
         t->u.f.returntype = type_from_ast_node(node->kids[6]);
@@ -337,7 +342,7 @@ void build_function_signatures(struct tree *node, struct sym_table *current, int
         node->type = t;
 
         t->u.f.parameters = build_and_insert_params(node->kids[3], new_scope,
-                                                      &t->u.f.nparams, symtab_err_flag, filename);
+                                                    &t->u.f.nparams, symtab_err_flag, filename);
         return;
     }
     default:
@@ -547,13 +552,15 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         char *name = node->kids[1]->leaf->text;
         struct sym_entry *existing = lookup_current(current, name);
 
-        if (existing && existing->is_declared == 0) {
+        if (existing && existing->is_declared == 0)
+        {
             fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
                     filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
             return;
         }
-        if (existing) existing->is_declared = 0;
+        if (existing)
+            existing->is_declared = 0;
         node->type = existing ? existing->type : NULL;
 
         // scope and params already built in build_function_signatures
@@ -567,13 +574,15 @@ void build_symtab(struct tree *node, struct sym_table *current, int *symtab_err_
         char *name = node->kids[1]->leaf->text;
         struct sym_entry *existing = lookup_current(current, name);
 
-        if (existing && existing->is_declared == 0) {
+        if (existing && existing->is_declared == 0)
+        {
             fprintf(stderr, "%s:%d: semantic error: redeclaration of function %s\n",
                     filename, node->kids[1]->leaf->lineno, name);
             *symtab_err_flag = 1;
             return;
         }
-        if (existing) existing->is_declared = 0;
+        if (existing)
+            existing->is_declared = 0;
         node->type = existing ? existing->type : NULL;
 
         struct sym_table *inner = node->type ? node->type->u.f.st : current;
@@ -1100,7 +1109,7 @@ paramlist build_and_insert_params(struct tree *node, struct sym_table *st, int *
         typeptr t = type_from_ast_node(node->kids[2]);
 
         // Insert into symbol table
-        insert(st, name, t, 0, 0, 0);
+        insert(st, name, t, 1, 0, 0);
 
         // Build param list node
         struct param *p = malloc(sizeof(struct param));

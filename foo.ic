@@ -6,7 +6,8 @@
 proc __init,0,0
 	ASN   	glob:0,const:10
 end	__init
-proc main,0,8
+proc main,0,32
+	ASN   	loc:0,?:0
 lab2:
 	BLT   	lab:1,loc:0,const:20
 	GOTO  	lab:3
