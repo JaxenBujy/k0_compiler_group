@@ -1,14 +1,3 @@
-Implemented:
-    - nested typechecking of right hand side in variable declarations and assignments
-    - mutability checking
-    - assigned return types to all predefined functions in the mksymtab_global function
-    
-To-Do:
-    - check/validation function for when we see function calls. Check their signature vs. their declaration
-    - check/validation function for arrays. Check that all their members are the same type, subscript in range, etc.
-    - operator checking. Example: something like "chung" + "nug" should not be okay. Also need to add in boolean operators into type checking.
-    - nullability checking
-
 Teammates:
     Jaxen Bujold - 2
     Christopher Esquibel - 2

@@ -28,6 +28,7 @@ struct addr
 #define R_NAME 2006   // pseudo-region for source names
 #define R_NONE 2007   // pseudo-region for unused addresses
 #define R_STRING 2008 // string literal region: str:offset
+#define R_PARM   2009 // incoming argument register N (offset = 0..5 for rdi..r9)
 
 // new pseudo-instructions
 #define D_STRINGSEC 3057 // .string N  – string-region header

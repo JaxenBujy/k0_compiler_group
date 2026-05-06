@@ -10,7 +10,7 @@ extern int tempoffset;
 
 // region / opcode name tables
 char *regionnames[] = {
-    "global", "loc", "class", "lab", "const", "", "none", "str"};
+    "global", "loc", "class", "lab", "const", "", "none", "str", "parm"};
 char *regionname(int i) { return regionnames[i - R_GLOBAL]; }
 
 char *opcodenames[] = {
@@ -199,6 +199,9 @@ void print_addr(FILE *out, struct addr a)
         break;
     case R_STRING:
         fprintf(out, "str:%d", a.u.offset);
+        break;
+    case R_PARM:
+        fprintf(out, "parm:%d", a.u.offset);
         break;
     case R_NAME:
         fprintf(out, "%s", a.u.name);

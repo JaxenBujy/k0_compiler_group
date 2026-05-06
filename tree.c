@@ -554,13 +554,40 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
     case PR_FUNCTION_DECL_TYPED_NULLABLE:
     {
         char *fname = t->kids[1]->leaf->text;
-        struct sym_table *inner = t->type->u.f.st; // set by semantic pass
+        struct sym_table *inner = t->type->u.f.st;
 
         tempoffset = inner->next_offset;
 
+        // Emit O_ASN parm:N → loc:offset for each incoming register argument.
+        // This must be done before body codegen so the saves land first.
+        struct instr *param_saves = NULL;
+        {
+            paramlist p = t->type->u.f.parameters;
+            int idx = 0;
+            while (p && idx < 6)
+            {
+                struct sym_entry *e = lookup_current(inner, p->name);
+                if (e)
+                {
+                    struct addr dst = {e->region, {.offset = e->offset}};
+                    struct addr src = {R_PARM, {.offset = idx}};
+                    param_saves = append(param_saves,
+                                         gen(O_ASN, dst, src, addr_none()));
+                }
+                p = p->next;
+                idx++;
+            }
+        }
+
+        // Generate body first so tempoffset reflects ALL allocations,
+        // then emit D_PROC with the correct (final) frame size.
+        struct instr *body = codegen(t->kids[7], inner);
+        int frame = tempoffset;
+
         struct instr *code = gen(D_PROC, addr_name(fname),
-                                 addr_const(0), addr_const(inner->next_offset));
-        code = append(code, codegen(t->kids[7], inner)); // adjust body index
+                                 addr_const(0), addr_const(frame));
+        code = append(code, param_saves);
+        code = append(code, body);
         code = append(code, gen(D_END, addr_name(fname), addr_none(), addr_none()));
         return code;
     }
@@ -569,14 +596,36 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         char *fname = t->kids[1]->leaf->text;
         struct sym_table *inner = t->type->u.f.st;
 
-        tempoffset = inner->next_offset; // temps start after locals
+        tempoffset = inner->next_offset;
+
+        // Emit parameter-save instructions
+        struct instr *param_saves = NULL;
+        {
+            paramlist p = t->type->u.f.parameters;
+            int idx = 0;
+            while (p && idx < 6)
+            {
+                struct sym_entry *e = lookup_current(inner, p->name);
+                if (e)
+                {
+                    struct addr dst = {e->region, {.offset = e->offset}};
+                    struct addr src = {R_PARM, {.offset = idx}};
+                    param_saves = append(param_saves,
+                                         gen(O_ASN, dst, src, addr_none()));
+                }
+                p = p->next;
+                idx++;
+            }
+        }
 
         // generate body first so tempoffset reflects all allocations
         struct instr *body = codegen(t->kids[5], inner);
+        int frame = tempoffset;
 
         // now emit proc with the final tempoffset as frame size
         struct instr *code = gen(D_PROC, addr_name(fname),
-                                 addr_const(0), addr_const(tempoffset));
+                                 addr_const(0), addr_const(frame));
+        code = append(code, param_saves);
         code = append(code, body);
         code = append(code, gen(D_END, addr_name(fname), addr_none(), addr_none()));
         return code;
@@ -605,13 +654,30 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         return code;
     }
     case PR_FUN_BODY_VAR_INIT:
-    case PR_FUN_BODY_VAR_DECL_ASSIGN:
     {
-        // VAR IDENT ASSIGN expr SEMICOLON
-        // kids[0]=VAR, kids[1]=IDENT, kids[2]=ASSIGN, kids[3]=expr
-        struct instr *code = codegen(t->kids[3], scope); // eval RHS
+        /* val_var IDENT ASSIGN expr SEMICOLON
+         * kids: [0]=val_var [1]=IDENT [2]=ASSIGN [3]=expr [4]=SEMICOLON */
+        struct instr *code = codegen(t->kids[3], scope);
         struct addr dst = lookup_place(t->kids[1], scope);
         code = append(code, gen(O_ASN, dst, t->kids[3]->place, addr_none()));
+        return code;
+    }
+    case PR_FUN_BODY_VAR_DECL_ASSIGN:
+    {
+        /* val_var IDENT COLON type ASSIGN expr SEMICOLON
+         * kids: [0]=val_var [1]=IDENT [2]=COLON [3]=type [4]=ASSIGN [5]=expr [6]=SEMICOLON */
+        struct instr *code = codegen(t->kids[5], scope);
+        struct addr dst = lookup_place(t->kids[1], scope);
+        code = append(code, gen(O_ASN, dst, t->kids[5]->place, addr_none()));
+        return code;
+    }
+    case PR_FUN_BODY_VAR_DECL_ASSIGN_NULLABLE:
+    {
+        /* val_var IDENT COLON type NULLABLE ASSIGN expr SEMICOLON
+         * kids: [0]=val_var [1]=IDENT [2]=COLON [3]=type [4]=NULLABLE [5]=ASSIGN [6]=expr [7]=SEMICOLON */
+        struct instr *code = codegen(t->kids[6], scope);
+        struct addr dst = lookup_place(t->kids[1], scope);
+        code = append(code, gen(O_ASN, dst, t->kids[6]->place, addr_none()));
         return code;
     }
     case PR_GLOBAL_VAR_INIT:
@@ -725,11 +791,61 @@ struct instr *codegen_relop(struct tree *t, int branch_op, struct sym_table *sco
 {
     struct instr *code = codegen(t->kids[0], scope);
     code = append(code, codegen(t->kids[2], scope));
-    // branch to onTrue if condition holds, else fall through to onFalse
-    code = append(code,
-                  gen(branch_op, t->onTrue, t->kids[0]->place, t->kids[2]->place));
-    code = append(code,
-                  gen(O_GOTO, t->onFalse, addr_none(), addr_none()));
+
+    /*
+     * Branch context (inside if/while condition):
+     *   emit a conditional branch to onTrue, then an unconditional goto onFalse.
+     *
+     * Value context (result used as a Boolean variable, e.g. ok = x > 0):
+     *   emit O_SCONT so x86gen can materialise 0/1 via SETcc.
+     *   Encoding:
+     *     dest   = output temporary
+     *     src1   = left  operand address
+     *     src2   = right operand address
+     *   We stuff the branch_op discriminant into a separate field by
+     *   temporarily storing it in dest.region while keeping dest.u.offset
+     *   as the scratch slot — x86gen reads dest.region == R_CONST as the
+     *   "branch_op tag" field.  Actually, cleanest: use a dedicated
+     *   3-field instruction:
+     *     O_SCONT  tmp , left_operand , right_operand
+     *   and carry branch_op in a second O_SCONT instruction as:
+     *     O_SCONT  addr_const(branch_op) , addr_none() , addr_none()
+     *   which x86gen reads immediately before the main one.
+     *
+     * Simplest and self-contained: emit one instruction with
+     *     dest   = new temp (where 0/1 goes)
+     *     src1   = left operand
+     *     src2   = right operand
+     * and the branch_op baked into the *opcode* field (we map each relop
+     * to a unique pseudo-opcode offset so x86gen can recover the SETcc).
+     * We re-use the O_BLT..O_BNE range itself: x86gen checks that the
+     * opcode is in [O_BLT, O_BNE] AND dest.region != R_LABEL.
+     */
+    if (t->has_true && t->has_false)
+    {
+        /* Branch context */
+        code = append(code,
+                      gen(branch_op, t->onTrue,
+                          t->kids[0]->place, t->kids[2]->place));
+        code = append(code,
+                      gen(O_GOTO, t->onFalse, addr_none(), addr_none()));
+    }
+    else
+    {
+        /*
+         * Value context.
+         * Emit the same branch_op opcode, but with a LOCAL temp as dest
+         * instead of a label.  x86gen distinguishes the two cases by
+         * checking dest.region:
+         *   R_LABEL  → branch (original behaviour)
+         *   anything else → SETcc materialise into dest
+         */
+        struct addr tmp = new_temp();
+        t->place = tmp;
+        code = append(code,
+                      gen(branch_op, tmp,
+                          t->kids[0]->place, t->kids[2]->place));
+    }
     return code;
 }
 

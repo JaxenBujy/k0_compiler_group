@@ -231,6 +231,16 @@ int alctoken(int category)
     t->nkids = 0;
 
     t->type = NULL; // not needed for leaf typing
+    t->symbol = NULL;
+
+    /* Zero-initialise label and place fields. */
+    t->has_first  = 0; t->has_follow = 0;
+    t->has_true   = 0; t->has_false  = 0;
+    t->first.region  = R_NONE; t->first.u.offset  = 0;
+    t->follow.region = R_NONE; t->follow.u.offset = 0;
+    t->onTrue.region = R_NONE; t->onTrue.u.offset = 0;
+    t->onFalse.region= R_NONE; t->onFalse.u.offset= 0;
+    t->place.region  = R_NONE; t->place.u.offset  = 0;
     
 
     t->leaf = malloc(sizeof(struct token));

@@ -359,6 +359,17 @@ struct tree *alctree(int prodrule, char *symbolname, int nkids, struct tree *kid
     t->nkids = nkids;
     t->leaf = leaf;
     t->type = NULL;
+    t->symbol = NULL;
+
+    /* Zero-initialise all label and place fields so that unvisited nodes
+     * don't have garbage has_true/has_false flags that confuse codegen. */
+    t->has_first  = 0; t->has_follow = 0;
+    t->has_true   = 0; t->has_false  = 0;
+    t->first.region  = R_NONE; t->first.u.offset  = 0;
+    t->follow.region = R_NONE; t->follow.u.offset = 0;
+    t->onTrue.region = R_NONE; t->onTrue.u.offset = 0;
+    t->onFalse.region= R_NONE; t->onFalse.u.offset= 0;
+    t->place.region  = R_NONE; t->place.u.offset  = 0;
 
     // fill with NULL kids first before inserting real kids so that none of them are garbage
     for (int i = 0; i < 10; i++) {

@@ -7,6 +7,7 @@ yyparse is called once to see its return value, so the loop of tokens being retu
 #include "k0gram.tab.h"
 #include "symtab.h"
 #include "tac.h"
+#include "x86gen.h"
 
 extern FILE *yyin;
 extern char *yytext;
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
     int tree_bool = 0;   // bool flag to determine if tree will be printed
     int symtab_bool = 0; // bool flag to determine if symbol table will be printed
     int tac_bool = 0;
+    int asm_bool = 0;    // bool flag to emit x86-64 assembly (.s file)
 
     // filename is required to come first
     filename = argv[1];
@@ -66,6 +68,10 @@ int main(int argc, char *argv[])
         if (strcmp(argv[i], "-tac") == 0)
         {
             tac_bool = 1;
+        }
+        if (strcmp(argv[i], "-asm") == 0)
+        {
+            asm_bool = 1;
         }
     }
 
@@ -194,6 +200,32 @@ int main(int argc, char *argv[])
                 tacprint(stdout, code);
             }
             fclose(ic);
+
+            // Generate x86-64 assembly if -asm was requested
+            if (asm_bool)
+            {
+                char *asmfile = malloc(file_len + 3);
+                strncpy(asmfile, base, file_len);
+                asmfile[file_len] = '\0';
+                strcat(asmfile, ".s");
+
+                printf("writing x86-64 assembly to %s\n", asmfile);
+                printf("to build an executable: gcc %s k0rt.c -o %.*s\n",
+                       asmfile, (int)file_len, base);
+
+                FILE *asmout = fopen(asmfile, "w");
+                if (!asmout)
+                {
+                    fprintf(stderr, "error: could not open %s\n", asmfile);
+                }
+                else
+                {
+                    x86gen(asmout, code);
+                    fclose(asmout);
+                }
+                free(asmfile);
+            }
+
             free(outfile);
         }
         else
