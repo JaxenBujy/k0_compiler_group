@@ -6,12 +6,9 @@ fun main()
       x = x + 1;
    }
 
-   jeg(x,y);
+   println("x before $x");
+   x = x + y;
+   println("x after $x");
 
    return 0;
-}
-
-fun jeg(x: Int, y: Int) {
-   x = y + x;
-   return x;
 }

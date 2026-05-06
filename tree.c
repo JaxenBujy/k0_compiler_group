@@ -485,9 +485,46 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         case MULTI_STRING:
         {
             char *s = t->leaf->sval ? t->leaf->sval : "";
-            int idx = addstring(s);
-            t->place = addr_string(idx);
-            return NULL;
+
+            if (!has_interpolation(s)) {
+                int idx = addstring(s);
+                t->place = addr_string(idx);
+                return NULL;
+            }
+
+            // build printf format string
+            char fmtbuf[1024];
+            build_format_string(s, fmtbuf, sizeof(fmtbuf));
+            int fmt_idx = addstring(fmtbuf);
+
+            // extract variable names
+            char *varnames[16];
+            int nvars = extract_interp_vars(s, varnames, 16);
+
+            // PARM the format string first
+            struct instr *code = NULL;
+            code = append(code, gen(O_PARM, addr_string(fmt_idx), addr_none(), addr_none()));
+
+            // PARM each interpolated variable
+            for (int i = 0; i < nvars; i++) {
+                struct sym_entry *e = lookup(scope, varnames[i]);
+                if (e) {
+                    struct addr var_addr;
+                    var_addr.region = e->region;
+                    var_addr.u.offset = e->offset;
+                    code = append(code, gen(O_PARM, var_addr, addr_none(), addr_none()));
+                } else {
+                    fprintf(stderr, "codegen: interpolated variable '%s' not found\n", varnames[i]);
+                }
+                free(varnames[i]);
+            }
+
+            // CALL printf directly
+            struct addr retval = new_temp();
+            code = append(code,
+                gen(O_CALL, retval, addr_name("printf"), addr_const(nvars + 1)));
+            t->place = retval;
+            return code;
         }
 
         case CHAR:
@@ -640,17 +677,22 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
 
     case PR_FUNCTION_CALL:
     {
-        // kids[0] = function name IDENT, kids[2] = argument list
         char *fname = t->kids[0]->leaf->text;
-
-        // first count the arguments
         int nargs = 0;
         struct instr *code = codegen_args(t->kids[2], scope, &nargs);
 
-        // allocate a temp for the return value
-        struct addr retval = new_temp();
-        code = append(code, gen(O_CALL, retval, addr_name(fname), addr_const(nargs)));
-        t->place = retval;
+        // if the argument was an interpolated string it already emitted
+        // its own PARM/CALL sequence to printf — suppress the outer call
+        int already_called = 0;
+        for (struct instr *p = code; p; p = p->next)
+            if (p->opcode == O_CALL) { already_called = 1; break; }
+
+        if (!already_called) {
+            struct addr retval = new_temp();
+            code = append(code,
+                gen(O_CALL, retval, addr_name(fname), addr_const(nargs)));
+            t->place = retval;
+        }
         return code;
     }
     case PR_FUN_BODY_VAR_INIT:
@@ -749,18 +791,32 @@ struct instr *codegen_args(struct tree *t, struct sym_table *scope, int *nargs)
 
     if (t->prodrule == PR_CALL_VALUES_RECUR)
     {
-        // kids[0] = list so far, kids[2] = next arg
         code = codegen_args(t->kids[0], scope, nargs);
         code = append(code, codegen(t->kids[2], scope));
-        code = append(code, gen(O_PARM, t->kids[2]->place, addr_none(), addr_none()));
-        (*nargs)++;
+
+        // check if arg already emitted its own call
+        int already_called = 0;
+        for (struct instr *p = code; p; p = p->next)
+            if (p->opcode == O_CALL) { already_called = 1; break; }
+
+        if (!already_called) {
+            code = append(code, gen(O_PARM, t->kids[2]->place, addr_none(), addr_none()));
+            (*nargs)++;
+        }
     }
     else
     {
-        // single argument (functionCallVal — leaf IDENT or literal)
         code = codegen(t, scope);
-        code = append(code, gen(O_PARM, t->place, addr_none(), addr_none()));
-        (*nargs)++;
+
+        // check if arg already emitted its own call
+        int already_called = 0;
+        for (struct instr *p = code; p; p = p->next)
+            if (p->opcode == O_CALL) { already_called = 1; break; }
+
+        if (!already_called) {
+            code = append(code, gen(O_PARM, t->place, addr_none(), addr_none()));
+            (*nargs)++;
+        }
     }
     return code;
 }

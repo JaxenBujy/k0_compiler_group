@@ -1,0 +1,28 @@
+.string 16
+	x before {%lld}
+
+	x after {%lld}
+
+.data 
+.code
+proc main,0,48
+	ASN   	loc:0,const:10
+	ASN   	loc:8,const:20
+lab2:
+	BLT   	lab:1,loc:0,loc:8
+	GOTO  	lab:3
+lab1:
+	ADD   	loc:16,loc:0,const:1
+	ASN   	loc:0,loc:16
+	GOTO  	lab:2
+lab3:
+	PARAM 	str:0
+	PARAM 	loc:0
+	CALL  	printf,2,loc:24
+	ADD   	loc:32,loc:0,loc:8
+	ASN   	loc:0,loc:32
+	PARAM 	str:1
+	PARAM 	loc:0
+	CALL  	printf,2,loc:40
+	RETURN	const:0
+end	main

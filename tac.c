@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "tac.h"
 #include "tree.h"
 #include "symtab.h"
@@ -387,4 +388,51 @@ struct addr lookup_place(struct tree *t, struct sym_table *scope)
     a.region = e->region;
     a.u.offset = e->offset;
     return a;
+}
+
+int has_interpolation(const char *s)
+{
+    for (const char *p = s; *p; p++)
+        if (*p == '$' && (isalpha(*(p+1)) || *(p+1) == '_'))
+            return 1;
+    return 0;
+}
+
+void build_format_string(const char *s, char *buf, int bufsize)
+{
+    int bi = 0;
+    for (const char *p = s; *p && bi < bufsize - 5;) {
+        if (*p == '$' && (isalpha(*(p+1)) || *(p+1) == '_')) {
+            buf[bi++] = '%';
+            buf[bi++] = 'l';
+            buf[bi++] = 'l';
+            buf[bi++] = 'd';
+            p++;
+            while (isalnum(*p) || *p == '_') p++;
+        } else {
+            buf[bi++] = *p++;
+        }
+    }
+    buf[bi++] = '\n';
+    buf[bi] = '\0';
+}
+
+int extract_interp_vars(const char *s, char **names, int maxnames)
+{
+    int count = 0;
+    for (const char *p = s; *p && count < maxnames;) {
+        if (*p == '$' && (isalpha(*(p+1)) || *(p+1) == '_')) {
+            p++;
+            const char *start = p;
+            while (isalnum(*p) || *p == '_') p++;
+            int len = p - start;
+            names[count] = malloc(len + 1);
+            strncpy(names[count], start, len);
+            names[count][len] = '\0';
+            count++;
+        } else {
+            p++;
+        }
+    }
+    return count;
 }

@@ -95,5 +95,8 @@ struct addr lookup_place(struct tree *t, struct sym_table *scope);
 struct addr addr_string(int idx);
 void tacprint(FILE *out, struct instr *code);
 void dump_scope(struct sym_table *st);
+int  has_interpolation(const char *s);
+void build_format_string(const char *s, char *buf, int bufsize);
+int  extract_interp_vars(const char *s, char **names, int maxnames);
 
 #endif
