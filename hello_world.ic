@@ -1,0 +1,74 @@
+.string 48
+	z: %lld
+
+	x is bigger than y
+	x is smaller than y
+	x: %lld
+
+	sum = %lld
+
+	final sum is %lld
+
+.data 
+.code
+proc main,0,80
+	ASN   	loc:0,const:5
+	ASN   	loc:8,const:3
+	PARAM 	loc:0
+	PARAM 	loc:8
+	CALL  	add,2,loc:24
+	ASN   	loc:16,loc:24
+	PARAM 	str:0
+	PARAM 	loc:16
+	CALL  	printf,2,loc:32
+lab5:
+	BGT   	lab:3,loc:0,loc:8
+	GOTO  	lab:4
+lab3:
+	PARAM 	str:1
+	CALL  	println,1,loc:40
+	GOTO  	lab:9
+lab4:
+	PARAM 	str:2
+	CALL  	println,1,loc:48
+lab9:
+lab9:
+	BLT   	lab:7,loc:0,const:10
+	GOTO  	lab:10
+lab7:
+	PARAM 	str:3
+	PARAM 	loc:0
+	CALL  	printf,2,loc:56
+	ADD   	loc:64,loc:0,const:1
+	ASN   	loc:0,loc:64
+	GOTO  	lab:9
+lab10:
+	CALL  	loop,0,loc:72
+end	main
+proc add,0,24
+	ASN   	loc:0,parm:0
+	ASN   	loc:8,parm:1
+	ADD   	loc:16,loc:0,loc:8
+	RETURN	loc:16
+end	add
+proc loop,0,56
+	ASN   	loc:0,const:0
+	ASN   	loc:8,const:1
+	ASN   	loc:16,const:10
+lab15:
+	BLE   	lab:16,loc:8,loc:16
+	GOTO  	lab:17
+lab16:
+	ADD   	loc:24,loc:0,loc:8
+	ASN   	loc:0,loc:24
+	PARAM 	str:4
+	PARAM 	loc:0
+	CALL  	printf,2,loc:32
+	ADD   	loc:40,loc:8,const:1
+	ASN   	loc:8,loc:40
+	GOTO  	lab:15
+lab17:
+	PARAM 	str:5
+	PARAM 	loc:0
+	CALL  	printf,2,loc:48
+end	loop

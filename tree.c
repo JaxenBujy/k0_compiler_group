@@ -722,6 +722,13 @@ struct instr *codegen(struct tree *t, struct sym_table *scope)
         code = append(code, gen(O_ASN, dst, t->kids[6]->place, addr_none()));
         return code;
     }
+    case PR_FOR_IDENT_IDENT:
+    case PR_FOR_LITERAL_IDENT:
+    case PR_FOR_IDENT_LITERAL:
+    case PR_FOR_LITERAL_LITERAL:
+    {
+        return codegen_for(t,scope);
+    }
     case PR_GLOBAL_VAR_INIT:
     case PR_GLOBAL_VAR_DECL:
     case PR_GLOBAL_VAR_DECL_ASSIGN:
@@ -902,6 +909,59 @@ struct instr *codegen_relop(struct tree *t, int branch_op, struct sym_table *sco
                       gen(branch_op, tmp,
                           t->kids[0]->place, t->kids[2]->place));
     }
+    return code;
+}
+
+struct instr *codegen_for(struct tree *t, struct sym_table *scope)
+{
+    // FOR ( IDENT IN start .. end ) body
+    // kids[0]=FOR, kids[1]=LPAREN, kids[2]=IDENT (loop var)
+    // kids[3]=IN, kids[4]=start, kids[5]=RANGE_INCL, kids[6]=end
+    // kids[7]=RPAREN, kids[8]=body
+
+    struct tree *loop_var = t->kids[2];  // the loop variable
+    struct tree *start    = t->kids[4];  // start expression
+    struct tree *end_node = t->kids[6];  // end expression
+    struct tree *body     = t->kids[8];  // loop body
+
+    // generate start and end values
+    struct instr *code = codegen(start, scope);
+    code = append(code, codegen(end_node, scope));
+
+    // initialize loop variable to start value
+    struct addr loop_addr = lookup_place(loop_var, scope);
+    code = append(code, gen(O_ASN, loop_addr, start->place, addr_none()));
+
+    // allocate a temp for the end value so it isn't recomputed each iteration
+    struct addr end_tmp = new_temp();
+    code = append(code, gen(O_ASN, end_tmp, end_node->place, addr_none()));
+
+    // generate labels
+    struct addr *top_label  = genlabel(); // top of loop
+    struct addr *body_label = genlabel(); // body start
+    struct addr *exit_label = genlabel(); // exit
+
+    // top of loop — check condition (loop_var <= end)
+    code = append(code, gen(D_LABEL, *top_label, addr_none(), addr_none()));
+    code = append(code, gen(O_BLE, *body_label, loop_addr, end_tmp));
+    code = append(code, gen(O_GOTO, *exit_label, addr_none(), addr_none()));
+
+    // body
+    code = append(code, gen(D_LABEL, *body_label, addr_none(), addr_none()));
+    code = append(code, codegen(body, scope));
+
+    // increment loop variable by 1
+    struct addr inc_tmp = new_temp();
+    code = append(code, gen(O_ADD, inc_tmp, loop_addr, addr_const(1)));
+    code = append(code, gen(O_ASN, loop_addr, inc_tmp, addr_none()));
+
+    // jump back to top
+    code = append(code, gen(O_GOTO, *top_label, addr_none(), addr_none()));
+
+    // exit
+    code = append(code, gen(D_LABEL, *exit_label, addr_none(), addr_none()));
+
+    t->place = addr_none();
     return code;
 }
 

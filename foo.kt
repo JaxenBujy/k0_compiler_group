@@ -1,10 +1,8 @@
-var g = 10;
-
-fun main() {
-   var i : Int = 0;
-
-   while (i < 20) {
-      i = i * i + 1;
-      }
-   println("$i");
+fun loop() {
+    var sum: Int = 0;
+    for (i in 1..10) {
+        sum = sum + i;
+        println("sum = $sum");
+    }
+    println("final sum is $sum");
 }

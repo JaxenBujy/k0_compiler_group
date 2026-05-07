@@ -16,8 +16,19 @@ fun main() {
         println("x: $x");
         x = x + 1;
     }
+
+    loop();
 }
 
 fun add(num1: Int, num2: Int): Int {
     return num1 + num2;
+}
+
+fun loop() {
+    var sum: Int = 0;
+    for (i in 1..10) {
+        sum = sum + i;
+        println("sum = $sum");
+    }
+    println("final sum is $sum");
 }
